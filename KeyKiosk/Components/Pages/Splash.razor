@@ -1,0 +1,67 @@
+﻿@page "/splash";
+@layout Layout.BlankLayout
+@rendermode InteractiveServer
+@inject NavigationManager navManager
+@implements IAsyncDisposable
+
+
+<div id="main" @onmousedown="BgClicked">
+    <img id="img" src="/Honda-Poster.png"  />
+</div>
+
+@if (loginVisible)
+{
+    <div @onclick="() => wd.Poke()" id="login" class="fixed left-[50%] top-[50%] w-min z-50 grid w-full translate-x-[-50%] translate-y-[-50%] gap-4 border bg-background p-6 shadow-lg sm:rounded-lg ">
+        <h1 class="text-2xl justify-self-center">Service Advisor Access Only</h1>
+        <PinEntry PinLength="6" @ref=pinEntry OnPinCompleted=@OnPinEntered/>
+    </div>
+}
+
+@code {
+    bool loginVisible;
+    PinEntry pinEntry;
+    WatchDog wd;
+
+    protected override Task OnInitializedAsync()
+    {
+        loginVisible = false;
+        wd = new WatchDog(15 * 1000, OnTimeout);
+        return base.OnInitializedAsync();
+    }
+
+    void BgClicked(MouseEventArgs args)
+    {
+        // Console.WriteLine(args.Detail);
+        this.loginVisible = !this.loginVisible;
+        wd.Poke();
+        return;
+    }
+
+    public void OnPinEntered(string pin)
+    {
+        if (pin.Equals("123456"))
+        {
+            navManager.NavigateTo("/");
+        } else
+        {
+            pinEntry.ClearAndShake();
+        }
+    }
+
+    async void OnTimeout()
+    {
+        wd.Poke();
+        this.loginVisible = false;
+        // Console.WriteLine("timed out");
+        await InvokeAsync(StateHasChanged);
+    }
+
+    public ValueTask DisposeAsync()
+    {
+        // Console.WriteLine("disposeing");
+        wd.Stop();
+        wd = null;
+
+        return new();
+    }
+}

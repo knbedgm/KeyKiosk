@@ -1,0 +1,33 @@
+﻿@page "/"
+@inject SerialTest ser
+@rendermode InteractiveServer
+
+<PageTitle>Home</PageTitle>
+
+<h1>Hello, world!</h1>
+@foreach (var port in ser.GetPorts())
+{
+    <p>@port</p><br />   
+}
+
+<button class="border border-8" @onclick=hi>Print</button>
+<button class="border border-8" @onclick=init>Init</button>
+<button class="border border-8" @onclick=lines>Lines</button>
+
+Welcome to your new app.
+
+@code {
+    void init() {
+        ser.Write("\x1B@");
+    }
+
+    void hi()
+    {
+        ser.Write("Hi!");
+    }
+
+    void lines()
+    {
+        ser.Write("\n\n");
+    }
+}

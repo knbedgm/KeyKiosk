@@ -1,0 +1,99 @@
+﻿@rendermode InteractiveServer
+
+<div class="flex flex-col items-center">
+
+
+    <div data-input-otp-container="true" style="position: relative; cursor: text; user-select: none; pointer-events: none; --root-height: 40px;" class="@(InvalidPin?"bad-pin":"") flex items-center gap-2 has-[:disabled]:opacity-50 w-min">
+        <div class="flex items-center">
+            @for (int i = 0; i < PinLength; i++)
+            {
+                <div class="relative flex h-20 w-20 items-center justify-center border-y-2 border-r-2 border-border border-input text-3xl transition-all first:rounded-l-md first:border-l-2 last:rounded-r-md">
+                    @if (EnteredPin.Length > i)
+                    {
+                        @("•")
+                    }
+                </div>
+
+            }
+        </div>
+        <div style="position: absolute; inset: 0px; pointer-events: none;">
+            <input @oninput=PinChanged type="text" maxlength="@PinLength" value="@EnteredPin" autocomplete="off" autofocus class="disabled:cursor-not-allowed" inputmode="numeric" pattern="^\d+$" style="position: absolute; inset: 0px; width: calc(100% + 40px); height: 100%; display: flex; text-align: left; opacity: 1; color: transparent; pointer-events: all; background: transparent; caret-color: transparent; border: 0px solid transparent; outline: transparent solid 0px; box-shadow: none; line-height: 1; letter-spacing: -0.5em; font-size: var(--root-height); font-family: monospace; font-variant-numeric: tabular-nums; clip-path: inset(0px 40px 0px 0px);">
+        </div>
+    </div>
+
+
+    <div id="keypad">
+        @for (int i = 0; i < 10; i++)
+        {
+            var li = i;
+            <button @onclick="() => Keypress(li.ToString())" style="grid-area: n-@li;" class="active:outline active:z-30 active:outline-[1em] outline-border/70 inline-flex items-center justify-center whitespace-nowrap rounded-md text-xl font-medium disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground w-[2.5cm] h-[2.5cm] px-4 py-2">@i</button>
+        }
+        <button @onclick='() => Keypress("b")' style="grid-area: b" class="active:outline active:z-30 active:outline-[1em] outline-border/70 inline-flex items-center justify-center whitespace-nowrap rounded-md text-xl font-medium disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground w-[2.5cm] h-[2.5cm] px-4 py-2"><span class="iconify mdi--backspace-outline"></span></button>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public int PinLength { get; set; } = 4;
+    public string EnteredPin { get; set; } = "";
+    bool InvalidPin { get; set; } = false;
+
+    [Parameter]
+    public EventCallback<string> OnPinCompleted { get; set; }
+
+    public PinEntry()
+    {
+        EnteredPin = "";
+    }
+
+    protected override Task OnParametersSetAsync()
+    {
+        return base.OnParametersSetAsync();
+    }
+
+    void PinChanged(ChangeEventArgs args)
+    {
+        if (!(args.Value is null) && args.Value.GetType() == typeof(String))
+        {
+            PinChanged((String)args.Value);
+        }
+    }
+
+    void PinChanged(string pin)
+    {
+        EnteredPin = pin;
+        InvalidPin = false;
+        Console.WriteLine(EnteredPin);
+
+        if (EnteredPin.Length == PinLength)
+        {
+            OnPinCompleted.InvokeAsync(EnteredPin);
+        }
+    }
+
+    public void ClearAndShake()
+    {
+        EnteredPin = "";
+        // InvokeAsync(StateHasChanged);
+        this.InvalidPin = true;
+        Console.WriteLine("shake");
+    }
+
+    void Keypress(string num)
+    {
+        String pin = EnteredPin;
+        if (num.Equals("b"))
+        {
+            if (EnteredPin.Length > 0)
+            {
+                pin = pin.Remove(EnteredPin.Length - 1);
+            }
+        }
+        else if (pin.Length < PinLength)
+        {
+            pin += num;
+        }
+        PinChanged(pin);
+    }
+
+}
