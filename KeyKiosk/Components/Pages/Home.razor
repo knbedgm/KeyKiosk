@@ -1,10 +1,11 @@
 ﻿@page "/"
 @inject SerialTest ser
+@inject UserSessionService session
 @rendermode InteractiveServer
 
 <PageTitle>Home</PageTitle>
 
-<h1>Hello, world!</h1>
+<h1>Hello, @session.User! </h1>
 @foreach (var port in ser.GetPorts())
 {
     <p>@port</p><br />   

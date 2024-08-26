@@ -2,6 +2,7 @@
 @layout Layout.BlankLayout
 @rendermode InteractiveServer
 @inject NavigationManager navManager
+@inject UserSessionService session
 @implements IAsyncDisposable
 
 
@@ -18,13 +19,15 @@
 }
 
 @code {
+
     bool loginVisible;
-    PinEntry pinEntry;
-    WatchDog wd;
+    PinEntry pinEntry = default!;
+    WatchDog wd = default!;
 
     protected override Task OnInitializedAsync()
     {
         loginVisible = false;
+
         wd = new WatchDog(15 * 1000, OnTimeout);
         return base.OnInitializedAsync();
     }
@@ -39,7 +42,7 @@
 
     public void OnPinEntered(string pin)
     {
-        if (pin.Equals("123456"))
+        if (session.Login(pin))
         {
             navManager.NavigateTo("/");
         } else
@@ -50,7 +53,6 @@
 
     async void OnTimeout()
     {
-        wd.Poke();
         this.loginVisible = false;
         // Console.WriteLine("timed out");
         await InvokeAsync(StateHasChanged);
@@ -60,7 +62,6 @@
     {
         // Console.WriteLine("disposeing");
         wd.Stop();
-        wd = null;
 
         return new();
     }

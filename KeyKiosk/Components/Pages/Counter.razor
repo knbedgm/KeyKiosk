@@ -1,9 +1,10 @@
 ﻿@page "/counter"
 @rendermode InteractiveServer
+@inject ScopedTest scop
 
 <PageTitle>Counter</PageTitle>
 
-<h1>Counter</h1>
+<h1>Counter @scop.val</h1>
 
 <p role="status">Current count: @currentCount</p>
 

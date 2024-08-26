@@ -31,3 +31,7 @@
         transform: translate3d(4px, 0, 0);
     }
 }
+
+/*#wraper:has(input:focus) {
+    outline: solid 2em orange;
+}*/

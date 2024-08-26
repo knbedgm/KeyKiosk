@@ -7,8 +7,9 @@ namespace KeyKiosk.Utilities
     public class WatchDog
     {
         object locker = new object();
-        long lastPoke;
+        long lastPoke = 0;
         Stopwatch stopWatch = new Stopwatch();
+        bool paused = false;
         long threshold;
         Action callback;
         Timer watchDogTimer;
@@ -32,6 +33,9 @@ namespace KeyKiosk.Utilities
                 if ((stopWatch.ElapsedMilliseconds - lastPoke) > threshold)
                 {
                     elapsed = true;
+                    paused = true;
+                    watchDogTimer.Stop();
+                    stopWatch.Stop();
                 }
             }
 
@@ -47,6 +51,12 @@ namespace KeyKiosk.Utilities
             lock (locker)
             {
                 lastPoke = stopWatch.ElapsedMilliseconds;
+                if (paused)
+                {
+                    paused = false;
+                    stopWatch.Start();
+                    watchDogTimer.Start();
+                }
             }
         }
 
@@ -54,6 +64,12 @@ namespace KeyKiosk.Utilities
         {
             watchDogTimer.Stop();
             watchDogTimer.Close();
+        }
+
+        public TimeSpan TimeRemaining()
+        {
+            var ts = new TimeSpan(stopWatch.ElapsedMilliseconds - lastPoke);
+            return ts;
         }
     }
 }
