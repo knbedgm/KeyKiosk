@@ -21,7 +21,7 @@
 @code {
 
     bool loginVisible;
-    PinEntry pinEntry = default!;
+    PinEntry? pinEntry;
     WatchDog wd = default!;
 
     protected override Task OnInitializedAsync()
@@ -47,7 +47,7 @@
             navManager.NavigateTo("/");
         } else
         {
-            pinEntry.ClearAndShake();
+            pinEntry?.ClearAndShake();
         }
     }
 

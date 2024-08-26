@@ -19,7 +19,10 @@
                 return true;
             }
 
-            return false;
+        public void Logout()
+        {
+            _user = null;
+            navigationManager.NavigateTo("splash");
         }
 
     }

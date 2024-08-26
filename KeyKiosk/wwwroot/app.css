@@ -64,6 +64,8 @@
 
 html, body {
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    overscroll-behavior: none;
+    touch-action: pan-x pan-y;
 }
 
 a, .btn-link {

@@ -1,6 +1,23 @@
-﻿<Router AppAssembly="typeof(Program).Assembly">
+﻿@rendermode InteractiveServer
+@inject UserSessionService session
+@inject NavigationManager navManager
+
+<Router AppAssembly="typeof(Program).Assembly" OnNavigateAsync=@authHandler>
     <Found Context="routeData">
         <RouteView RouteData="routeData" DefaultLayout="typeof(Layout.MainLayout)" />
         <FocusOnNavigate RouteData="routeData" Selector="h1" />
     </Found>
 </Router>
+
+@code {
+    void authHandler(NavigationContext ctx)
+    {
+        if (session.User is null)
+        {
+            if (ctx.Path != "splash")
+            {
+                navManager.NavigateTo("splash");
+            }
+        }
+    }
+}

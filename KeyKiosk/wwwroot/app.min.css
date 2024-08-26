@@ -714,18 +714,9 @@ video {
   border-width: 8px;
 }
 
-.border-y-8 {
-  border-top-width: 8px;
-  border-bottom-width: 8px;
-}
-
 .border-y-2 {
   border-top-width: 2px;
   border-bottom-width: 2px;
-}
-
-.border-r-8 {
-  border-right-width: 8px;
 }
 
 .border-r-2 {
@@ -781,11 +772,6 @@ video {
   line-height: 2.25rem;
 }
 
-.text-xl {
-  font-size: 1.25rem;
-  line-height: 1.75rem;
-}
-
 .font-medium {
   font-weight: 500;
 }
@@ -802,22 +788,6 @@ video {
 
 .outline {
   outline-style: solid;
-}
-
-.outline-primary\/80 {
-  outline-color: hsl(var(--primary) / 0.8);
-}
-
-.outline-ring\/20 {
-  outline-color: hsl(var(--ring) / 0.2);
-}
-
-.outline-border\/20 {
-  outline-color: hsl(var(--border) / 0.2);
-}
-
-.outline-border\/40 {
-  outline-color: hsl(var(--border) / 0.4);
 }
 
 .outline-border\/70 {
@@ -850,6 +820,8 @@ video {
 
 html, body {
   font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  overscroll-behavior: none;
+  touch-action: pan-x pan-y;
 }
 
 a, .btn-link {
@@ -905,10 +877,6 @@ h1:focus {
   border-bottom-left-radius: calc(var(--radius) - 2px);
 }
 
-.first\:border-l:first-child {
-  border-left-width: 1px;
-}
-
 .first\:border-l-2:first-child {
   border-left-width: 2px;
 }
@@ -924,10 +892,6 @@ h1:focus {
 
 .active\:outline:active {
   outline-style: solid;
-}
-
-.active\:outline-2:active {
-  outline-width: 2px;
 }
 
 .active\:outline-\[1em\]:active {

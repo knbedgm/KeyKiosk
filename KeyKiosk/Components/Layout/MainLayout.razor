@@ -1,4 +1,5 @@
 ﻿@inherits LayoutComponentBase
+@inject UserSessionService session
 
 <div class="page">
     <div class="sidebar">
@@ -7,7 +8,7 @@
 
     <main>
         <div class="top-row px-4">
-            <a href="splash">Exit</a>
+            <a @onclick="() => session.Logout()">Exit</a>
         </div>
 
         <article class="content px-4">

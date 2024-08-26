@@ -14,6 +14,8 @@ namespace KeyKiosk
                 .AddInteractiveServerComponents();
 
             builder.Services.AddSingleton<SerialTest>();
+            builder.Services.AddScoped<ScopedTest>();
+            builder.Services.AddScoped<UserSessionService>();
 
             var app = builder.Build();
 

@@ -27,9 +27,9 @@
         @for (int i = 0; i < 10; i++)
         {
             var li = i;
-            <button @onmousedown="() => OnKeypadInput(li.ToString())" style="grid-area: n-@li;" class="active:outline active:z-30 active:outline-[1em] outline-border/70 inline-flex items-center justify-center whitespace-nowrap rounded-md text-3xl font-medium disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground w-[2.5cm] h-[2.5cm] px-4 py-2">@i</button>
+            <button @onmousedown="() => OnKeypadInput(li.ToString())" @onmouseup="async () => await pinInput.FocusAsync()" style="grid-area: n-@li;" class="active:outline active:z-30 active:outline-[1em] outline-border/70 inline-flex items-center justify-center whitespace-nowrap rounded-md text-3xl font-medium disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground w-[2.5cm] h-[2.5cm] px-4 py-2">@i</button>
         }
-        <button @onmousedown='() => OnKeypadInput("b")' style="grid-area: b" class="active:outline active:z-30 active:outline-[1em] outline-border/70 inline-flex items-center justify-center whitespace-nowrap rounded-md text-3xl font-medium disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground w-[2.5cm] h-[2.5cm] px-4 py-2"><span class="iconify mdi--backspace-outline"></span></button>
+        <button @onmousedown='() => OnKeypadInput("b")' @onmouseup="async () => await pinInput.FocusAsync()" style="grid-area: b" class="active:outline active:z-30 active:outline-[1em] outline-border/70 inline-flex items-center justify-center whitespace-nowrap rounded-md text-3xl font-medium disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground w-[2.5cm] h-[2.5cm] px-4 py-2"><span class="iconify mdi--backspace-outline"></span></button>
     </div>
 </div>
 
@@ -92,7 +92,7 @@
         Console.WriteLine("shake");
     }
 
-    async Task OnKeypadInput(string num)
+    void OnKeypadInput(string num)
     {
         String pin = EnteredPin;
         if (num.Equals("b"))
@@ -107,7 +107,6 @@
             pin += num;
         }
         PinChanged(pin);
-        await pinInput.FocusAsync();
     }
 
 }
