@@ -5,7 +5,7 @@
 
 <PageTitle>Home</PageTitle>
 
-<h1>Hello, @session.User! </h1>
+<h1>Hello, @session.User?.Name! (@session.User?.UserType.ToString()) </h1>
 @foreach (var port in ser.GetPorts())
 {
     <p>@port</p><br />   
