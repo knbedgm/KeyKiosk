@@ -18,6 +18,7 @@ namespace KeyKiosk
             builder.Services.AddSingleton<SerialTest>();
             builder.Services.AddScoped<ScopedTest>();
             builder.Services.AddScoped<UserSessionService>();
+            builder.Services.AddScoped<NavAuthService>();
 
             var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
