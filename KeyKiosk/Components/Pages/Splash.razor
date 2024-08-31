@@ -1,4 +1,4 @@
-﻿@page "/splash";
+﻿@page "/";
 @layout Layout.BlankLayout
 @rendermode InteractiveServer
 @inject NavigationManager navManager
@@ -44,7 +44,7 @@
     {
         if (session.Login(pin))
         {
-            navManager.NavigateTo("/");
+            navManager.NavigateTo("/home");
         } else
         {
             pinEntry?.ClearAndShake();

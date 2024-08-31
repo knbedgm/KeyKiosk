@@ -32,7 +32,7 @@ namespace KeyKiosk.Services
         public void Logout()
         {
             _user = null;
-            navigationManager.NavigateTo("splash");
+            navigationManager.NavigateTo("");
         }
 
     }

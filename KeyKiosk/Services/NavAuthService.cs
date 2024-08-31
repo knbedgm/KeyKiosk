@@ -23,10 +23,10 @@ namespace KeyKiosk.Services
         {
 
             Console.WriteLine($"attemt auth {path} for {UserSessionService.User?.Name}");
-            List<string> publicPaths = ["splash"];
-            List<string> userPaths = [""];
+            List<string> publicPaths = [""];
+            List<string> userPaths = ["home"];
             userPaths.AddRange(publicPaths);
-            List<string> managerPaths = [""];
+            List<string> managerPaths = ["home"];
             managerPaths.AddRange(userPaths);
 
             var user = UserSessionService.User;
