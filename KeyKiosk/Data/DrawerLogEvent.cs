@@ -7,8 +7,10 @@ namespace KeyKiosk.Data
     {
         public int ID { get; set; }
         public DateTime DateTime { get; set; }
-        public Drawer Drawer { get; set; }
-        public User User { get; set; }
+        public int DrawerId { get; set; }
+        public int UserId { get; private set; }
+        public string UserName { get; private set; }
+        public required User User { set { UserId = value.Id; UserName = value.Name; } }
         public DrawerLogEventType EventType { get; set; }
         public string? RONumber { get; set; }
     }

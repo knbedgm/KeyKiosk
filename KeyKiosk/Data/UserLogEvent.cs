@@ -7,8 +7,12 @@ namespace KeyKiosk.Data
     {
         public int ID { get; set; }
         public DateTime DateTime { get; set; }
-        public User ActingUser { get; set; }
-        public string? SecondaryUserName { get; set; }
+        public int ActingUserId { get; private set; }
+        public string ActingUserName { get; private set; }
+        public required User ActingUser { set { ActingUserId = value.Id; ActingUserName = value.Name; } }
+        public int? SecondaryUserId { get; private set; }
+        public string? SecondaryUserName { get; private set; }
+        public User SecondaryUser { set { SecondaryUserId = value.Id; SecondaryUserName = value.Name; } }
         [Column(TypeName = "TEXT")]
         public UserLogEventType EventType { get; set; }
     }

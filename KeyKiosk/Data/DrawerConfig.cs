@@ -4,9 +4,9 @@ namespace KeyKiosk.Data
 {
     public class DrawerConfig
     {
-        public string Name { get; set; }
+        public required string Name { get; set; }
         public int RelayIndex { get; set; }
-        public int SensorIndex { get; set; }
+        //public int SensorIndex { get; set; }
 
     }
 
