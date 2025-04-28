@@ -48,6 +48,7 @@ module.exports = {
                     DEFAULT: "hsl(var(--card))",
                     foreground: "hsl(var(--card-foreground))",
                 },
+                "honda-blue": "rgb(0, 125, 186)",
             },
             borderRadius: {
                 lg: `var(--radius)`,
@@ -75,6 +76,6 @@ module.exports = {
     },
     plugins: [
         require("tailwindcss-animate"),
-        addIconSelectors(['mdi', 'mdi-light'])
+        addIconSelectors(['mdi', 'mdi-light', 'fluent'])
     ],
 }

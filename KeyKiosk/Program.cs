@@ -25,15 +25,33 @@ namespace KeyKiosk
             void DbOptions(DbContextOptionsBuilder options)
             {
                 options.UseSqlite(connectionString);
-                options.LogTo(Console.WriteLine, minimumLevel: LogLevel.Information);
+                //options.LogTo(Console.WriteLine, minimumLevel: LogLevel.Information);
                 //options.LogTo(Console.WriteLine, minimumLevel: LogLevel.Debug);
                 options.EnableSensitiveDataLogging();
             }
 
             builder.Services.AddDbContext<ApplicationDbContext>(DbOptions);
 
+            // prevent config issues from blocking `dotnet ef migration` commands
             if (!EF.IsDesignTime)
             {
+                // Drawer Serial Interface Service
+                //string port = builder.Configuration.GetRequiredSection("DrawerSerialPort").Value ?? throw new InvalidOperationException("Configuration string 'DrawerSerialPort' not found.");
+                //builder.Services.AddSingleton<IPhysicalDrawerController>(new DenkoviDrawerController(port));
+                builder.Services.AddSingleton<IPhysicalDrawerController, TestConsoleDrawerController>();
+
+                // Drawer High-level control service
+                var drawerConfigs = builder.Configuration.GetDrawerConfigs() ?? throw new InvalidOperationException("Configuration section 'Drawers' not found.");
+                builder.Services.AddScoped<DrawerService>((IServiceProvider svc) =>
+                {
+                    var db = svc.GetRequiredService<ApplicationDbContext>();
+                    var controller = svc.GetRequiredService<IPhysicalDrawerController>();
+                    var users = svc.GetRequiredService<UserSessionService>();
+                    return new(drawerConfigs, controller, db, users);
+                });
+
+
+                // Initialize drawer entries in database
                 var options = new DbContextOptionsBuilder<ApplicationDbContext>();
                 DbOptions(options);
                 var ctx = new ApplicationDbContext(options.Options);
@@ -43,29 +61,28 @@ namespace KeyKiosk
                     ctx.Database.Migrate();
                 }
 
-                var cfgs = builder.Configuration.GetDrawerConfigs() ?? throw new InvalidOperationException("Configuration section 'Drawers' not found.");
 
                 var dbCount = ctx.Drawers.Count();
 
-                if (cfgs.Count == 0)
+                if (drawerConfigs.Count == 0)
                 {
                     throw new InvalidOperationException("Configuration section 'Drawers' has no entries.");
                 }
                 else if (dbCount == 0)
                 {
-                    for (int i = 1; i <= cfgs.Count; i++)
+                    for (int i = 1; i <= drawerConfigs.Count; i++)
                     {
-                        int li = i;
-                        ctx.Drawers.Add(new() { Id = li, Occupied = false });
+                        ctx.Drawers.Add(new() { Id = i, Occupied = false});
                     }
                     ctx.SaveChanges();
                 }
-                else if (dbCount != cfgs.Count)
+                else if (dbCount != drawerConfigs.Count)
                 {
                     throw new InvalidOperationException("Configuration section 'Drawers' entry count doesn't match database. Please delete/flush database entries.");
                 }
 
 
+                // create first user if none exist
                 if (ctx.Users.Count() == 0)
                 {
                     ctx.Users.Add(new() { Id = 1, Name = "DefaultAdmin", Pin = "555555", UserType = UserType.Admin });
