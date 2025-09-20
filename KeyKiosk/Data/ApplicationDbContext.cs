@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using System.Collections;
 
 namespace KeyKiosk.Data
@@ -19,7 +20,14 @@ namespace KeyKiosk.Data
             modelBuilder.Entity<DrawerLogEvent>().Property(e => e.EventType).HasConversion<string>();
         }
 
-    }
+		protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
+		{
+			configurationBuilder
+				.Properties<DateTimeOffset>()
+				.HaveConversion<DateTimeOffsetConverter>();
+		}
+
+	}
 
 
     //public class ApplicationDbContexttFactory : IDesignTimeDbContextFactory<ApplicationDbContext>
@@ -32,4 +40,15 @@ namespace KeyKiosk.Data
     //        return new ApplicationDbContext(optionsBuilder.Options);
     //    }
     //}
+}
+
+
+public class DateTimeOffsetConverter : ValueConverter<DateTimeOffset, DateTimeOffset>
+{
+	public DateTimeOffsetConverter()
+		: base(
+			d => d.ToUniversalTime(),
+			d => d.ToUniversalTime())
+	{
+	}
 }

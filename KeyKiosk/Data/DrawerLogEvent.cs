@@ -6,7 +6,7 @@ namespace KeyKiosk.Data
     public class DrawerLogEvent : ILogEvent
     {
         public int ID { get; set; }
-        public DateTime DateTime { get; set; }
+        public DateTimeOffset DateTime { get; set; }
         public int DrawerId { get; set; }
         public int UserId { get; private set; }
         public string UserName { get; private set; }

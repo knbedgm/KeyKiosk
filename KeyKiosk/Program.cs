@@ -24,7 +24,8 @@ namespace KeyKiosk
 
             void DbOptions(DbContextOptionsBuilder options)
             {
-                options.UseSqlite(connectionString);
+                //options.UseSqlite(connectionString);
+                options.UseNpgsql(connectionString);
                 //options.LogTo(Console.WriteLine, minimumLevel: LogLevel.Information);
                 //options.LogTo(Console.WriteLine, minimumLevel: LogLevel.Debug);
                 options.EnableSensitiveDataLogging();

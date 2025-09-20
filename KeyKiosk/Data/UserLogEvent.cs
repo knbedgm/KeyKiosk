@@ -6,7 +6,7 @@ namespace KeyKiosk.Data
     public class UserLogEvent : ILogEvent
     {
         public int ID { get; set; }
-        public DateTime DateTime { get; set; }
+        public DateTimeOffset DateTime { get; set; }
         public int ActingUserId { get; private set; }
         public string ActingUserName { get; private set; }
         public required User ActingUser { set { ActingUserId = value.Id; ActingUserName = value.Name; } }
