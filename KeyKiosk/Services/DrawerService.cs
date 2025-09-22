@@ -28,14 +28,12 @@ namespace KeyKiosk.Services
         {
             //TODO: make service scoped to access use / database for audit
             dbContext.DrawerLog.Add(new() { DateTime = DateTime.Now, EventType = DrawerLogEventType.Open, DrawerId = id, User = userSessionService.User!});
-            var drawer = dbContext.Drawers.First(d => d.Id == id);
-            if (drawer != null)
-            {
-                drawer.Occupied = !drawer.Occupied;
-            }
-            //dbContext.Drawers.Add(new());
+            var drawer = drawers.First(d => d.Id == id);
+            if (drawer == null) throw new ArgumentException($"Unable to find drawer with id ${id}", "id");
+
+            drawer.db.Occupied = !drawer.Occupied;
             dbContext.SaveChanges();
-            await DrawerController.Open(id);
+            await DrawerController.Open(drawer.config.RelayIndex);
         }
 
         public async Task OpenAll()
@@ -50,8 +48,8 @@ namespace KeyKiosk.Services
 
         public class Drawer
         {
-            public required  DrawerConfig config { private get; init; }
-            public required Data.Drawer db { private get; init; }
+            public required  DrawerConfig config { internal get; init; }
+            public required Data.Drawer db { internal get; init; }
             public int Id { get => db.Id; }
             public string Name { get => config.Name; }
             public string? CurrentRONumber { get => db.CurrentRONumber; }

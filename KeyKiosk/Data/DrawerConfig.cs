@@ -12,9 +12,16 @@ namespace KeyKiosk.Data
 
     public static class DrawerConfigExtentions
     {
-        public static ICollection<DrawerConfig>? GetDrawerConfigs(this IConfiguration configuration)
+        public static ICollection<DrawerConfig> GetDrawerConfigs(this IConfiguration configuration)
         {
-            return configuration.GetSection("Drawers").Get<ICollection<DrawerConfig>>();
+            var config = configuration.GetSection("Drawers").Get<ICollection<DrawerConfig>>();
+
+            if (config == null)
+            {
+				throw new InvalidOperationException("Configuration section 'Drawers' not found.");
+			}
+
+            return config;
         }
     }
 }

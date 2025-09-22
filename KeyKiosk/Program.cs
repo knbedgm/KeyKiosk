@@ -42,7 +42,7 @@ namespace KeyKiosk
                 builder.Services.AddSingleton<IPhysicalDrawerController, TestConsoleDrawerController>();
 
                 // Drawer High-level control service
-                var drawerConfigs = builder.Configuration.GetDrawerConfigs() ?? throw new InvalidOperationException("Configuration section 'Drawers' not found.");
+                var drawerConfigs = builder.Configuration.GetDrawerConfigs();
                 builder.Services.AddScoped<DrawerService>((IServiceProvider svc) =>
                 {
                     var db = svc.GetRequiredService<ApplicationDbContext>();
