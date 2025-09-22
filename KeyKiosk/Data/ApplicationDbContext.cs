@@ -9,22 +9,25 @@ namespace KeyKiosk.Data
     {
         public DbSet<User> Users { get; set; }
         public DbSet<Drawer> Drawers { get; set; }
+        public DbSet<WorkOrder> WorkOrders { get; set; }
+
 
         public DbSet<DrawerLogEvent> DrawerLog { get; set; }
         public DbSet<UserLogEvent> UserLog { get; set; }
 
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
-            modelBuilder.Entity<User>().Property(e => e.UserType).HasConversion<string>();
-            modelBuilder.Entity<UserLogEvent>().Property(e => e.EventType).HasConversion<string>();
-            modelBuilder.Entity<DrawerLogEvent>().Property(e => e.EventType).HasConversion<string>();
-        }
+        //protected override void OnModelCreating(ModelBuilder modelBuilder)
+        //{
+        //    modelBuilder.Entity<User>().Property(e => e.UserType).HasConversion<string>();
+        //    modelBuilder.Entity<UserLogEvent>().Property(e => e.EventType).HasConversion<string>();
+        //    modelBuilder.Entity<DrawerLogEvent>().Property(e => e.EventType).HasConversion<string>();
+        //}
 
 		protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
 		{
 			configurationBuilder
 				.Properties<DateTimeOffset>()
 				.HaveConversion<DateTimeOffsetConverter>();
+			configurationBuilder.Properties<Enum>().HaveConversion<string>();
 		}
 
 	}

@@ -8,7 +8,6 @@ namespace KeyKiosk.Data
         public int Id { get; set; }
         public string Name { get; set; } = "";
         public string Pin { get; set; } = "000000";
-        [Column(TypeName = "TEXT")]
         public UserType UserType { get; set; } = UserType.User;
     }
 

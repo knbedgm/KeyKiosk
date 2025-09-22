@@ -13,7 +13,6 @@ namespace KeyKiosk.Data
         public int? SecondaryUserId { get; private set; }
         public string? SecondaryUserName { get; private set; }
         public User SecondaryUser { set { SecondaryUserId = value.Id; SecondaryUserName = value.Name; } }
-        [Column(TypeName = "TEXT")]
         public UserLogEventType EventType { get; set; }
     }
 
