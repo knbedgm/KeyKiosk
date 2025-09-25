@@ -6,7 +6,6 @@ namespace KeyKiosk.Services
 {
     public class KioskNavAuthService
     {
-        [Inject]
         public required KioskUserSessionService UserSessionService { get; set; }
 
         public KioskNavAuthService(KioskUserSessionService userSessionService)
@@ -27,8 +26,8 @@ namespace KeyKiosk.Services
             Console.WriteLine($"attemt auth {path} for {UserSessionService.User?.Name}");
             List<string> publicPaths = [""];
             List<string> userPaths = ["home"];
-            userPaths.AddRange(publicPaths);
             List<string> managerPaths = ["home"];
+            userPaths.AddRange(publicPaths);
             managerPaths.AddRange(userPaths);
 
             var user = UserSessionService.User;
@@ -45,7 +44,7 @@ namespace KeyKiosk.Services
             // early kick for non-logged in
             if (user is null)
             {
-                return publicPaths.First();
+                return "/kiosk/" + publicPaths.First();
             }
             
             // determine what roles are allowed
@@ -69,14 +68,14 @@ namespace KeyKiosk.Services
                 switch (user.UserType)
                 {
                     case UserType.User:
-                        return userPaths.First();
+                        return "/kiosk/" + userPaths.First();
 
                     case UserType.Manager:
-                        return managerPaths.First();
+                        return "/kiosk/" + managerPaths.First();
                 }
             }
 
-            return "splash";
+            return "/kiosk";
         }
     }
 }
