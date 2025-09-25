@@ -7,9 +7,9 @@ namespace KeyKiosk.Services
         List<DrawerConfig> DrawerIOConfig;
         IPhysicalDrawerController DrawerController;
         ApplicationDbContext dbContext;
-        UserSessionService userSessionService;
+        KioskUserSessionService userSessionService;
         List<Drawer> drawers;
-        public DrawerService(IEnumerable<DrawerConfig> conf, IPhysicalDrawerController DrawerController, ApplicationDbContext dbContext, UserSessionService userSessionService)
+        public DrawerService(IEnumerable<DrawerConfig> conf, IPhysicalDrawerController DrawerController, ApplicationDbContext dbContext, KioskUserSessionService userSessionService)
         {
             DrawerIOConfig = new List<DrawerConfig>(conf);
             this.DrawerController = DrawerController;

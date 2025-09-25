@@ -17,8 +17,8 @@ namespace KeyKiosk
 
             builder.Services.AddSingleton<SerialTest>();
             builder.Services.AddScoped<ScopedTest>();
-            builder.Services.AddScoped<UserSessionService>();
-            builder.Services.AddScoped<NavAuthService>();
+            builder.Services.AddScoped<KioskUserSessionService>();
+            builder.Services.AddScoped<KioskNavAuthService>();
 
             var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
@@ -47,7 +47,7 @@ namespace KeyKiosk
                 {
                     var db = svc.GetRequiredService<ApplicationDbContext>();
                     var controller = svc.GetRequiredService<IPhysicalDrawerController>();
-                    var users = svc.GetRequiredService<UserSessionService>();
+                    var users = svc.GetRequiredService<KioskUserSessionService>();
                     return new(drawerConfigs, controller, db, users);
                 });
 

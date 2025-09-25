@@ -4,12 +4,12 @@ using Microsoft.AspNetCore.Components.Routing;
 
 namespace KeyKiosk.Services
 {
-    public class NavAuthService
+    public class KioskNavAuthService
     {
         [Inject]
-        public required UserSessionService UserSessionService { get; set; }
+        public required KioskUserSessionService UserSessionService { get; set; }
 
-        public NavAuthService(UserSessionService userSessionService)
+        public KioskNavAuthService(KioskUserSessionService userSessionService)
         {
             this.UserSessionService = userSessionService;
         }
@@ -21,6 +21,8 @@ namespace KeyKiosk.Services
         /// <returns>null if authorized, else the fallback path to redirect to</returns>
         public string? UserCanAccessPath(string path)
         {
+            if (!path.StartsWith("kiosk/")) return null;
+            path = path.Substring("kiosk/".Length);
 
             Console.WriteLine($"attemt auth {path} for {UserSessionService.User?.Name}");
             List<string> publicPaths = [""];

@@ -1,8 +1,8 @@
-﻿@page "/";
+﻿@page "/kiosk";
 @layout Layout.BlankLayout
 @rendermode InteractiveServer
 @inject NavigationManager navManager
-@inject UserSessionService session
+@inject KioskUserSessionService session
 @implements IAsyncDisposable
 
 
@@ -13,7 +13,7 @@
 @if (loginVisible)
 {
     <div @onclick="() => wd.Poke()" id="login" class="fixed left-[50%] top-[50%] w-min z-50 grid w-full translate-x-[-50%] translate-y-[-50%] gap-4 border bg-background p-6 shadow-lg sm:rounded-lg ">
-        <h1 class="text-2xl justify-self-center">Service Advisor Access Only</h1>
+        <h1 class="text-2xl justify-self-center">Employee Access Only</h1>
         <PinEntry PinLength="6" @ref=pinEntry OnPinCompleted=@OnPinEntered/>
     </div>
 }
@@ -44,7 +44,7 @@
     {
         if (session.Login(pin))
         {
-            navManager.NavigateTo("/home");
+            navManager.NavigateTo("kiosk/home");
         } else
         {
             pinEntry?.ClearAndShake();

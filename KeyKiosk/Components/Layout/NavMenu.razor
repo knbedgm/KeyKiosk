@@ -1,51 +1,55 @@
-﻿@inject NavAuthService navAuthService
+﻿@implements IDisposable
 
-<nav class="flex flex-row justify-evenly h-full py-3 bg-border">
-    @foreach (var link in accessableLinks)
-    {
-        @* <div class="nav-item px-3 ">
-    <NavLink class="nav-link bg-primary text-primary-foreground hover:bg-primary/90   inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50" href="@link.href">
-    @link.Name
-    </NavLink>
-    </div> *@
+@inject NavigationManager NavigationManager
 
-        <NavLink class="nav-link flex flex-col w-36 [&.active]:bg-honda-blue [&.active]:text-sky-100 [&.active]:hover:bg-honda-blue/90  [&:not(.active)]:border [&:not(.active)]:border-2 [&:not(.active)]:border-honda-blue [&:not(.active)]:bg-sky-50 [&:not(.active)]:hover:bg-accent [&:not(.active)]:hover:text-accent-foreground   inline-flex items-center justify-center whitespace-nowrap rounded-md text-xl font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50" href="@link.href">
-            <span class="iconify w-12 h-12 @link.icon"></span>
-            @link.Name
-        </NavLink>
-        @* @(cw(link.ToString())) *@
-    }
-</nav>
+<div class="top-row ps-3 navbar navbar-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="">BlazorApp1</a>
+    </div>
+</div>
+
+<input type="checkbox" title="Navigation menu" class="navbar-toggler" />
+
+<div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
+    <nav class="nav flex-column">
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="home" Match="NavLinkMatch.All">
+                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
+            </NavLink>
+        </div>
+
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="counter">
+                <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Counter
+            </NavLink>
+        </div>
+
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="weather">
+                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Weather
+            </NavLink>
+        </div>
+    </nav>
+</div>
 
 @code {
-    class Link
-    {
-        public required string Name { get; init; }
-        public required string href { get; init; }
-        public required string icon { get; init; }
+    private string? currentUrl;
 
-        public override string ToString()
-        {
-            return $"{{'{Name}': '{href}'}}";
-        }
+    protected override void OnInitialized()
+    {
+        currentUrl = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
+        NavigationManager.LocationChanged += OnLocationChanged;
     }
 
-    List<Link> links = [
-        new(){Name="Counter", href="counter", icon="fluent--history-24-filled"},
-        new(){Name="Home", href="home", icon="fluent--drawer-24-filled"},
-        new(){Name="Weather", href="weather", icon="fluent--person-edit-24-filled"}
-    ];
-
-    List<Link> accessableLinks = [];
-
-    protected override void OnParametersSet()
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
     {
-        accessableLinks = links.FindAll((l) => (navAuthService.UserCanAccessPath(l.href) is null));
+        currentUrl = NavigationManager.ToBaseRelativePath(e.Location);
+        StateHasChanged();
     }
 
-    object? cw(string str)
+    public void Dispose()
     {
-        Console.WriteLine(str);
-        return null;
+        NavigationManager.LocationChanged -= OnLocationChanged;
     }
 }
+

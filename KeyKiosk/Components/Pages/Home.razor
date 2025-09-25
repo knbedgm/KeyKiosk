@@ -1,50 +1,9 @@
 ﻿@page "/home"
-@inject SerialTest ser
-@inject UserSessionService session
-@inject DrawerService drawers
-@rendermode InteractiveServer
 
 <PageTitle>Home</PageTitle>
 
-<h1>Hello, @session.User?.Name! (@session.User?.UserType.ToString()) </h1>
-@foreach (var port in ser.GetPorts())
-{
-    <p>@port</p>
-    <br />
-}
-
-<button class="border border-8" @onclick=hi>Print</button>
-<button class="border border-8" @onclick=init>Init</button>
-<button class="border border-8" @onclick=lines>Lines</button>
-<button class="border border-8" @onclick="()=>drawers.Open(1)">open1</button>
-<button class="border border-8" @onclick="()=>drawers.Open(16)">open16</button>
-<button class="border border-8" @onclick="()=>drawers.OpenAll()">openall</button>
-
- <div class="grid grid-rows-4 grid-cols-4 gap-4 m-4">
-    @foreach (var item in drawers.GetDrawers())
-    {
-        <div class="rounded-lg border bg-card text-card-foreground shadow-sm">
-            <h1>@item.Name</h1>
-            <p>@(item.Occupied ? "Full" : "Empty" )</p>
-            <button class="border border-8" @onclick="()=>drawers.Open(item.Id)">open</button>
-        </div>
-    }
-</div>
+<h3>Home</h3>
 
 @code {
 
-    void init()
-    {
-        ser.Write("\x1B@");
-    }
-
-    void hi()
-    {
-        ser.Write("Hi!");
-    }
-
-    void lines()
-    {
-        ser.Write("\n\n");
-    }
 }

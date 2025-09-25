@@ -1,68 +1,23 @@
 ﻿@inherits LayoutComponentBase
-@inject UserSessionService session
-@inject NavigationManager nav
 
-<CascadingValue Value="this">
-    <div class="page">
-
-        <div class="top-row px-4">
-            <div class="py-4 h-full">
-                <img class="object-contain h-full" src="/splash logo.png" alt="Logo" />
-            </div>
-            <a @onclick="() => session.Logout()">Exit</a>
-        </div>
-        <main>
-             @Body
-        </main>
-
-        @* @foreach (var hist in History)
-        {
-            <p>@hist</p>
-
-            <br />
-        }
-        @if (History.Count > 1)
-        {
-            <a @onclick="()=>nav.NavigateTo(History[History.Count-2])">Back</a>
-        } *@
-        <div class="navmenu">
-            <NavMenu />
-        </div>
+<div class="page">
+    <div class="sidebar">
+        <NavMenu />
     </div>
-</CascadingValue>
 
-<div id="blazor-error-ui">
-    An unhandled error has occurred.
-    <a href="" class="reload">Reload</a>
+    <main>
+        <div class="top-row px-4">
+            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
+        </div>
+
+        <article class="content px-4">
+            @Body
+        </article>
+    </main>
 </div>
 
-@code {
-    List<string> History = [];
-
-    public bool ShowBack { get; set; } = false;
-    public bool ShowExit { get; set; } = true;
-
-    protected override void OnInitialized()
-    {
-        nav.LocationChanged += OnLocationChange;
-        if (History.Count == 0)
-        {
-            History.Add(nav.Uri);
-        }
-    }
-
-    void OnLocationChange(object? sender, LocationChangedEventArgs e)
-    {
-        // Console.WriteLine($"Moving to '{e.Location}'");
-        int loc = History.IndexOf(e.Location);
-        if (loc == -1)
-        {
-            History.Add(e.Location);
-        }
-        else
-        {
-            History = History.Slice(0, loc + 1);
-        }
-        InvokeAsync(StateHasChanged);
-    }
-}
+<div id="blazor-error-ui" data-nosnippet>
+    An unhandled error has occurred.
+    <a href="." class="reload">Reload</a>
+    <span class="dismiss">🗙</span>
+</div>
