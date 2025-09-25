@@ -15,11 +15,6 @@ namespace KeyKiosk
             builder.Services.AddRazorComponents()
                 .AddInteractiveServerComponents();
 
-            builder.Services.AddSingleton<SerialTest>();
-            builder.Services.AddScoped<ScopedTest>();
-            builder.Services.AddScoped<KioskUserSessionService>();
-            builder.Services.AddScoped<KioskNavAuthService>();
-
             var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
             void DbOptions(DbContextOptionsBuilder options)
@@ -36,21 +31,7 @@ namespace KeyKiosk
             // prevent config issues from blocking `dotnet ef migration` commands
             if (!EF.IsDesignTime)
             {
-                // Drawer Serial Interface Service
-                //string port = builder.Configuration.GetRequiredSection("DrawerSerialPort").Value ?? throw new InvalidOperationException("Configuration string 'DrawerSerialPort' not found.");
-                //builder.Services.AddSingleton<IPhysicalDrawerController>(new DenkoviDrawerController(port));
-                builder.Services.AddSingleton<IPhysicalDrawerController, TestConsoleDrawerController>();
-
-                // Drawer High-level control service
-                var drawerConfigs = builder.Configuration.GetDrawerConfigs();
-                builder.Services.AddScoped<DrawerService>((IServiceProvider svc) =>
-                {
-                    var db = svc.GetRequiredService<ApplicationDbContext>();
-                    var controller = svc.GetRequiredService<IPhysicalDrawerController>();
-                    var users = svc.GetRequiredService<KioskUserSessionService>();
-                    return new(drawerConfigs, controller, db, users);
-                });
-
+                builder.RegiserAppServices();
 
                 // Initialize drawer entries in database
                 var options = new DbContextOptionsBuilder<ApplicationDbContext>();
@@ -61,27 +42,6 @@ namespace KeyKiosk
                 {
                     ctx.Database.Migrate();
                 }
-
-
-                var dbCount = ctx.Drawers.Count();
-
-                if (drawerConfigs.Count == 0)
-                {
-                    throw new InvalidOperationException("Configuration section 'Drawers' has no entries.");
-                }
-                else if (dbCount == 0)
-                {
-                    for (int i = 1; i <= drawerConfigs.Count; i++)
-                    {
-                        ctx.Drawers.Add(new() { Id = i, Occupied = false});
-                    }
-                    ctx.SaveChanges();
-                }
-                else if (dbCount != drawerConfigs.Count)
-                {
-                    throw new InvalidOperationException("Configuration section 'Drawers' entry count doesn't match database. Please delete/flush database entries.");
-                }
-
 
                 // create first user if none exist
                 if (ctx.Users.Count() == 0)

@@ -1,25 +1,30 @@
 ﻿using KeyKiosk.Data;
+using System.Collections;
 
 namespace KeyKiosk.Services
 {
     public class DrawerService
     {
-        List<DrawerConfig> DrawerIOConfig;
+        IList<DrawerConfig> DrawerIOConfig;
         IPhysicalDrawerController DrawerController;
         ApplicationDbContext dbContext;
         KioskUserSessionService userSessionService;
         List<Drawer> drawers;
-        public DrawerService(IEnumerable<DrawerConfig> conf, IPhysicalDrawerController DrawerController, ApplicationDbContext dbContext, KioskUserSessionService userSessionService)
+        public DrawerService(IList<DrawerConfig> DrawerIOConfig, IPhysicalDrawerController DrawerController, ApplicationDbContext dbContext, KioskUserSessionService userSessionService)
         {
-            DrawerIOConfig = new List<DrawerConfig>(conf);
+            this.DrawerIOConfig = DrawerIOConfig;
             this.DrawerController = DrawerController;
             this.dbContext = dbContext;
             this.userSessionService = userSessionService;
-            
+
+            this.initDb(DrawerIOConfig);
+
             drawers = new List<Drawer>();
-            foreach (var d in dbContext.Drawers)
+
+            var dbDrawers = from drawer in dbContext.Drawers orderby drawer.Id select drawer;
+            foreach (var d in dbDrawers)
             {
-                Console.WriteLine($"Loading {d} @ {d.Id}");
+                //Console.WriteLine($"Loading {d} @ {d.Id}");
                 drawers.Add(new() { db= d, config= DrawerIOConfig[d.Id-1] });
             }
         }
@@ -45,6 +50,28 @@ namespace KeyKiosk.Services
         {
             return drawers;
         }
+
+        private void initDb(IList<DrawerConfig> drawerConfigs)
+        {
+			var dbCount = dbContext.Drawers.Count();
+
+			if (drawerConfigs.Count() == 0)
+			{
+				throw new InvalidOperationException("Configuration section 'Drawers' has no entries.");
+			}
+			else if (dbCount == 0)
+			{
+				for (int i = 1; i <= drawerConfigs.Count; i++)
+				{
+					dbContext.Drawers.Add(new() { Id = i, Occupied = false });
+				}
+				dbContext.SaveChanges();
+			}
+			else if (dbCount != drawerConfigs.Count)
+			{
+				throw new InvalidOperationException("Configuration section 'Drawers' entry count doesn't match database. Please delete/flush database entries.");
+			}
+		}
 
         public class Drawer
         {
