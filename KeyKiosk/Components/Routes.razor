@@ -13,11 +13,11 @@
 @code {
     void authHandler(NavigationContext ctx)
     {
-        // var newpath = navAuth.UserCanAccessPath(ctx.Path);
-        // if (!(newpath is null))
-        // {
-        //     navManager.NavigateTo(newpath);
-        // }
+        var newpath = navAuth.UserCanAccessPath(ctx.Path);
+        if (!(newpath is null))
+        {
+            navManager.NavigateTo(newpath);
+        }
     }
 
     // protected override void OnInitialized()
