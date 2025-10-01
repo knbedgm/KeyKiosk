@@ -1,0 +1,11 @@
+﻿@page "/customer/login"
+@rendermode InteractiveServer
+@layout Layout.CustomerLayout
+
+<h3>CustomerLogin</h3>
+
+<input type="text" @bind="CustomerName" />
+
+<p>Customer name is @CustomerName</p>
+
+<button onclick="@GoCustomerHomePage">Submit</button>
