@@ -5,6 +5,7 @@ public class WorkOrder
 {
 	public int Id { get; set; }
 	public required string CustomerName { get; set; }
+	public required string VehiclePlate { get; set; }
 	public DateTimeOffset StartDate { get; set; }
 	public DateTimeOffset EndDate { get; set; }
 	public WorkOrderStatusType Status { get; set; }
