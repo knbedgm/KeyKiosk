@@ -20,6 +20,10 @@ namespace KeyKiosk
             builder.Services.AddScoped<UserSessionService>();
             builder.Services.AddScoped<NavAuthService>();
 
+            builder.Services.AddScoped<WorkOrderService>();
+
+            // builder.Services.AddControllers();
+
             var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
             void DbOptions(DbContextOptionsBuilder options)
@@ -89,6 +93,33 @@ namespace KeyKiosk
                     ctx.Users.Add(new() { Id = 1, Name = "DefaultAdmin", Pin = "555555", UserType = UserType.Admin });
                     ctx.SaveChanges();
                 }
+
+                //work order service list
+                if (!ctx.WorkOrders.Any())
+                {
+                    ctx.WorkOrders.Add(new WorkOrder
+                    {
+                        CustomerName = "Test Customer",
+                        StartDate = DateTimeOffset.Now,
+                        EndDate = DateTimeOffset.Now.AddDays(2),
+                        Status = WorkOrderStatusType.Created,
+                        Details = "Initial seeded work order",
+                        Tasks = new List<WorkOrderTask>
+                    {
+                        new WorkOrderTask
+                        {
+                            CustomerName = "Task 1",
+                            StartDate = DateTimeOffset.Now,
+                            EndDate = DateTimeOffset.Now.AddDays(1),
+                            Status = WorkOrderTaskStatusType.WorkStarted,
+                            CostCents = 5000
+                        }
+                    }
+                    });
+
+                    ctx.SaveChanges();
+                }
+
             }
 
             var app = builder.Build();
@@ -108,6 +139,9 @@ namespace KeyKiosk
 
             app.MapRazorComponents<App>()
                 .AddInteractiveServerRenderMode();
+
+            // Map API controllers
+           // app.MapControllers();
 
             app.Run();
         }
