@@ -18,6 +18,8 @@
 			<th>Customer Name</th>
 			<th>Status</th>
 			<th>Details</th>
+			<th>Costs</th>
+			<th>Tasks</th>
 		</tr>
 		@foreach (WorkOrder workOrder in WorkOrderList)
 		{
@@ -26,6 +28,17 @@
 				<td>@workOrder.CustomerName</td>
 				<td>@workOrder.Status</td>
 				<td>@workOrder.Details</td>
+				<td>@workOrder.TotalCostCents</td>
+				<td>
+					<ol>
+						@foreach (WorkOrderTask task in workOrder.Tasks)
+						{
+
+							<li>Task Id: @task.Id Task Cost: @task.CostCents
+							</li>
+						}
+					</ol>
+				</td>
 			</tr>
 		}
 	</table>

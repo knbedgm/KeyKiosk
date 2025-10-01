@@ -1,46 +1,37 @@
 ﻿using KeyKiosk.Data;
 using KeyKiosk.Services;
+using Microsoft.AspNetCore.Components;
+using Microsoft.EntityFrameworkCore;
 
 namespace KeyKiosk.Components.Pages.Customer;
 
 public partial class CustomerHomePage
 {
-    ApplicationDbContext dbContext;
-    DatabaseService databaseService;
-    private string EnteredName { get; set; }
+    [Inject]
+    private WorkOrderService DatabaseService { get; set; }
+
+    private string EnteredName { get; set; } = "";
 
     List<WorkOrder> WorkOrderList { get; set; } = new List<WorkOrder>();
 
-    public CustomerHomePage(ApplicationDbContext dbContext)
+    public CustomerHomePage(WorkOrderService databaseService)
     {
-        this.dbContext = dbContext;
-        databaseService = new DatabaseService(dbContext);
-        EnteredName = "";
+        DatabaseService = databaseService;
     }
 
     public void GetListOfWorkOrders()
     {
         WorkOrderList.Clear();
-        GetWorkOrdersByCustomerName(EnteredName);
+        var workOrders = DatabaseService.GetWorkOrdersByCustomerName(EnteredName);
+        PopulateWorkOrdersList(workOrders);
     }
 
-    public bool GetWorkOrdersByCustomerName(string customerName)
+    private void PopulateWorkOrdersList(List<WorkOrder> workOrders)
     {
-
-
-        var workOrders = from workOrder in dbContext.WorkOrders
-                         where workOrder.CustomerName == customerName
-                         orderby workOrder.StartDate
-                         select workOrder;
-
-        foreach (WorkOrder workOrder in workOrders)
+        foreach (WorkOrder w in workOrders)
         {
-            Console.WriteLine($"Id: {workOrder.Id} ----- CustomerName: {workOrder.CustomerName} ----- Status: {workOrder.Status}");
-
-            WorkOrderList.Add(workOrder);
+            WorkOrderList.Add(w);
         }
-
-        return true;
     }
 
     public void PrintName()

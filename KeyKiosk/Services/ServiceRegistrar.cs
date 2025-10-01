@@ -13,6 +13,7 @@ namespace KeyKiosk.Services
 			builder.Services.AddScoped<ScopedTest>();
 			builder.Services.AddScoped<KioskUserSessionService>();
 			builder.Services.AddScoped<KioskNavAuthService>();
+			builder.Services.AddScoped<WorkOrderService>();
 
 			// Drawer Serial Interface Service
 			//string port = builder.Configuration.GetRequiredSection("DrawerSerialPort").Value ?? throw new InvalidOperationException("Configuration string 'DrawerSerialPort' not found.");
