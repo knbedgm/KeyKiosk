@@ -1,27 +1,22 @@
-﻿
-namespace KeyKiosk.Data;
-
-public class WorkOrder
+﻿namespace KeyKiosk.Data
 {
-	public int Id { get; set; }
-	public required string CustomerName { get; set; }
-	public DateTimeOffset StartDate { get; set; }
-	public DateTimeOffset EndDate { get; set; }
-	public WorkOrderStatusType Status { get; set; }
-	public required string Details { get; set; }
-	public virtual required IList<WorkOrderTask> Tasks { get; set; }
-	public int TotalCostCents { get => Tasks.Sum(t => t.CostCents); }
+	public class WorkOrder
+	{
+		public int Id { get; set; }
+		public required string CustomerName { get; set; }
+		public DateTimeOffset StartDate { get; set; }
+		public DateTimeOffset EndDate { get; set; }
+		public WorkOrderStatusType Status { get; set; }
+		public required string Details { get; set; }
+		public required IList<WorkOrderTask> Tasks { get; set; }
+		public int TotalCostCents { get => Tasks.Sum(t => t.CostCents); }
+	}
 
-    public static explicit operator WorkOrder(List<WorkOrder> v)
-    {
-        throw new NotImplementedException();
-    }
-}
-
-public enum WorkOrderStatusType
-{
-	Created,
-	WorkStarted,
-	WorkFinished,
-	Closed,
+	public enum WorkOrderStatusType
+	{
+		Created,
+		WorkStarted,
+		WorkFinished,
+		Closed,
+	}
 }
