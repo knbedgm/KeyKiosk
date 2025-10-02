@@ -1,6 +1,6 @@
 ﻿@page "/workorders"
 @using KeyKiosk.Data
-@inject WorkOrderService WorkOrderSvc
+@inject WorkOrderService WorkOrderSvc /*call database methods*/
 
 <h1>Work Orders</h1>
 
@@ -14,6 +14,7 @@ else if (!workOrders.Any())
 }
 else
 {
+    // Display work orders in a table
     <table class="table">
         <thead>
             <tr>

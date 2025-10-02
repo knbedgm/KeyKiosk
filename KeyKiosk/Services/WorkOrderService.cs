@@ -9,11 +9,14 @@ public class WorkOrderService
 {
     public required ApplicationDbContext dbContext { get; set; }
 
+    //encapsulate db operations for work orders
+    //injected into the service so it can query the db
     public WorkOrderService(ApplicationDbContext dbContext)
     {
         this.dbContext = dbContext;
     }
 
+    //database queries by customers name
     public List<WorkOrder> GetWorkOrdersByCustomerName(string customerName)
     {
         List<WorkOrder> workOrders = dbContext.WorkOrders
@@ -32,11 +35,13 @@ public class WorkOrderService
         return workOrders;
     }
 
+    //fetch all work orders
     public async Task<List<WorkOrder>> GetAllAsync()
     {
         return await dbContext.WorkOrders.Include(w => w.Tasks).ToListAsync();
     }
 
+    //fetch work order by id
     public async Task<WorkOrder?> GetByIdAsync(int id)
     {
         return await dbContext.WorkOrders.Include(w => w.Tasks)
