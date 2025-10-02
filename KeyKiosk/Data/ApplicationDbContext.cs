@@ -10,6 +10,7 @@ namespace KeyKiosk.Data
         public DbSet<User> Users { get; set; }
         public DbSet<Drawer> Drawers { get; set; }
         public DbSet<WorkOrder> WorkOrders { get; set; }
+        public DbSet<WorkOrderTaskTemplate> WorkOrderTaskTemplates { get; set; }
 
 
         public DbSet<DrawerLogEvent> DrawerLog { get; set; }

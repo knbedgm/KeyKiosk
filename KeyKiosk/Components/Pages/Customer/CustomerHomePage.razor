@@ -2,9 +2,44 @@
 @rendermode InteractiveServer
 @layout Layout.CustomerLayout
 
+@using KeyKiosk.Data
+
 <h3>CustomerHomePage</h3>
 
+<input type="text" @bind="EnteredName"/>
 
-@code {
+<button onclick="@GetListOfWorkOrders">Submit</button>
 
-}
+@if (WorkOrderList != null && WorkOrderList.Count > 0)
+{
+	<table>
+		<tr>
+			<th>Id</th>
+			<th>Customer Name</th>
+			<th>Status</th>
+			<th>Details</th>
+			<th>Costs</th>
+			<th>Tasks</th>
+		</tr>
+		@foreach (WorkOrder workOrder in WorkOrderList)
+		{
+			<tr>
+				<td>@workOrder.Id</td>
+				<td>@workOrder.CustomerName</td>
+				<td>@workOrder.Status</td>
+				<td>@workOrder.Details</td>
+				<td>@workOrder.TotalCostCents</td>
+				<td>
+					<ol>
+						@foreach (WorkOrderTask task in workOrder.Tasks)
+						{
+
+							<li>Task Id: @task.Id Task Cost: @task.CostCents
+							</li>
+						}
+					</ol>
+				</td>
+			</tr>
+		}
+	</table>
+} 
