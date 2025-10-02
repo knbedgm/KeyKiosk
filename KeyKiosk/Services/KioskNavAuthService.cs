@@ -4,12 +4,11 @@ using Microsoft.AspNetCore.Components.Routing;
 
 namespace KeyKiosk.Services
 {
-    public class NavAuthService
+    public class KioskNavAuthService
     {
-        [Inject]
-        public required UserSessionService UserSessionService { get; set; }
+        public required KioskUserSessionService UserSessionService { get; set; }
 
-        public NavAuthService(UserSessionService userSessionService)
+        public KioskNavAuthService(KioskUserSessionService userSessionService)
         {
             this.UserSessionService = userSessionService;
         }
@@ -21,12 +20,14 @@ namespace KeyKiosk.Services
         /// <returns>null if authorized, else the fallback path to redirect to</returns>
         public string? UserCanAccessPath(string path)
         {
+            if (!path.StartsWith("kiosk/")) return null;
+            path = path.Substring("kiosk/".Length);
 
             Console.WriteLine($"attemt auth {path} for {UserSessionService.User?.Name}");
             List<string> publicPaths = [""];
             List<string> userPaths = ["home"];
-            userPaths.AddRange(publicPaths);
             List<string> managerPaths = ["home"];
+            userPaths.AddRange(publicPaths);
             managerPaths.AddRange(userPaths);
 
             var user = UserSessionService.User;
@@ -43,7 +44,7 @@ namespace KeyKiosk.Services
             // early kick for non-logged in
             if (user is null)
             {
-                return publicPaths.First();
+                return "/kiosk/" + publicPaths.First();
             }
             
             // determine what roles are allowed
@@ -67,14 +68,14 @@ namespace KeyKiosk.Services
                 switch (user.UserType)
                 {
                     case UserType.User:
-                        return userPaths.First();
+                        return "/kiosk/" + userPaths.First();
 
                     case UserType.Manager:
-                        return managerPaths.First();
+                        return "/kiosk/" + managerPaths.First();
                 }
             }
 
-            return "splash";
+            return "/kiosk";
         }
     }
 }

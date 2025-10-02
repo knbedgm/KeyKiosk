@@ -3,6 +3,7 @@ using System;
 using KeyKiosk.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace KeyKiosk.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251001201513_AddTaskTemplate")]
+    partial class AddTaskTemplate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -158,9 +161,6 @@ namespace KeyKiosk.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<int>("TotalCostCents")
-                        .HasColumnType("integer");
-
                     b.HasKey("Id");
 
                     b.ToTable("WorkOrders");
@@ -181,18 +181,24 @@ namespace KeyKiosk.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<DateTimeOffset>("EndDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset>("StartDate")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<int>("WorkOrderId")
+                    b.Property<int?>("WorkOrderId")
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
 
                     b.HasIndex("WorkOrderId");
 
-                    b.ToTable("WorkOrdersTask");
+                    b.ToTable("WorkOrderTask");
                 });
 
             modelBuilder.Entity("KeyKiosk.Data.WorkOrderTaskTemplate", b =>
@@ -217,13 +223,9 @@ namespace KeyKiosk.Migrations
 
             modelBuilder.Entity("KeyKiosk.Data.WorkOrderTask", b =>
                 {
-                    b.HasOne("KeyKiosk.Data.WorkOrder", "WorkOrder")
+                    b.HasOne("KeyKiosk.Data.WorkOrder", null)
                         .WithMany("Tasks")
-                        .HasForeignKey("WorkOrderId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("WorkOrder");
+                        .HasForeignKey("WorkOrderId");
                 });
 
             modelBuilder.Entity("KeyKiosk.Data.WorkOrder", b =>

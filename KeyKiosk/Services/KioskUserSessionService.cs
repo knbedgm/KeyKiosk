@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Components;
 
 namespace KeyKiosk.Services
 {
-    public class UserSessionService
+    public class KioskUserSessionService
     {
         public User? User { get => _user; }
         User? _user = null;
@@ -11,7 +11,7 @@ namespace KeyKiosk.Services
         private readonly ApplicationDbContext dbContext;
         private readonly NavigationManager navigationManager;
 
-        public UserSessionService(ApplicationDbContext dbContext, NavigationManager navigationManager) {
+        public KioskUserSessionService(ApplicationDbContext dbContext, NavigationManager navigationManager) {
             this.dbContext = dbContext;
             this.navigationManager = navigationManager;
         }
@@ -32,7 +32,7 @@ namespace KeyKiosk.Services
         public void Logout()
         {
             _user = null;
-            navigationManager.NavigateTo("");
+            navigationManager.NavigateTo("kiosk");
         }
 
     }
