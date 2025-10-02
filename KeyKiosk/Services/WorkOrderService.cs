@@ -1,49 +1,68 @@
 ﻿using KeyKiosk.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
-namespace KeyKiosk.Services
+namespace KeyKiosk.Services;
+
+public class WorkOrderService
 {
-    public class WorkOrderService
+    public required ApplicationDbContext dbContext { get; set; }
+
+    public WorkOrderService(ApplicationDbContext dbContext)
     {
-        private readonly ApplicationDbContext _db;
+        this.dbContext = dbContext;
+    }
 
-        public WorkOrderService(ApplicationDbContext db)
+    public List<WorkOrder> GetWorkOrdersByCustomerName(string customerName)
+    {
+        List<WorkOrder> workOrders = dbContext.WorkOrders
+                                  .Where(w => w.CustomerName == customerName)
+                                  .Include(w => w.Tasks)
+                                  .OrderBy(w => w.StartDate)
+                                  .ToList();
+
+        foreach (WorkOrder workOrder in workOrders)
         {
-            _db = db;
+            Console.WriteLine($"Id: {workOrder.Id}");
+            Console.WriteLine($"CustomerName: {workOrder.CustomerName}");
+            Console.WriteLine($"Status: {workOrder.Status}");
         }
 
-        public async Task<List<WorkOrder>> GetAllAsync()
-        {
-            return await _db.WorkOrders.Include(w => w.Tasks).ToListAsync();
-        }
+        return workOrders;
 
-        public async Task<WorkOrder?> GetByIdAsync(int id)
-        {
-            return await _db.WorkOrders.Include(w => w.Tasks)
-                                       .FirstOrDefaultAsync(w => w.Id == id);
-        }
+    }
 
-        public async Task AddAsync(WorkOrder order)
-        {
-            _db.WorkOrders.Add(order);
-            await _db.SaveChangesAsync();
-        }
+    public async Task<List<WorkOrder>> GetAllAsync()
+    {
+        return await dbContext.WorkOrders.Include(w => w.Tasks).ToListAsync();
+    }
 
-        public async Task UpdateAsync(WorkOrder order)
-        {
-            _db.WorkOrders.Update(order);
-            await _db.SaveChangesAsync();
-        }
+    public async Task<WorkOrder?> GetByIdAsync(int id)
+    {
+        return await dbContext.WorkOrders.Include(w => w.Tasks)
+                                   .FirstOrDefaultAsync(w => w.Id == id);
+    }
 
-        public async Task DeleteAsync(int id)
+    public async Task AddAsync(WorkOrder order)
+    {
+        dbContext.WorkOrders.Add(order);
+        await dbContext.SaveChangesAsync();
+    }
+
+    public async Task UpdateAsync(WorkOrder order)
+    {
+        dbContext.WorkOrders.Update(order);
+        await dbContext.SaveChangesAsync();
+    }
+
+    public async Task DeleteAsync(int id)
+    {
+        var order = await dbContext.WorkOrders.FindAsync(id);
+        if (order != null)
         {
-            var order = await _db.WorkOrders.FindAsync(id);
-            if (order != null)
-            {
-                _db.WorkOrders.Remove(order);
-                await _db.SaveChangesAsync();
-            }
+            dbContext.WorkOrders.Remove(order);
+            await dbContext.SaveChangesAsync();
         }
     }
 }

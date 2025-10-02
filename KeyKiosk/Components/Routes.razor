@@ -1,7 +1,7 @@
 ﻿@rendermode InteractiveServer
-@inject UserSessionService session
+@inject KioskUserSessionService session
 @inject NavigationManager navManager
-@inject NavAuthService navAuth
+@inject KioskNavAuthService navAuth
 
 <Router AppAssembly="typeof(Program).Assembly" OnNavigateAsync="authHandler">
     <Found Context="routeData">

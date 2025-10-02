@@ -12,9 +12,9 @@ namespace KeyKiosk.Data
 
     public static class DrawerConfigExtentions
     {
-        public static ICollection<DrawerConfig> GetDrawerConfigs(this IConfiguration configuration)
+        public static IList<DrawerConfig> GetDrawerConfigs(this IConfiguration configuration)
         {
-            var config = configuration.GetSection("Drawers").Get<ICollection<DrawerConfig>>();
+            var config = configuration.GetSection("Drawers").Get<IList<DrawerConfig>>();
 
             if (config == null)
             {
