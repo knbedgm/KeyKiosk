@@ -30,7 +30,6 @@ public class WorkOrderService
         }
 
         return workOrders;
-
     }
 
     public async Task<List<WorkOrder>> GetAllAsync()
@@ -44,6 +43,7 @@ public class WorkOrderService
                                    .FirstOrDefaultAsync(w => w.Id == id);
     }
 
+    /*
     public async Task AddAsync(WorkOrder order)
     {
         dbContext.WorkOrders.Add(order);
@@ -65,4 +65,5 @@ public class WorkOrderService
             await dbContext.SaveChangesAsync();
         }
     }
+    */
 }
