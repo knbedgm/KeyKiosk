@@ -64,7 +64,7 @@ namespace KeyKiosk
                     {
                         new WorkOrderTask
                         {
-                            CustomerName = "Task 1",
+                            Description = "Task 1",
                             StartDate = DateTimeOffset.Now,
                             EndDate = DateTimeOffset.Now.AddDays(1),
                             Status = WorkOrderTaskStatusType.WorkStarted,
