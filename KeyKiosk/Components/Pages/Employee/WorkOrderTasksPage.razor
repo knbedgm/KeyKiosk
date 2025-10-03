@@ -1,0 +1,135 @@
+﻿@page "/employee/WorkOrderTasks"
+@rendermode InteractiveServer
+@layout Layout.CustomerLayout
+@namespace KeyKiosk.Components.Pages.Employee
+
+@using KeyKiosk.Data
+
+<h3>WorkOrderTaskPage</h3>
+
+@* Display list of existing templates*@
+@if (TaskList != null && TaskList.Count > 0)
+{
+    <table>
+        <tr>
+            <th>Id</th>
+            <th>Description</th>
+            <th>Cost Cents</th>
+            <th>Start Date</th>
+            <th>End Date</th>
+            <th>Status</th>
+        </tr>
+        @foreach (WorkOrderTask task in TaskList)
+        {
+            <tr>
+                <td>@task.Id</td>
+                <td>@task.Description</td>
+                <td>@task.CostCents</td>
+                <td>@task.StartDate</td>
+                <td>@task.EndDate</td>
+                <td>@task.Status</td>
+                <td>
+                    @* Deletes selected task *@
+                    <button @onclick="@(e => DeleteTask(task.Id))">
+                        Delete
+                    </button>
+                </td>
+            </tr>
+        }
+    </table>
+}
+
+
+<br />
+<br />
+<br />
+
+<h1>Add New Task</h1>
+
+<br />
+
+@* Form to add new task *@
+<EditForm Model="@TaskToAdd" OnValidSubmit="@AddNewTask">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <label>Description</label>
+    <select @onchange="@UpdateTaskToAddDescriptionCost">
+        <option disabled selected>--- Select ---</option>
+        @foreach (WorkOrderTaskTemplate template in TemplateList)
+        {
+            <option value="@template.Id">@template.TaskDescription</option>
+        }
+    </select>
+
+    <label>Cost in Cents</label>
+    <input type="number" value="@TaskToAdd.CostCents" readonly/>
+
+    <label>Start Date</label>
+    <input type="date" @bind="TaskToAdd.StartDate"/>
+    
+    <label>End Date</label>
+    <input type="date" @bind="TaskToAdd.EndDate"/>
+
+    <label>Status</label>
+    <select @bind="TaskToAdd.Status">
+        @foreach (WorkOrderTaskStatusType status in Enum.GetValues(typeof(WorkOrderTaskStatusType)))
+        {
+            <option value="@status">@status</option>
+        }
+    </select>
+
+    <button type="submit">Submit</button>
+</EditForm>
+
+<br />
+<br />
+<br />
+
+@if (TaskList != null && TaskList.Count > 0)
+{
+    <h1>Update Existing Task</h1>
+
+    <br />
+
+    @* Form to update existing template *@
+    <EditForm Model="@TaskToUpdate" OnValidSubmit="@UpdateExistingTask">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <select @bind="TaskToUpdate.Id">
+            @foreach (WorkOrderTask task in TaskList)
+            {
+                <option value="@task.Id">@task.Description</option>
+            }
+        </select>
+
+        <label>Description</label>
+        <select @onchange="@UpdateTaskToUpdateDescriptionCost">
+            <option disabled selected>--- Select ---</option>
+            @foreach (WorkOrderTaskTemplate template in TemplateList)
+            {
+                <option value="@template.Id">@template.TaskDescription</option>
+            }
+        </select>
+
+        <label>Cost in Cents</label>
+        <input type="number" value="@TaskToUpdate.CostCents" readonly />
+
+        <label>Start Date</label>
+        <input type="date" @bind="TaskToUpdate.StartDate" />
+
+        <label>End Date</label>
+        <input type="date" @bind="TaskToUpdate.EndDate" />
+
+        <label>Status</label>
+        <select @bind="TaskToUpdate.Status">
+            @foreach (WorkOrderTaskStatusType status in Enum.GetValues(typeof(WorkOrderTaskStatusType)))
+            {
+                <option value="@status">@status</option>
+            }
+        </select>
+
+        <button type="submit">Submit</button>
+    </EditForm>
+}

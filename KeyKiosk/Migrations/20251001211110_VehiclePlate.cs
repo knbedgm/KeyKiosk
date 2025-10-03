@@ -5,18 +5,14 @@
 namespace KeyKiosk.Migrations
 {
     /// <inheritdoc />
-    public partial class RemoveCustomerName : Migration
+    public partial class VehiclePlate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropColumn(
-                name: "CustomerName",
-                table: "WorkOrderTasks");
-
             migrationBuilder.AddColumn<string>(
-                name: "Description",
-                table: "WorkOrderTask",
+                name: "VehiclePlate",
+                table: "WorkOrders",
                 type: "text",
                 nullable: false,
                 defaultValue: "");
@@ -25,16 +21,9 @@ namespace KeyKiosk.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AddColumn<string>(
-                name: "CustomerName",
-                table: "WorkOrderTasks",
-                type: "text",
-                nullable: false,
-                defaultValue: "");
-
             migrationBuilder.DropColumn(
-                name: "Description",
-                table: "WorkOrderTask");
+                name: "VehiclePlate",
+                table: "WorkOrders");
         }
     }
 }

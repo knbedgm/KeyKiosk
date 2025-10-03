@@ -158,6 +158,10 @@ namespace KeyKiosk.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<string>("VehiclePlate")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.HasKey("Id");
 
                     b.ToTable("WorkOrders");
