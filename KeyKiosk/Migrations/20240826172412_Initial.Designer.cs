@@ -30,7 +30,7 @@ namespace KeyKiosk.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<bool>("Occupied")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("boolean");
 
                     b.HasKey("Id");
 
@@ -44,7 +44,7 @@ namespace KeyKiosk.Migrations
                         .HasColumnType("INTEGER");
 
                     b.Property<DateTime>("DateTime")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<int>("DrawerId")
                         .HasColumnType("INTEGER");
@@ -99,7 +99,7 @@ namespace KeyKiosk.Migrations
                         .HasColumnType("INTEGER");
 
                     b.Property<DateTime>("DateTime")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<int>("EventType")
                         .HasColumnType("INTEGER");
