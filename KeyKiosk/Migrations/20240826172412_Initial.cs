@@ -18,7 +18,7 @@ namespace KeyKiosk.Migrations
                     Id = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
                     CurrentRONumber = table.Column<string>(type: "TEXT", nullable: true),
-                    Occupied = table.Column<bool>(type: "INTEGER", nullable: false)
+                    Occupied = table.Column<bool>(type: "boolean", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -46,7 +46,7 @@ namespace KeyKiosk.Migrations
                 {
                     ID = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
-                    DateTime = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    DateTime = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     DrawerId = table.Column<int>(type: "INTEGER", nullable: false),
                     UserId = table.Column<int>(type: "INTEGER", nullable: false),
                     EventType = table.Column<int>(type: "TEXT", nullable: false),
@@ -75,7 +75,7 @@ namespace KeyKiosk.Migrations
                 {
                     ID = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
-                    DateTime = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    DateTime = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     ActingUserId = table.Column<int>(type: "INTEGER", nullable: false),
                     SecondaryUserName = table.Column<string>(type: "TEXT", nullable: true),
                     EventType = table.Column<int>(type: "INTEGER", nullable: false)
