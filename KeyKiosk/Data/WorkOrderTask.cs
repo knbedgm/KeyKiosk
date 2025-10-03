@@ -1,12 +1,9 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-
-namespace KeyKiosk.Data;
+﻿namespace KeyKiosk.Data;
 
 public class WorkOrderTask
 {
-    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-    public int Id { get; set; }
-	public string Description { get; set; } = "";
+	public int Id { get; set; }
+	public required string Description { get; set; } = "";
 	public DateTimeOffset StartDate { get; set; }
 	public DateTimeOffset EndDate { get; set; }
 	public WorkOrderTaskStatusType Status { get; set; }

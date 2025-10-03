@@ -1,5 +1,4 @@
-﻿
-namespace KeyKiosk.Data;
+﻿namespace KeyKiosk.Data;
 
 public class WorkOrder
 {
@@ -12,11 +11,6 @@ public class WorkOrder
 	public required string Details { get; set; }
 	public virtual required IList<WorkOrderTask> Tasks { get; set; }
 	public int TotalCostCents { get => Tasks.Sum(t => t.CostCents); }
-
-    public static explicit operator WorkOrder(List<WorkOrder> v)
-    {
-        throw new NotImplementedException();
-    }
 }
 
 public enum WorkOrderStatusType
