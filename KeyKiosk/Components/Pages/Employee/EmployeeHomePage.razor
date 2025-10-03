@@ -2,8 +2,159 @@
 @rendermode InteractiveServer
 @layout Layout.CustomerLayout
 
-<h3>EmployeeHome</h3>
+@using KeyKiosk.Data
+@using Microsoft.EntityFrameworkCore
+@inject ApplicationDbContext Db
+
+<h3>Employee Home - Work Orders Management</h3>
+
+<button class="btn btn-primary mb-3" @onclick="NewWorkOrder">New Work Order</button>
+
+@if (workOrders == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Customer</th>
+                <th>Vehicle Plate</th>
+                <th>Status</th>
+                <th>Start</th>
+                <th>End</th>
+                <th>Total Cost</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var wo in workOrders)
+            {
+                <tr>
+                    <td>@wo.Id</td>
+                    <td>@wo.CustomerName</td>
+                    <td>@wo.VehiclePlate</td>
+                    <td>@wo.Status</td>
+                    <td>@wo.StartDate.ToString("yyyy-MM-dd")</td>
+                    <td>@wo.EndDate.ToString("yyyy-MM-dd")</td>
+                    <td>@($"{wo.TotalCostCents / 100.0:C}")</td>
+                    <td>
+                        <button class="btn btn-sm btn-secondary me-2" @onclick="() => EditWorkOrder(wo.Id)">Edit</button>
+                        <button class="btn btn-sm btn-danger" @onclick="() => DeleteWorkOrder(wo.Id)">Delete</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@if (editWorkOrder != null)
+{
+    <EditForm Model="editWorkOrder" OnValidSubmit="SaveWorkOrder">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="mb-2">
+            <label>Customer Name</label>
+            <InputText class="form-control" @bind-Value="editWorkOrder.CustomerName" />
+        </div>
+
+        <div class="mb-2">
+            <label>Vehicle Plate</label>
+            <InputText class="form-control" @bind-Value="editWorkOrder.VehiclePlate" />
+        </div>
+
+        <div class="mb-2">
+            <label>Status</label>
+            <InputSelect class="form-control" @bind-Value="editWorkOrder.Status">
+                @foreach (var s in Enum.GetValues<WorkOrderStatusType>())
+                {
+                    <option value="@s">@s</option>
+                }
+            </InputSelect>
+        </div>
+
+        <div class="mb-2">
+            <label>Details</label>
+            <InputTextArea class="form-control" @bind-Value="editWorkOrder.Details" />
+        </div>
+
+        <div class="mb-2">
+            <label>Start Date</label>
+            <InputDate class="form-control" @bind-Value="editWorkOrder.StartDate" />
+        </div>
+
+        <div class="mb-2">
+            <label>End Date</label>
+            <InputDate class="form-control" @bind-Value="editWorkOrder.EndDate" />
+        </div>
+
+        <button type="submit" class="btn btn-success">Save</button>
+        <button type="button" class="btn btn-secondary" @onclick="CancelEdit">Cancel</button>
+    </EditForm>
+}
 
 @code {
+    private List<WorkOrder>? workOrders;
+    private WorkOrder? editWorkOrder;
 
+    protected override async Task OnInitializedAsync()
+    {
+        workOrders = await Db.WorkOrders.Include(w => w.Tasks).ToListAsync();
+    }
+
+    private void NewWorkOrder()
+    {
+        editWorkOrder = new WorkOrder
+        {
+            CustomerName = "",
+            Details = "",
+            VehiclePlate = "",
+            StartDate = DateTimeOffset.Now,
+            EndDate = DateTimeOffset.Now.AddDays(1),
+            Status = WorkOrderStatusType.Created,
+            Tasks = new List<WorkOrderTask>()
+        };
+    }
+
+    private async Task EditWorkOrder(int id)
+    {
+        editWorkOrder = await Db.WorkOrders
+            .Include(w => w.Tasks)
+            .FirstOrDefaultAsync(w => w.Id == id);
+    }
+
+    private async Task SaveWorkOrder()
+    {
+        if (editWorkOrder!.Id == 0)
+        {
+            Db.WorkOrders.Add(editWorkOrder);
+        }
+        else
+        {
+            Db.WorkOrders.Update(editWorkOrder);
+        }
+
+        await Db.SaveChangesAsync();
+        workOrders = await Db.WorkOrders.Include(w => w.Tasks).ToListAsync();
+        editWorkOrder = null;
+    }
+
+    private async Task DeleteWorkOrder(int id)
+    {
+        var wo = await Db.WorkOrders.FindAsync(id);
+        if (wo != null)
+        {
+            Db.WorkOrders.Remove(wo);
+            await Db.SaveChangesAsync();
+            workOrders = await Db.WorkOrders.Include(w => w.Tasks).ToListAsync();
+        }
+    }
+
+    private void CancelEdit()
+    {
+        editWorkOrder = null;
+    }
 }

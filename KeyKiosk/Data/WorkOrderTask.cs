@@ -8,6 +8,9 @@ public class WorkOrderTask
 	public DateTimeOffset EndDate { get; set; }
 	public WorkOrderTaskStatusType Status { get; set; }
 	public int CostCents { get; set; }
+
+	public int WorkOrderId { get; set; }
+	public virtual WorkOrder WorkOrder { get; set; }
 }
 public enum WorkOrderTaskStatusType
 {
