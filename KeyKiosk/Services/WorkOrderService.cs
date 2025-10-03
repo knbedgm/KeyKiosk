@@ -6,6 +6,7 @@ namespace KeyKiosk.Services;
 
 public class WorkOrderService
 {
+    /// Set up dbContext
     public required ApplicationDbContext dbContext { get; set; }
 
     public WorkOrderService(ApplicationDbContext dbContext)
@@ -13,21 +14,17 @@ public class WorkOrderService
         this.dbContext = dbContext;
     }
 
+    /// <summary>
+    /// Get all work orders for a customer name
+    /// </summary>
+    /// <param name="customerName"></param>
+    /// <returns></returns>
     public List<WorkOrder> GetWorkOrdersByCustomerName(string customerName)
     {
-        List<WorkOrder> workOrders = dbContext.WorkOrders
-                                  .Where(w => w.CustomerName == customerName)
-                                  .Include(w => w.Tasks)
-                                  .OrderBy(w => w.StartDate)
-                                  .ToList();
-
-        foreach (WorkOrder workOrder in workOrders)
-        {
-            Console.WriteLine($"Id: {workOrder.Id}");
-            Console.WriteLine($"CustomerName: {workOrder.CustomerName}");
-            Console.WriteLine($"Status: {workOrder.Status}");
-        }
-
-        return workOrders;
+        return dbContext.WorkOrders
+                        .Where(w => w.CustomerName == customerName)
+                        .Include(w => w.Tasks)
+                        .OrderBy(w => w.StartDate)
+                        .ToList();
     }
 }

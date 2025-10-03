@@ -21,6 +21,7 @@ else
             <tr>
                 <th>ID</th>
                 <th>Customer</th>
+                <th>Vehicle Plate</th>
                 <th>Status</th>
                 <th>Start</th>
                 <th>End</th>
@@ -34,6 +35,7 @@ else
                 <tr>
                     <td>@wo.Id</td>
                     <td>@wo.CustomerName</td>
+                    <td>@wo.VehiclePlate</td>
                     <td>@wo.Status</td>
                     <td>@wo.StartDate.ToString("yyyy-MM-dd")</td>
                     <td>@wo.EndDate.ToString("yyyy-MM-dd")</td>
@@ -57,6 +59,11 @@ else
         <div class="mb-2">
             <label>Customer Name</label>
             <InputText class="form-control" @bind-Value="editWorkOrder.CustomerName" />
+        </div>
+
+        <div class="mb-2">
+            <label>Vehicle Plate</label>
+            <InputText class="form-control" @bind-Value="editWorkOrder.VehiclePlate" />
         </div>
 
         <div class="mb-2">
@@ -104,6 +111,7 @@ else
         {
             CustomerName = "",
             Details = "",
+            VehiclePlate = "",
             StartDate = DateTimeOffset.Now,
             EndDate = DateTimeOffset.Now.AddDays(1),
             Status = WorkOrderStatusType.Created,

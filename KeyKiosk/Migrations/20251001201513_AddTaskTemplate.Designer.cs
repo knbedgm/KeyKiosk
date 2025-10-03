@@ -198,7 +198,7 @@ namespace KeyKiosk.Migrations
 
                     b.HasIndex("WorkOrderId");
 
-                    b.ToTable("WorkOrderTask");
+                    b.ToTable("WorkOrderTasks");
                 });
 
             modelBuilder.Entity("KeyKiosk.Data.WorkOrderTaskTemplate", b =>

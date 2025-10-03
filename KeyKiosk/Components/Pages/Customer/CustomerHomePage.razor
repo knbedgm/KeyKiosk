@@ -6,10 +6,13 @@
 
 <h3>CustomerHomePage</h3>
 
+
+@* Gets list of work orders based on entered name *@
 <input type="text" @bind="EnteredName"/>
 
 <button onclick="@GetListOfWorkOrders">Submit</button>
 
+@* Display list of work orders and associated tasks *@
 @if (WorkOrderList != null && WorkOrderList.Count > 0)
 {
 	<table>
@@ -33,7 +36,6 @@
 					<ol>
 						@foreach (WorkOrderTask task in workOrder.Tasks)
 						{
-
 							<li>Task Id: @task.Id Task Cost: @task.CostCents
 							</li>
 						}
