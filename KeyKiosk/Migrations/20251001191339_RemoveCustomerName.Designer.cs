@@ -177,6 +177,10 @@ namespace KeyKiosk.Migrations
                     b.Property<int>("CostCents")
                         .HasColumnType("integer");
 
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<DateTimeOffset>("EndDate")
                         .HasColumnType("timestamp with time zone");
 
@@ -194,7 +198,7 @@ namespace KeyKiosk.Migrations
 
                     b.HasIndex("WorkOrderId");
 
-                    b.ToTable("WorkOrdersTask");
+                    b.ToTable("WorkOrderTasks");
                 });
 
             modelBuilder.Entity("KeyKiosk.Data.WorkOrderTask", b =>

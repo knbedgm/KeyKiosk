@@ -12,7 +12,14 @@ namespace KeyKiosk.Migrations
         {
             migrationBuilder.DropColumn(
                 name: "CustomerName",
-                table: "WorkOrdersTask");
+                table: "WorkOrderTasks");
+
+            migrationBuilder.AddColumn<string>(
+                name: "Description",
+                table: "WorkOrderTask",
+                type: "text",
+                nullable: false,
+                defaultValue: "");
         }
 
         /// <inheritdoc />
@@ -20,10 +27,14 @@ namespace KeyKiosk.Migrations
         {
             migrationBuilder.AddColumn<string>(
                 name: "CustomerName",
-                table: "WorkOrdersTask",
+                table: "WorkOrderTasks",
                 type: "text",
                 nullable: false,
                 defaultValue: "");
+
+            migrationBuilder.DropColumn(
+                name: "Description",
+                table: "WorkOrderTask");
         }
     }
 }
