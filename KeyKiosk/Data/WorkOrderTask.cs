@@ -3,7 +3,7 @@
 public class WorkOrderTask
 {
 	public int Id { get; set; }
-	public required string Description { get; set; } = "";
+	public string Description { get; set; } = "";
 	public DateTimeOffset StartDate { get; set; }
 	public DateTimeOffset EndDate { get; set; }
 	public WorkOrderTaskStatusType Status { get; set; }
