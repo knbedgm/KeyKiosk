@@ -38,7 +38,7 @@ namespace KeyKiosk.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Drawers");
+                    b.ToTable("Drawers", (string)null);
                 });
 
             modelBuilder.Entity("KeyKiosk.Data.DrawerLogEvent", b =>
@@ -71,7 +71,7 @@ namespace KeyKiosk.Migrations
 
                     b.HasKey("ID");
 
-                    b.ToTable("DrawerLog");
+                    b.ToTable("DrawerLog", (string)null);
                 });
 
             modelBuilder.Entity("KeyKiosk.Data.User", b =>
@@ -96,7 +96,7 @@ namespace KeyKiosk.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Users");
+                    b.ToTable("Users", (string)null);
                 });
 
             modelBuilder.Entity("KeyKiosk.Data.UserLogEvent", b =>
@@ -129,7 +129,7 @@ namespace KeyKiosk.Migrations
 
                     b.HasKey("ID");
 
-                    b.ToTable("UserLog");
+                    b.ToTable("UserLog", (string)null);
                 });
 
             modelBuilder.Entity("KeyKiosk.Data.WorkOrder", b =>
@@ -164,7 +164,7 @@ namespace KeyKiosk.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("WorkOrders");
+                    b.ToTable("WorkOrders", (string)null);
                 });
 
             modelBuilder.Entity("KeyKiosk.Data.WorkOrderTask", b =>
@@ -199,7 +199,7 @@ namespace KeyKiosk.Migrations
 
                     b.HasIndex("WorkOrderId");
 
-                    b.ToTable("WorkOrderTask");
+                    b.ToTable("WorkOrderTasks", (string)null);
                 });
 
             modelBuilder.Entity("KeyKiosk.Data.WorkOrderTaskTemplate", b =>
@@ -219,7 +219,7 @@ namespace KeyKiosk.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("WorkOrderTaskTemplates");
+                    b.ToTable("WorkOrderTaskTemplates", (string)null);
                 });
 
             modelBuilder.Entity("KeyKiosk.Data.WorkOrderTask", b =>

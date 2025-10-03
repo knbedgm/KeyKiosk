@@ -16,7 +16,7 @@ namespace KeyKiosk.Migrations
 
             migrationBuilder.AddColumn<string>(
                 name: "Description",
-                table: "WorkOrderTask",
+                table: "WorkOrderTasks",
                 type: "text",
                 nullable: false,
                 defaultValue: "");
