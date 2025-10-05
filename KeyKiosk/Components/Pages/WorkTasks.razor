@@ -36,7 +36,7 @@ else
                     <td> @task.StartDate.ToString("g") </td>
                     <td> @task.EndDate.ToString("g") </td>
                     <td> @task.Status </td>
-                    <td> @(task.CostCents / 100.0m) </td>
+                    <td> @((task.CostCents / 100.0m).ToString("C")) </td>
                     <td> @task.Description </td>
                 </tr>
             }

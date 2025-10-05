@@ -1,7 +1,5 @@
 ﻿using KeyKiosk.Data;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace KeyKiosk.Services;
 

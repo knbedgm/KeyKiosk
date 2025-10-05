@@ -37,7 +37,7 @@ else
                     <td>@order.EndDate.ToString("yyyy-MM-dd")</td>
                     <td>@order.Status</td>
                     <td>@order.Details</td>
-                    <td>@(order.TotalCostCents / 100.0m).ToString("C")</td>
+                    <td>@((order.TotalCostCents / 100.0m).ToString("C"))</td>
                 </tr>
             }
         </tbody>

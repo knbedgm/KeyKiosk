@@ -49,33 +49,6 @@ namespace KeyKiosk
                     ctx.Users.Add(new() { Id = 1, Name = "DefaultAdmin", Pin = "555555", UserType = UserType.Admin });
                     ctx.SaveChanges();
                 }
-
-                //work order service list
-                if (!ctx.WorkOrders.Any())
-                {
-                    ctx.WorkOrders.Add(new WorkOrder
-                    {
-                        CustomerName = "Test Customer",
-                        StartDate = DateTimeOffset.Now,
-                        EndDate = DateTimeOffset.Now.AddDays(2),
-                        Status = WorkOrderStatusType.Created,
-                        Details = "Initial seeded work order",
-                        Tasks = new List<WorkOrderTask>
-                    {
-                        new WorkOrderTask
-                        {
-                            Description = "Task 1",
-                            StartDate = DateTimeOffset.Now,
-                            EndDate = DateTimeOffset.Now.AddDays(1),
-                            Status = WorkOrderTaskStatusType.WorkStarted,
-                            CostCents = 5000
-                        }
-                    }
-                    });
-
-                    ctx.SaveChanges();
-                }
-
             }
 
             var app = builder.Build();
@@ -95,9 +68,6 @@ namespace KeyKiosk
 
             app.MapRazorComponents<App>()
                 .AddInteractiveServerRenderMode();
-
-            // Map API controllers
-           // app.MapControllers();
 
             app.Run();
         }

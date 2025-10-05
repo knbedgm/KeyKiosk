@@ -14,6 +14,7 @@ public class WorkOrderTask
 }
 public enum WorkOrderTaskStatusType
 {
+	Created,
 	WorkStarted,
 	WorkFinished,
 }
