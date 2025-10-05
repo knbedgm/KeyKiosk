@@ -7,48 +7,44 @@ namespace KeyKiosk.Services;
 
 public class WorkOrderService
 {
-    public required ApplicationDbContext dbContext { get; set; }
+	/// Set up dbContext
+	public required ApplicationDbContext dbContext { get; set; }
 
-    //encapsulate db operations for work orders
-    //injected into the service so it can query the db
-    public WorkOrderService(ApplicationDbContext dbContext)
-    {
-        this.dbContext = dbContext;
-    }
+	//encapsulate db operations for work orders
+	//injected into the service so it can query the db
+	public WorkOrderService(ApplicationDbContext dbContext)
+	{
+		this.dbContext = dbContext;
+	}
 
-    //database queries by customers name
-    public List<WorkOrder> GetWorkOrdersByCustomerName(string customerName)
-    {
-        List<WorkOrder> workOrders = dbContext.WorkOrders
-                                  .Where(w => w.CustomerName == customerName)
-                                  .Include(w => w.Tasks)
-                                  .OrderBy(w => w.StartDate)
-                                  .ToList();
+	/// <summary>
+	/// Get all work orders for a customer name
+	/// </summary>
+	/// <param name="customerName"></param>
+	/// <returns></returns>
+	public List<WorkOrder> GetWorkOrdersByCustomerName(string customerName)
+	{
+		return dbContext.WorkOrders
+						.Where(w => w.CustomerName == customerName)
+						.Include(w => w.Tasks)
+						.OrderBy(w => w.StartDate)
+						.ToList();
+	}
 
-        foreach (WorkOrder workOrder in workOrders)
-        {
-            Console.WriteLine($"Id: {workOrder.Id}");
-            Console.WriteLine($"CustomerName: {workOrder.CustomerName}");
-            Console.WriteLine($"Status: {workOrder.Status}");
-        }
+	//fetch all work orders
+	public async Task<List<WorkOrder>> GetAllAsync()
+	{
+		return await dbContext.WorkOrders.Include(w => w.Tasks).ToListAsync();
+	}
 
-        return workOrders;
-    }
+	//fetch work order by id
+	public async Task<WorkOrder?> GetByIdAsync(int id)
+	{
+		return await dbContext.WorkOrders.Include(w => w.Tasks)
+								   .FirstOrDefaultAsync(w => w.Id == id);
+	}
 
-    //fetch all work orders
-    public async Task<List<WorkOrder>> GetAllAsync()
-    {
-        return await dbContext.WorkOrders.Include(w => w.Tasks).ToListAsync();
-    }
-
-    //fetch work order by id
-    public async Task<WorkOrder?> GetByIdAsync(int id)
-    {
-        return await dbContext.WorkOrders.Include(w => w.Tasks)
-                                   .FirstOrDefaultAsync(w => w.Id == id);
-    }
-
-    /*
+	/*
     public async Task AddAsync(WorkOrder order)
     {
         dbContext.WorkOrders.Add(order);

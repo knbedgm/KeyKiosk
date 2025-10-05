@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace KeyKiosk.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251001191339_RemoveCustomerName")]
-    partial class RemoveCustomerName
+    [Migration("20251001211110_VehiclePlate")]
+    partial class VehiclePlate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -161,6 +161,10 @@ namespace KeyKiosk.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<string>("VehiclePlate")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.HasKey("Id");
 
                     b.ToTable("WorkOrders");
@@ -199,6 +203,26 @@ namespace KeyKiosk.Migrations
                     b.HasIndex("WorkOrderId");
 
                     b.ToTable("WorkOrderTasks");
+                });
+
+            modelBuilder.Entity("KeyKiosk.Data.WorkOrderTaskTemplate", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("TaskCostCents")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("TaskDescription")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("WorkOrderTaskTemplates");
                 });
 
             modelBuilder.Entity("KeyKiosk.Data.WorkOrderTask", b =>

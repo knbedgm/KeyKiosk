@@ -3,18 +3,15 @@ using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using System.Collections;
 
-
 namespace KeyKiosk.Data
 {
     public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : DbContext(options)
     {
         public DbSet<User> Users { get; set; }
         public DbSet<Drawer> Drawers { get; set; }
-
         public DbSet<WorkOrder> WorkOrders { get; set; }
-        public DbSet<WorkOrderTaskTemplate> WorkOrderTaskTemplates { get; set; }
-
         public DbSet<WorkOrderTask> WorkOrderTasks { get; set; }
+        public DbSet<WorkOrderTaskTemplate> WorkOrderTaskTemplates { get; set; }
 
         public DbSet<DrawerLogEvent> DrawerLog { get; set; }
         public DbSet<UserLogEvent> UserLog { get; set; }
