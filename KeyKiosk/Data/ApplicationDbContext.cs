@@ -13,7 +13,6 @@ namespace KeyKiosk.Data
         public DbSet<WorkOrderTask> WorkOrderTasks { get; set; }
         public DbSet<WorkOrderTaskTemplate> WorkOrderTaskTemplates { get; set; }
 
-
         public DbSet<DrawerLogEvent> DrawerLog { get; set; }
         public DbSet<UserLogEvent> UserLog { get; set; }
 
