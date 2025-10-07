@@ -1,0 +1,212 @@
+﻿@page "/orderslog"
+@inject KeyKiosk.Services.OrderLogService OrderLogService
+
+<h1>Work Orders Log</h1>
+
+<input @bind="searchCustomer" placeholder="Filter by customer" />
+<input @bind="searchId" placeholder="Filter by ID" type="number" />
+<button @onclick="ApplyFilters">Apply Filters</button>
+
+<h2>Work Orders</h2>
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Id</th>
+            <th>Customer</th>
+            <th>Status</th>
+            <th>Details</th>
+            <th>Total Cost</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (filteredOrders != null)
+        {
+            @foreach (var order in filteredOrders)
+            {
+                <tr>
+                    <td>@order.Id</td>
+                    <td>@order.CustomerName</td>
+                    <td>@order.Status</td>
+                    <td>@order.Details</td>
+                    <td>@(order.TotalCostCents / 100.0m).ToString("C")</td>
+                    <td>
+                        <button class="btn btn-danger btn-sm" @onclick="() => DeleteOrder(order.Id)">Delete</button>
+                    </td>
+                </tr>
+
+                <!-- Nested Work Tasks Table -->
+                <tr>
+                    <td colspan="6">
+                        <h5>Tasks</h5>
+                        <table class="table table-sm table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Task Id</th>
+                                    <th>Description</th>
+                                    <th>Status</th>
+                                    <th>Cost</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var task in order.Tasks)
+                                {
+                                    if (editTaskId == task.Id && editOrderId == order.Id)
+                                    {
+                                        <!-- Edit mode -->
+                                        <tr>
+                                            <td>@task.Id</td>
+                                            <td><input @bind="editTaskDescription" /></td>
+                                            <td>
+                                                <select @bind="editTaskStatus">
+                                                    <option value="WorkStarted">WorkStarted</option>
+                                                    <option value="WorkFinished">WorkFinished</option>
+                                                </select>
+                                            </td>
+                                            <td><input type="number" @bind="editTaskCost" /></td>
+                                            <td>
+                                                <button class="btn btn-success btn-sm" @onclick="() => SaveTask(order.Id, task.Id)">Save</button>
+                                                <button class="btn btn-secondary btn-sm" @onclick="CancelEdit">Cancel</button>
+                                            </td>
+                                        </tr>
+                                    }
+                                    else
+                                    {
+                                        <!-- Display mode -->
+                                        <tr>
+                                            <td>@task.Id</td>
+                                            <td>@task.Description</td>
+                                            <td>@task.Status</td>
+                                            <td>@(task.CostCents / 100.0m).ToString("C")</td>
+                                            <td>
+                                                <button class="btn btn-primary btn-sm" @onclick="() => EditTask(order.Id, task)">Edit</button>
+                                                <button class="btn btn-danger btn-sm" @onclick="() => DeleteTask(order.Id, task.Id)">Delete</button>
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                            </tbody>
+                        </table>
+
+                        <!-- Add new task form -->
+                        <div>
+                            <input placeholder="Task description" @bind="newTaskDescription" />
+                            <input placeholder="Cost (cents)" type="number" @bind="newTaskCost" />
+                            <button class="btn btn-primary btn-sm" @onclick="() => AddTask(order.Id)">Add Task</button>
+                        </div>
+                    </td>
+                </tr>
+            }
+        }
+    </tbody>
+</table>
+
+@code {
+    private string? searchCustomer;
+    private int? searchId;
+    private IEnumerable<WorkOrder> filteredOrders = new List<WorkOrder>();
+
+    // For adding tasks
+    private string? newTaskDescription;
+    private int newTaskCost;
+
+    // For editing tasks
+    private int editTaskId;
+    private int editOrderId;
+    private string? editTaskDescription;
+    private int editTaskCost;
+    private WorkOrderTaskStatusType editTaskStatus;
+
+    protected override async Task OnInitializedAsync()
+    {
+        filteredOrders = await OrderLogService.GetAllOrdersAsync();
+    }
+
+    private async Task ApplyFilters()
+    {
+        var orders = await OrderLogService.GetAllOrdersAsync();
+
+        if (!string.IsNullOrWhiteSpace(searchCustomer))
+        {
+            orders = orders.Where(o =>
+                o.CustomerName.Contains(searchCustomer, StringComparison.OrdinalIgnoreCase)).ToList();
+        }
+
+        if (searchId.HasValue && searchId.Value > 0)
+        {
+            orders = orders.Where(o => o.Id == searchId.Value).ToList();
+        }
+
+        filteredOrders = orders;
+    }
+
+    private async Task DeleteOrder(int id)
+    {
+        await OrderLogService.DeleteWorkOrderAsync(id);
+        await ApplyFilters();
+    }
+
+    private async Task DeleteTask(int orderId, int taskId)
+    {
+        await OrderLogService.DeleteTaskAsync(orderId, taskId);
+        await ApplyFilters();
+    }
+
+    private async Task AddTask(int orderId)
+    {
+        if (!string.IsNullOrWhiteSpace(newTaskDescription))
+        {
+            var task = new WorkOrderTask
+                {
+                    Description = newTaskDescription,
+                    StartDate = DateTimeOffset.Now,
+                    EndDate = DateTimeOffset.Now,
+                    Status = WorkOrderTaskStatusType.WorkStarted,
+                    CostCents = newTaskCost
+                };
+
+            await OrderLogService.AddTaskToOrderAsync(orderId, task);
+
+            newTaskDescription = string.Empty;
+            newTaskCost = 0;
+
+            await ApplyFilters();
+        }
+    }
+
+    private void EditTask(int orderId, WorkOrderTask task)
+    {
+        editOrderId = orderId;
+        editTaskId = task.Id;
+        editTaskDescription = task.Description;
+        editTaskCost = task.CostCents;
+        editTaskStatus = task.Status;
+    }
+
+    private async Task SaveTask(int orderId, int taskId)
+    {
+        var updatedTask = new WorkOrderTask
+            {
+                Id = taskId,
+                Description = editTaskDescription ?? string.Empty,
+                StartDate = DateTimeOffset.Now, // you could preserve original if desired
+                EndDate = DateTimeOffset.Now,
+                Status = editTaskStatus,
+                CostCents = editTaskCost
+            };
+
+        await OrderLogService.UpdateTaskAsync(orderId, updatedTask);
+
+        CancelEdit();
+        await ApplyFilters();
+    }
+
+    private void CancelEdit()
+    {
+        editTaskId = 0;
+        editOrderId = 0;
+        editTaskDescription = null;
+        editTaskCost = 0;
+    }
+}

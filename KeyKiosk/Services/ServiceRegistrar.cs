@@ -14,11 +14,13 @@ namespace KeyKiosk.Services
 			builder.Services.AddScoped<KioskUserSessionService>();
 			builder.Services.AddScoped<KioskNavAuthService>();
 			builder.Services.AddScoped<WorkOrderService>();
+            builder.Services.AddSingleton<OrderLogService>();
 
-			// Drawer Serial Interface Service
-			//string port = builder.Configuration.GetRequiredSection("DrawerSerialPort").Value ?? throw new InvalidOperationException("Configuration string 'DrawerSerialPort' not found.");
-			//builder.Services.AddSingleton<IPhysicalDrawerController>(new DenkoviDrawerController(port));
-			builder.Services.AddSingleton<IPhysicalDrawerController, TestConsoleDrawerController>();
+
+            // Drawer Serial Interface Service
+            //string port = builder.Configuration.GetRequiredSection("DrawerSerialPort").Value ?? throw new InvalidOperationException("Configuration string 'DrawerSerialPort' not found.");
+            //builder.Services.AddSingleton<IPhysicalDrawerController>(new DenkoviDrawerController(port));
+            builder.Services.AddSingleton<IPhysicalDrawerController, TestConsoleDrawerController>();
 
 			// Drawer High-level control service
 			var drawerConfigs = builder.Configuration.GetDrawerConfigs();

@@ -28,6 +28,7 @@ namespace KeyKiosk
 
             builder.Services.AddDbContext<ApplicationDbContext>(DbOptions);
 
+
             // prevent config issues from blocking `dotnet ef migration` commands
             if (!EF.IsDesignTime)
             {
