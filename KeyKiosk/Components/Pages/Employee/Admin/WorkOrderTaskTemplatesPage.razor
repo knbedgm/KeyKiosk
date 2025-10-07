@@ -12,14 +12,16 @@
 	<table>
 		<tr>
 			<th>Id</th>
-			<th>Description</th>
+			<th>Title</th>
+			<th>Details</th>
 			<th>Cost</th>
 		</tr>
 		@foreach (WorkOrderTaskTemplate template in TemplateList)
 		{
 			<tr>
 				<td>@template.Id</td>
-				<td>@template.TaskDescription</td>
+				<td>@template.TaskTitle</td>
+				<td>@template.TaskDetails</td>
 				<td>@template.TaskCostCents</td>
 				<td>
 					@* Deletes selected template *@
@@ -45,8 +47,11 @@
 	<DataAnnotationsValidator />
 	<ValidationSummary />
 
-	<label>Description</label>
-	<input type="text" @bind="TemplateToAdd.TaskDescription" />
+	<label>Title</label>
+	<input type="text" @bind="TemplateToAdd.TaskTitle" />
+	
+	<label>Details</label>
+	<input type="text" @bind="TemplateToAdd.TaskDetails" />
 
 	<label>Cost in Cents</label>
 	<input type="number" @bind="TemplateToAdd.TaskCostCents"/>
@@ -72,12 +77,12 @@
 		<select @bind="TemplateToUpdate.Id">
 			@foreach (WorkOrderTaskTemplate template in TemplateList)
 			{
-				<option value="@template.Id">@template.TaskDescription</option>
+				<option value="@template.Id">@template.TaskTitle</option>
 			}
 		</select>
 
-		<label>New Description</label>
-		<input type="text" @bind="TemplateToUpdate.TaskDescription" />
+		<label>New Details</label>
+		<input type="text" @bind="TemplateToUpdate.TaskDetails" />
 
 		<label>New Cost in Cents</label>
 		<input type="number" @bind="TemplateToUpdate.TaskCostCents" />

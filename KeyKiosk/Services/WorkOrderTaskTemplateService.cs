@@ -40,7 +40,7 @@ public class WorkOrderTaskTemplateService
     /// <param name="template"></param>
     public void AddWorkOrderTaskTemplate(WorkOrderTaskTemplate template)
     {
-        var newTemplate = new WorkOrderTaskTemplate { TaskDescription = template.TaskDescription, TaskCostCents = template.TaskCostCents };
+        var newTemplate = new WorkOrderTaskTemplate { TaskTitle = template.TaskTitle, TaskDetails = template.TaskDetails, TaskCostCents = template.TaskCostCents };
         dbContext.WorkOrderTaskTemplates.Add(newTemplate);
         dbContext.SaveChanges();
     }
@@ -55,7 +55,8 @@ public class WorkOrderTaskTemplateService
         var templateToUpdate = dbContext.WorkOrderTaskTemplates.FirstOrDefault(t => t.Id == updatedTemplate.Id);
         if (templateToUpdate != null)
         {
-            templateToUpdate.TaskDescription = updatedTemplate.TaskDescription;
+            templateToUpdate.TaskTitle = updatedTemplate.TaskTitle;
+            templateToUpdate.TaskDetails = updatedTemplate.TaskDetails;
             templateToUpdate.TaskCostCents = updatedTemplate.TaskCostCents;
         }
         dbContext.SaveChanges();

@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace KeyKiosk.Data
+﻿namespace KeyKiosk.Data
 {
     public class DrawerConfig
     {

@@ -1,4 +1,4 @@
-﻿@page "/employee/WorkOrderTasks"
+﻿@page "/employee/WorkOrder/{WorkOrderId:int}/Tasks"
 @rendermode InteractiveServer
 @layout Layout.MainLayout
 @namespace KeyKiosk.Components.Pages.Employee
@@ -7,13 +7,14 @@
 
 <h3>WorkOrderTaskPage</h3>
 
-@* Display list of existing templates*@
+@* Display list of existing tasks*@
 @if (TaskList != null && TaskList.Count > 0)
 {
     <table>
         <tr>
             <th>Id</th>
-            <th>Description</th>
+            <th>Title</th>
+            <th>Details</th>
             <th>Cost Cents</th>
             <th>Start Date</th>
             <th>End Date</th>
@@ -23,16 +24,17 @@
         {
             <tr>
                 <td>@task.Id</td>
-                <td>@task.Description</td>
+                <td>@task.Title</td>
+                <td>@task.Details</td>
                 <td>@task.CostCents</td>
                 <td>@task.StartDate</td>
                 <td>@task.EndDate</td>
                 <td>@task.Status</td>
                 <td>
                     @* Deletes selected task *@
-                    <button @onclick="@(e => DeleteTask(task.Id))">
+                    @* <button @onclick="@(e => DeleteTask(task.Id))">
                         Delete
-                    </button>
+                    </button> *@
                 </td>
             </tr>
         }
@@ -53,12 +55,12 @@
     <DataAnnotationsValidator />
     <ValidationSummary />
 
-    <label>Description</label>
-    <select @onchange="@UpdateTaskToAddDescriptionCost">
+    <label>Title</label>
+    <select @onchange="@ModifyCreateTaskFromTemplate">
         <option disabled selected>--- Select ---</option>
         @foreach (WorkOrderTaskTemplate template in TemplateList)
         {
-            <option value="@template.Id">@template.TaskDescription</option>
+            <option value="@template.Id">@template.TaskTitle</option>
         }
     </select>
 
@@ -90,46 +92,50 @@
 {
     <h1>Update Existing Task</h1>
 
+    <InputSelect @bind-Value:get="TaskToUpdateId" @bind-Value:set="LoadUpdateTask">
+        <option value="">Select a Task</option>
+        @foreach (WorkOrderTask task in TaskList)
+        {
+            <option value="@task.Id">@task.Title</option>
+        }
+    </InputSelect>
+
     <br />
 
     @* Form to update existing template *@
-    <EditForm Model="@TaskToUpdate" OnValidSubmit="@UpdateExistingTask">
-        <DataAnnotationsValidator />
-        <ValidationSummary />
+    @if (TaskToUpdateId != null)
+    {
+        <EditForm Model="@TaskToUpdate" OnValidSubmit="@UpdateExistingTask">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
 
-        <select @bind="TaskToUpdate.Id">
-            @foreach (WorkOrderTask task in TaskList)
-            {
-                <option value="@task.Id">@task.Description</option>
-            }
-        </select>
 
-        <label>Description</label>
-        <select @onchange="@UpdateTaskToUpdateDescriptionCost">
-            <option disabled selected>--- Select ---</option>
-            @foreach (WorkOrderTaskTemplate template in TemplateList)
-            {
-                <option value="@template.Id">@template.TaskDescription</option>
-            }
-        </select>
 
-        <label>Cost in Cents</label>
-        <input type="number" value="@TaskToUpdate.CostCents" readonly />
+            <label>Title</label>
+            <span>@TaskToUpdateOriginal?.Title</span>
 
-        <label>Start Date</label>
-        <input type="date" @bind="TaskToUpdate.StartDate" />
+            <label>Details</label>
+            <InputTextArea class="form-control" @bind-Value="TaskToUpdate.Details" />
 
-        <label>End Date</label>
-        <input type="date" @bind="TaskToUpdate.EndDate" />
+            <label>Cost in Cents</label>
+            @* <input type="number" value="@TaskToUpdate.CostCents" readonly /> *@
+            <InputNumber @bind-Value=TaskToUpdate.CostCents></InputNumber>
 
-        <label>Status</label>
-        <select @bind="TaskToUpdate.Status">
-            @foreach (WorkOrderTaskStatusType status in Enum.GetValues(typeof(WorkOrderTaskStatusType)))
-            {
-                <option value="@status">@status</option>
-            }
-        </select>
+            <label>Start Date</label>
+            <input type="date" @bind="TaskToUpdate.StartDate" />
 
-        <button type="submit">Submit</button>
-    </EditForm>
+            <label>End Date</label>
+            <input type="date" @bind="TaskToUpdate.EndDate" />
+
+            <label>Status</label>
+            <select @bind="TaskToUpdate.Status">
+                @foreach (WorkOrderTaskStatusType status in Enum.GetValues(typeof(WorkOrderTaskStatusType)))
+                {
+                    <option value="@status">@status</option>
+                }
+            </select>
+
+            <button type="submit">Submit</button>
+        </EditForm>
+    }
 }

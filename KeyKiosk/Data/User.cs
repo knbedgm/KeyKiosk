@@ -1,7 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-
-namespace KeyKiosk.Data
+﻿namespace KeyKiosk.Data
 {
     public class User
     {

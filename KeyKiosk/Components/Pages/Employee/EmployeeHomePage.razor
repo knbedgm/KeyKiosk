@@ -37,8 +37,8 @@ else
                     <td>@wo.CustomerName</td>
                     <td>@wo.VehiclePlate</td>
                     <td>@wo.Status</td>
-                    <td>@wo.StartDate.ToString("yyyy-MM-dd")</td>
-                    <td>@wo.EndDate.ToString("yyyy-MM-dd")</td>
+                    <td>@wo.StartDate?.ToString("yyyy-MM-dd")</td>
+                    <td>@wo.EndDate?.ToString("yyyy-MM-dd")</td>
                     <td>@($"{wo.TotalCostCents / 100.0:C}")</td>
                     <td>
                         <button class="btn btn-sm btn-secondary me-2" @onclick="() => EditWorkOrder(wo.Id)">Edit</button>

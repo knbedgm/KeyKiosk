@@ -20,11 +20,12 @@ else
         <thead>
             <tr>    
                 <th> Id </th>
+                <th> Title </th>
                 <th> Start Date </th>
                 <th> End Date </th>
                 <th> Status </th>
                 <th> Cost ($) </th>
-                <th> Description </th>
+                <th> Details </th>
                
             </tr>
         </thead>
@@ -33,11 +34,12 @@ else
             {
                 <tr>
                     <td> @task.Id </td>
-                    <td> @task.StartDate.ToString("g") </td>
-                    <td> @task.EndDate.ToString("g") </td>
+                    <td> @task.Title </td>
+                    <td> @task.StartDate?.ToString("g") </td>
+                    <td> @task.EndDate?.ToString("g") </td>
                     <td> @task.Status </td>
                     <td> @((task.CostCents / 100.0m).ToString("C")) </td>
-                    <td> @task.Description </td>
+                    <td> @task.Details </td>
                 </tr>
             }
         </tbody>

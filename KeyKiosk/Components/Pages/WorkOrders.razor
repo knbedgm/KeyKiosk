@@ -33,8 +33,8 @@ else
                 <tr>
                     <td>@order.Id</td>
                     <td>@order.CustomerName</td>
-                    <td>@order.StartDate.ToString("yyyy-MM-dd")</td>
-                    <td>@order.EndDate.ToString("yyyy-MM-dd")</td>
+                    <td>@order.StartDate?.ToString("yyyy-MM-dd")</td>
+                    <td>@order.EndDate?.ToString("yyyy-MM-dd")</td>
                     <td>@order.Status</td>
                     <td>@order.Details</td>
                     <td>@((order.TotalCostCents / 100.0m).ToString("C"))</td>
