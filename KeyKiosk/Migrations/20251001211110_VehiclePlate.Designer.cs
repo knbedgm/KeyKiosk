@@ -3,6 +3,7 @@ using System;
 using KeyKiosk.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace KeyKiosk.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251001211110_VehiclePlate")]
+    partial class VehiclePlate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -148,10 +151,10 @@ namespace KeyKiosk.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<DateTimeOffset?>("EndDate")
+                    b.Property<DateTimeOffset>("EndDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<DateTimeOffset?>("StartDate")
+                    b.Property<DateTimeOffset>("StartDate")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Status")
@@ -167,42 +170,6 @@ namespace KeyKiosk.Migrations
                     b.ToTable("WorkOrders");
                 });
 
-            modelBuilder.Entity("KeyKiosk.Data.WorkOrderLogEvent", b =>
-                {
-                    b.Property<int>("ID")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("ID"));
-
-                    b.Property<DateTimeOffset>("DateTime")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("EventType")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("UserName")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<int>("workOrderId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("ID");
-
-                    b.HasIndex("workOrderId");
-
-                    b.ToTable("WorkOrderLog");
-
-                    b.HasDiscriminator<string>("EventType");
-
-                    b.UseTphMappingStrategy();
-                });
-
             modelBuilder.Entity("KeyKiosk.Data.WorkOrderTask", b =>
                 {
                     b.Property<int>("Id")
@@ -214,25 +181,21 @@ namespace KeyKiosk.Migrations
                     b.Property<int>("CostCents")
                         .HasColumnType("integer");
 
-                    b.Property<string>("Details")
+                    b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<DateTimeOffset?>("EndDate")
+                    b.Property<DateTimeOffset>("EndDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<DateTimeOffset?>("StartDate")
+                    b.Property<DateTimeOffset>("StartDate")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<int>("WorkOrderId")
+                    b.Property<int?>("WorkOrderId")
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
@@ -253,11 +216,7 @@ namespace KeyKiosk.Migrations
                     b.Property<int>("TaskCostCents")
                         .HasColumnType("integer");
 
-                    b.Property<string>("TaskDetails")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("TaskTitle")
+                    b.Property<string>("TaskDescription")
                         .IsRequired()
                         .HasColumnType("text");
 
@@ -266,63 +225,11 @@ namespace KeyKiosk.Migrations
                     b.ToTable("WorkOrderTaskTemplates");
                 });
 
-            modelBuilder.Entity("KeyKiosk.Data.WorkOrderLogEvent+CreateEvent", b =>
-                {
-                    b.HasBaseType("KeyKiosk.Data.WorkOrderLogEvent");
-
-                    b.HasDiscriminator().HasValue("Created");
-                });
-
-            modelBuilder.Entity("KeyKiosk.Data.WorkOrderLogEvent+DetailsChangedEvent", b =>
-                {
-                    b.HasBaseType("KeyKiosk.Data.WorkOrderLogEvent");
-
-                    b.Property<string>("CustomerName")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Details")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("VehiclePlate")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasDiscriminator().HasValue("DetailsChanged");
-                });
-
-            modelBuilder.Entity("KeyKiosk.Data.WorkOrderLogEvent+StatusChangedEvent", b =>
-                {
-                    b.HasBaseType("KeyKiosk.Data.WorkOrderLogEvent");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasDiscriminator().HasValue("StatusChanged");
-                });
-
-            modelBuilder.Entity("KeyKiosk.Data.WorkOrderLogEvent", b =>
-                {
-                    b.HasOne("KeyKiosk.Data.WorkOrder", "workOrder")
-                        .WithMany()
-                        .HasForeignKey("workOrderId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("workOrder");
-                });
-
             modelBuilder.Entity("KeyKiosk.Data.WorkOrderTask", b =>
                 {
-                    b.HasOne("KeyKiosk.Data.WorkOrder", "WorkOrder")
+                    b.HasOne("KeyKiosk.Data.WorkOrder", null)
                         .WithMany("Tasks")
-                        .HasForeignKey("WorkOrderId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("WorkOrder");
+                        .HasForeignKey("WorkOrderId");
                 });
 
             modelBuilder.Entity("KeyKiosk.Data.WorkOrder", b =>

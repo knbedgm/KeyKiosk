@@ -13,16 +13,14 @@ namespace KeyKiosk.Data
         public DbSet<WorkOrderTask> WorkOrderTasks { get; set; }
         public DbSet<WorkOrderTaskTemplate> WorkOrderTaskTemplates { get; set; }
 
-
         public DbSet<DrawerLogEvent> DrawerLog { get; set; }
         public DbSet<UserLogEvent> UserLog { get; set; }
+		public DbSet<WorkOrderLogEvent> WorkOrderLog { get; set; }
 
-        //protected override void OnModelCreating(ModelBuilder modelBuilder)
-        //{
-        //    modelBuilder.Entity<User>().Property(e => e.UserType).HasConversion<string>();
-        //    modelBuilder.Entity<UserLogEvent>().Property(e => e.EventType).HasConversion<string>();
-        //    modelBuilder.Entity<DrawerLogEvent>().Property(e => e.EventType).HasConversion<string>();
-        //}
+		protected override void OnModelCreating(ModelBuilder modelBuilder)
+		{
+			new WorkOrderLogEventEntityTypeConfiguration().Configure(modelBuilder.Entity<WorkOrderLogEvent>());
+		}
 
         protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
         {

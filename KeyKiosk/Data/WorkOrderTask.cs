@@ -2,16 +2,20 @@
 
 public class WorkOrderTask
 {
-    public int Id { get; set; }
-    public required string Description { get; set; } = "";
-    public DateTimeOffset StartDate { get; set; }
-    public DateTimeOffset EndDate { get; set; }
-    public WorkOrderTaskStatusType Status { get; set; }
-    public int CostCents { get; set; }
+	public int Id { get; init; }
+	public required string Title { get; init; }
+	public required string Details { get; set; }
+	public DateTimeOffset? StartDate { get; set; }
+	public DateTimeOffset? EndDate { get; set; }
+	public WorkOrderTaskStatusType Status { get; set; }
+	public int CostCents { get; set; }
+
+	public int WorkOrderId { get; set; }
+	public required virtual WorkOrder WorkOrder { get; set; }
 }
 public enum WorkOrderTaskStatusType
 {
-    Created,
-    WorkStarted,
-    WorkFinished,
+	Created,
+	WorkStarted,
+	WorkFinished,
 }

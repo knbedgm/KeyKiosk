@@ -55,14 +55,6 @@ namespace KeyKiosk.Migrations
                 oldType: "INTEGER",
                 oldNullable: true);
 
-            migrationBuilder.AlterColumn<DateTime>(
-                name: "DateTime",
-                table: "UserLog",
-                type: "timestamp with time zone",
-                nullable: false,
-                oldClrType: typeof(string),
-                oldType: "TEXT");
-
             migrationBuilder.AlterColumn<string>(
                 name: "ActingUserName",
                 table: "UserLog",
@@ -154,14 +146,6 @@ namespace KeyKiosk.Migrations
                 nullable: false,
                 oldClrType: typeof(int),
                 oldType: "INTEGER");
-
-            migrationBuilder.AlterColumn<DateTime>(
-                name: "DateTime",
-                table: "DrawerLog",
-                type: "timestamp with time zone",
-                nullable: false,
-                oldClrType: typeof(string),
-                oldType: "TEXT");
 
             migrationBuilder.AlterColumn<int>(
                 name: "ID",

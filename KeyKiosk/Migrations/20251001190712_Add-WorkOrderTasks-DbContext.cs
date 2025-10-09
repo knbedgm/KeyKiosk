@@ -20,12 +20,12 @@ namespace KeyKiosk.Migrations
 
             migrationBuilder.RenameTable(
                 name: "WorkOrderTask",
-                newName: "WorkOrdersTask");
+                newName: "WorkOrderTasks");
 
             migrationBuilder.RenameIndex(
                 name: "IX_WorkOrderTask_WorkOrderId",
-                table: "WorkOrdersTask",
-                newName: "IX_WorkOrdersTask_WorkOrderId");
+                table: "WorkOrderTasks",
+                newName: "IX_WorkOrderTasks_WorkOrderId");
 
             migrationBuilder.AlterColumn<string>(
                 name: "UserType",
@@ -44,13 +44,13 @@ namespace KeyKiosk.Migrations
                 oldType: "TEXT");
 
             migrationBuilder.AddPrimaryKey(
-                name: "PK_WorkOrdersTask",
-                table: "WorkOrdersTask",
+                name: "PK_WorkOrderTasks",
+                table: "WorkOrderTasks",
                 column: "Id");
 
             migrationBuilder.AddForeignKey(
-                name: "FK_WorkOrdersTask_WorkOrders_WorkOrderId",
-                table: "WorkOrdersTask",
+                name: "FK_WorkOrderTasks_WorkOrders_WorkOrderId",
+                table: "WorkOrderTasks",
                 column: "WorkOrderId",
                 principalTable: "WorkOrders",
                 principalColumn: "Id");
@@ -60,19 +60,19 @@ namespace KeyKiosk.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropForeignKey(
-                name: "FK_WorkOrdersTask_WorkOrders_WorkOrderId",
-                table: "WorkOrdersTask");
+                name: "FK_WorkOrderTasks_WorkOrders_WorkOrderId",
+                table: "WorkOrderTasks");
 
             migrationBuilder.DropPrimaryKey(
-                name: "PK_WorkOrdersTask",
-                table: "WorkOrdersTask");
+                name: "PK_WorkOrderTasks",
+                table: "WorkOrderTasks");
 
             migrationBuilder.RenameTable(
-                name: "WorkOrdersTask",
+                name: "WorkOrderTasks",
                 newName: "WorkOrderTask");
 
             migrationBuilder.RenameIndex(
-                name: "IX_WorkOrdersTask_WorkOrderId",
+                name: "IX_WorkOrderTasks_WorkOrderId",
                 table: "WorkOrderTask",
                 newName: "IX_WorkOrderTask_WorkOrderId");
 

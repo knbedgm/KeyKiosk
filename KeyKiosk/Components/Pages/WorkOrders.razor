@@ -1,0 +1,64 @@
+﻿@page "/workorders"
+@using KeyKiosk.Data
+@inject WorkOrderService WorkOrderSvc /*call database methods*/
+
+<h1>Work Orders</h1>
+
+@if (workOrders == null)
+{
+    <p><em>Loading work orders...</em></p>
+}
+else if (!workOrders.Any())
+{
+    <p>No work orders found.</p>
+}
+else
+{
+    // Display work orders in a table
+    <table class="table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Customer</th>
+                <th>Start</th>
+                <th>End</th>
+                <th>Status</th>
+                <th>Details</th>
+                <th>Total Cost</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (KeyKiosk.Data.WorkOrder order in workOrders)
+            {
+                <tr>
+                    <td>@order.Id</td>
+                    <td>@order.CustomerName</td>
+                    <td>@order.StartDate?.ToString("yyyy-MM-dd")</td>
+                    <td>@order.EndDate?.ToString("yyyy-MM-dd")</td>
+                    <td>@order.Status</td>
+                    <td>@order.Details</td>
+                    <td>@((order.TotalCostCents / 100.0m).ToString("C"))</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<KeyKiosk.Data.WorkOrder>? workOrders;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            workOrders = await WorkOrderSvc.GetAllAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading work orders: {ex}");
+            workOrders = new List<WorkOrder>(); // fallback so UI updates
+        }
+    }
+}
+
+

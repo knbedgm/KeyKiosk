@@ -1,0 +1,92 @@
+﻿@page "/employee/admin/WorkOrderTaskTemplates"
+@rendermode InteractiveServer
+@layout Layout.MainLayout
+
+@using KeyKiosk.Data
+
+<h3>WorkOrdersTaskTemplatesPage</h3>
+
+@* Display list of existing templates*@
+@if (TemplateList != null && TemplateList.Count > 0)
+{
+	<table>
+		<tr>
+			<th>Id</th>
+			<th>Title</th>
+			<th>Details</th>
+			<th>Cost</th>
+		</tr>
+		@foreach (WorkOrderTaskTemplate template in TemplateList)
+		{
+			<tr>
+				<td>@template.Id</td>
+				<td>@template.TaskTitle</td>
+				<td>@template.TaskDetails</td>
+				<td>@template.TaskCostCents</td>
+				<td>
+					@* Deletes selected template *@
+					<button @onclick="@(e => DeleteTemplate(template.Id))">
+						Delete
+					</button>
+				</td>
+			</tr>
+		}
+	</table>
+}
+
+<br />
+<br />
+<br />
+
+<h1>Add New Template</h1>
+
+<br />
+
+@* Form to add new template *@
+<EditForm Model="@TemplateToAdd" OnValidSubmit="@AddNewTemplate">
+	<DataAnnotationsValidator />
+	<ValidationSummary />
+
+	<label>Title</label>
+	<input type="text" @bind="TemplateToAdd.TaskTitle" />
+	
+	<label>Details</label>
+	<input type="text" @bind="TemplateToAdd.TaskDetails" />
+
+	<label>Cost in Cents</label>
+	<input type="number" @bind="TemplateToAdd.TaskCostCents"/>
+
+	<button type="submit">Submit</button>
+</EditForm>
+
+<br />
+<br />
+<br />
+
+@if (TemplateList != null && TemplateList.Count > 0)
+{
+	<h1>Update Existing Template</h1>
+
+	<br />
+
+	@* Form to update existing template *@
+	<EditForm Model="@TemplateToUpdate" OnValidSubmit="@UpdateExistingTemplate">
+		<DataAnnotationsValidator />
+		<ValidationSummary />
+
+		<select @bind="TemplateToUpdate.Id">
+			@foreach (WorkOrderTaskTemplate template in TemplateList)
+			{
+				<option value="@template.Id">@template.TaskTitle</option>
+			}
+		</select>
+
+		<label>New Details</label>
+		<input type="text" @bind="TemplateToUpdate.TaskDetails" />
+
+		<label>New Cost in Cents</label>
+		<input type="number" @bind="TemplateToUpdate.TaskCostCents" />
+
+		<button type="submit">Submit</button>
+	</EditForm>
+}

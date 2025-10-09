@@ -3,7 +3,8 @@
     public class WorkOrderTaskTemplate
     {
         public int Id { get; set; }
-        public required string TaskDescription { get; set; } = "";
+        public string TaskTitle { get; set; } = "";
+        public string TaskDetails { get; set; } = "";
         public int TaskCostCents { get; set; }
     }
 }

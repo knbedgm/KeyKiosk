@@ -1,0 +1,56 @@
+﻿@page "/worktasks"
+@using KeyKiosk.Data
+@using Microsoft.EntityFrameworkCore
+
+@inject ApplicationDbContext Db
+
+<h1>Work Tasks</h1>
+
+@if (tasks == null)
+{
+    <p><em>Loading...</em></p>
+}
+else if (!tasks.Any())
+{
+    <p>No tasks found.</p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>    
+                <th> Id </th>
+                <th> Title </th>
+                <th> Start Date </th>
+                <th> End Date </th>
+                <th> Status </th>
+                <th> Cost ($) </th>
+                <th> Details </th>
+               
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var task in tasks)
+            {
+                <tr>
+                    <td> @task.Id </td>
+                    <td> @task.Title </td>
+                    <td> @task.StartDate?.ToString("g") </td>
+                    <td> @task.EndDate?.ToString("g") </td>
+                    <td> @task.Status </td>
+                    <td> @((task.CostCents / 100.0m).ToString("C")) </td>
+                    <td> @task.Details </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<WorkOrderTask>? tasks;
+
+    protected override async Task OnInitializedAsync()
+    {
+        tasks = await Db.WorkOrderTasks.ToListAsync();
+    }
+}
