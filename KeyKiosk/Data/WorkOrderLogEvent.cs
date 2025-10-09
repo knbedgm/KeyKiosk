@@ -10,7 +10,10 @@ namespace KeyKiosk.Data
 
 	public abstract class WorkOrderLogEvent : ILogEvent
 	{
-		public int ID { get; set; }
+        /// <summary>
+        /// Base properties for all work order log events
+        /// </summary>
+        public int ID { get; set; }
 		public DateTimeOffset DateTime { get; set; } = DateTimeOffset.Now;
 		public int UserId { get; private set; }
 		public string UserName { get; private set; }
@@ -18,7 +21,10 @@ namespace KeyKiosk.Data
 		public required WorkOrder workOrder { get; set; }
 		public abstract WorkOrderLogEventType EventType { get; set; }
 
-		public enum WorkOrderLogEventType
+        /// <summary>
+		/// Defines all possible event categories for work order log events
+        /// </summary>
+        public enum WorkOrderLogEventType
 		{
 			Created,
 			StatusChanged,
@@ -29,8 +35,10 @@ namespace KeyKiosk.Data
 			TaskDetailsChanged,
 		}
 
-
-		public class CreateEvent : WorkOrderLogEvent
+        /// <summary>
+        /// SUBCLASSES
+        /// </summary>
+        public class CreateEvent : WorkOrderLogEvent
 		{
 			public override WorkOrderLogEventType EventType { get => WorkOrderLogEventType.Created; set {} }
 		}
@@ -85,6 +93,12 @@ namespace KeyKiosk.Data
 
 }
 
+/// <summary>
+/// Subclasses are mapped to CreateEvent, StatusChangedEventand DetailsChangedEvent
+/// UseTphMappingStrategy(): Tells EF to use a single table for all subclasses.
+/// HasDiscriminator(e => e.EventType): Uses the EventType property as the discriminator column.
+/// HasValue<...>: Maps specific subclasses to specific enum values.
+/// </summary>
 public class WorkOrderLogEventEntityTypeConfiguration : IEntityTypeConfiguration<WorkOrderLogEvent>
 {
 	public void Configure(EntityTypeBuilder<WorkOrderLogEvent> builder)

@@ -6,6 +6,9 @@ namespace KeyKiosk.Services
 {
     public class WorkOrderLogService
     {
+        /// <summary>
+        /// Contructor, service crteated that injects depenedency injection and use in quieries are stored  
+        /// </summary> 
         private readonly ApplicationDbContext _context;
 
         public WorkOrderLogService(ApplicationDbContext context)
@@ -13,6 +16,10 @@ namespace KeyKiosk.Services
             _context = context;
         }
 
+        /// <summary>
+        /// Returns a list of work order log events filtered by the provided parameters 
+        /// such as username, work order ID, status, vehicle plate, search term, and event type.  
+        /// </summary>
         public async Task<List<WorkOrderLogEvent>> GetFilteredLogsAsync(
             string? username = null,
             int? workOrderId = null,
@@ -46,9 +53,13 @@ namespace KeyKiosk.Services
             if (eventType.HasValue)
                 query = query.Where(e => e.EventType == eventType.Value);
 
-            return await query.OrderByDescending(e => e.DateTime).ToListAsync();
+            return await query.OrderByDescending(e => e.DateTime).ToListAsync(); //orders logs  by the newest first
         }
 
+        /// <summary>
+        /// Method reuses the filter logix to export logs as a CSV string filtered by the provided parameters
+        /// such as username, work order ID, status, vehicle plate, search term, and event type.  
+        /// </summary>
         public async Task<string> ExportLogsToCsvAsync(
             string? username = null,
             int? workOrderId = null,
@@ -62,12 +73,12 @@ namespace KeyKiosk.Services
             var sb = new StringBuilder();
             sb.AppendLine("ID,DateTime,UserName,EventType,WorkOrderId,Status,VehiclePlate,Details");
 
-            foreach (var log in logs)
+            foreach (var log in logs) //creates a CSV header row
             {
                 sb.AppendLine($"{log.ID},{log.DateTime},{log.UserName},{log.EventType},{log.workOrder.Id},{log.workOrder.Status},{log.workOrder.VehiclePlate},{log.workOrder.Details}");
             }
 
-            return sb.ToString();
+            return sb.ToString(); //returns the CSV as a string
         }
     }
 }
