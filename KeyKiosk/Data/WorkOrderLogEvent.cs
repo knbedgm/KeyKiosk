@@ -7,6 +7,7 @@ namespace KeyKiosk.Data
 {
 	// doesn't work, tries to apply to subclasses too
 	//[EntityTypeConfiguration(typeof(WorkOrderLogEventEntityTypeConfiguration))]
+
 	public abstract class WorkOrderLogEvent : ILogEvent
 	{
 		public int ID { get; set; }
@@ -50,6 +51,7 @@ namespace KeyKiosk.Data
 			public required string Details { get; set; }
 		}
 
+		//reference work order task for the changes
 		public abstract class TaskEvent : WorkOrderLogEvent
 		{
 			public required WorkOrderTask Task { get; set; }

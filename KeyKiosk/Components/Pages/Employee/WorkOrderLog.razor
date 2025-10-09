@@ -1,0 +1,102 @@
+﻿@page "/workorderlogs"
+@using KeyKiosk.Data
+@inject KeyKiosk.Services.WorkOrderLogService LogService
+@inject IJSRuntime JS
+
+<h2>Work Order Log Events</h2>
+
+<div class="filters">
+    <input @bind="filterUser" placeholder="Filter by username" />
+    <input type="number" @bind="filterWorkOrderId" placeholder="Work Order ID" />
+    <input @bind="filterStatus" placeholder="Status" />
+    <input @bind="filterVehiclePlate" placeholder="Vehicle Plate" />
+    <input @bind="searchText" placeholder="Search..." />
+
+    <select @bind="filterEventType">
+        <option value="">All Event Types</option>
+        @foreach (var type in Enum.GetValues<WorkOrderLogEvent.WorkOrderLogEventType>())
+        {
+            <option value="@type">@type</option>
+        }
+    </select>
+
+    <button class="btn btn-primary" @onclick="ApplyFilters">Apply</button>
+    <button class="btn btn-secondary" @onclick="ExportCsv">Export CSV</button>
+
+</div>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>DateTime</th>
+            <th>User</th>
+            <th>Event Type</th>
+            <th>Work Order</th>
+            <th>Status</th>
+            <th>Vehicle Plate</th>
+            <th>Details</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (logs != null)
+        {
+            @foreach (var log in logs)
+            {
+                <tr>
+                    <td>@log.ID</td>
+                    <td>@log.DateTime</td>
+                    <td>@log.UserName</td>
+                    <td>@log.EventType</td>
+                    <td>@log.workOrder.Id</td>
+                    <td>@log.workOrder.Status</td>
+                    <td>@log.workOrder.VehiclePlate</td>
+                    <td>@log.workOrder.Details</td>
+                </tr>
+            }
+        }
+    </tbody>
+</table>
+
+@code {
+    private string? filterUser;
+    private int? filterWorkOrderId;
+    private string? filterStatus;
+    private string? filterVehiclePlate;
+    private string? searchText;
+    private WorkOrderLogEvent.WorkOrderLogEventType? filterEventType;
+    private List<WorkOrderLogEvent> logs = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        logs = await LogService.GetFilteredLogsAsync();
+    }
+
+    private async Task ApplyFilters()
+    {
+        logs = await LogService.GetFilteredLogsAsync(
+            filterUser,
+            filterWorkOrderId,
+            filterStatus,
+            filterVehiclePlate,
+            searchText,
+            filterEventType);
+    }
+
+    private async Task ExportCsv()
+    {
+        var csv = await LogService.ExportLogsToCsvAsync(
+            filterUser,
+            filterWorkOrderId,
+            filterStatus,
+            filterVehiclePlate,
+            searchText,
+            filterEventType);
+
+        var bytes = System.Text.Encoding.UTF8.GetBytes(csv);
+        var base64 = Convert.ToBase64String(bytes);
+        var fileName = $"WorkOrderLogs_{DateTime.Now:yyyyMMddHHmmss}.csv";
+
+        await JS.InvokeVoidAsync("downloadFile", fileName, base64);
+    }
+}
