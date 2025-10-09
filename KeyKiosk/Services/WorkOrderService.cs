@@ -1,33 +1,93 @@
 ﻿using KeyKiosk.Data;
 using Microsoft.EntityFrameworkCore;
-using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace KeyKiosk.Services;
 
 public class WorkOrderService
 {
-    public required ApplicationDbContext dbContext { get; set; }
+    private readonly ApplicationDbContext _dbContext;
 
     public WorkOrderService(ApplicationDbContext dbContext)
     {
-        this.dbContext = dbContext;
+        _dbContext = dbContext;
     }
 
-    public List<WorkOrder> GetWorkOrdersByCustomerName(string customerName)
+    // Get all work orders
+    public async Task<List<WorkOrder>> GetAllWorkOrdersAsync()
     {
-        List<WorkOrder> workOrders = dbContext.WorkOrders
-                                  .Where(w => w.CustomerName == customerName)
-                                  .Include(w => w.Tasks)
-                                  .OrderBy(w => w.StartDate)
-                                  .ToList();
-
-        foreach (WorkOrder workOrder in workOrders)
-        {
-            Console.WriteLine($"Id: {workOrder.Id}");
-            Console.WriteLine($"CustomerName: {workOrder.CustomerName}");
-            Console.WriteLine($"Status: {workOrder.Status}");
-        }
-
-        return workOrders;
+        return await _dbContext.WorkOrders
+                               .Include(w => w.Tasks)
+                               .OrderBy(w => w.StartDate)
+                               .ToListAsync();
     }
+
+    // Get work orders by customer name
+    public async Task<List<WorkOrder>> GetWorkOrdersByCustomerNameAsync(string customerName)
+    {
+        return await _dbContext.WorkOrders
+                               .Where(w => w.CustomerName.ToLower() == customerName.ToLower())
+                               .Include(w => w.Tasks)
+                               .OrderBy(w => w.StartDate)
+                               .ToListAsync();
+    }
+
+    // Add a new work order
+    public async Task AddWorkOrderAsync(WorkOrder workOrder)
+    {
+        if (workOrder.Tasks == null)
+            workOrder.Tasks = new List<WorkOrderTask>();
+
+        _dbContext.WorkOrders.Add(workOrder);
+        await _dbContext.SaveChangesAsync();
+    }
+
+    // Update an existing work order
+public async Task UpdateWorkOrderAsync(WorkOrder workOrder)
+{
+    // Get the tracked entity if it exists
+    var trackedEntity = await _dbContext.WorkOrders
+                                        .Include(w => w.Tasks)
+                                        .FirstOrDefaultAsync(w => w.Id == workOrder.Id);
+
+    if (trackedEntity != null)
+    {
+        // Update only the properties you want to change
+        trackedEntity.CustomerName = workOrder.CustomerName;
+        trackedEntity.VehiclePlate = workOrder.VehiclePlate;
+        trackedEntity.StartDate = workOrder.StartDate;
+        trackedEntity.EndDate = workOrder.EndDate;
+        trackedEntity.Status = workOrder.Status;
+        trackedEntity.Details = workOrder.Details;
+
+        // Optional: update tasks manually if needed
+        // trackedEntity.Tasks = workOrder.Tasks;
+
+        await _dbContext.SaveChangesAsync();
+    }
+}
+
+
+    // Delete a work order
+    public async Task DeleteWorkOrderAsync(int workOrderId)
+    {
+        var workOrder = await _dbContext.WorkOrders
+                                        .Include(w => w.Tasks)
+                                        .FirstOrDefaultAsync(w => w.Id == workOrderId);
+        if (workOrder != null)
+        {
+            _dbContext.WorkOrders.Remove(workOrder);
+            await _dbContext.SaveChangesAsync();
+        }
+    }
+
+    public async Task<List<WorkOrder>> GetWorkOrdersByVehiclePlateAsync(string plate)
+    {
+        return await _dbContext.WorkOrders
+                               .Where(w => w.VehiclePlate.ToLower() == plate.ToLower())
+                               .Include(w => w.Tasks)
+                               .OrderBy(w => w.StartDate)
+                               .ToListAsync();
+    }
+
+
 }

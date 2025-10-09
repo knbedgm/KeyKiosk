@@ -10,6 +10,7 @@ namespace KeyKiosk.Data
         public DbSet<User> Users { get; set; }
         public DbSet<Drawer> Drawers { get; set; }
         public DbSet<WorkOrder> WorkOrders { get; set; }
+        public DbSet<WorkOrderTask> WorkOrderTasks { get; set; }
         public DbSet<WorkOrderTaskTemplate> WorkOrderTaskTemplates { get; set; }
 
 
@@ -23,15 +24,15 @@ namespace KeyKiosk.Data
         //    modelBuilder.Entity<DrawerLogEvent>().Property(e => e.EventType).HasConversion<string>();
         //}
 
-		protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
-		{
-			configurationBuilder
-				.Properties<DateTimeOffset>()
-				.HaveConversion<DateTimeOffsetConverter>();
-			configurationBuilder.Properties<Enum>().HaveConversion<string>();
-		}
+        protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
+        {
+            configurationBuilder
+                .Properties<DateTimeOffset>()
+                .HaveConversion<DateTimeOffsetConverter>();
+            configurationBuilder.Properties<Enum>().HaveConversion<string>();
+        }
 
-	}
+    }
 
 
     //public class ApplicationDbContexttFactory : IDesignTimeDbContextFactory<ApplicationDbContext>
@@ -49,10 +50,10 @@ namespace KeyKiosk.Data
 
 public class DateTimeOffsetConverter : ValueConverter<DateTimeOffset, DateTimeOffset>
 {
-	public DateTimeOffsetConverter()
-		: base(
-			d => d.ToUniversalTime(),
-			d => d.ToUniversalTime())
-	{
-	}
+    public DateTimeOffsetConverter()
+        : base(
+            d => d.ToUniversalTime(),
+            d => d.ToUniversalTime())
+    {
+    }
 }

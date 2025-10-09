@@ -1,41 +1,34 @@
 ﻿using KeyKiosk.Data;
 using KeyKiosk.Services;
 using Microsoft.AspNetCore.Components;
-using Microsoft.EntityFrameworkCore;
 
 namespace KeyKiosk.Components.Pages.Customer;
 
 public partial class CustomerHomePage
 {
-    [Inject]
-    private WorkOrderService DatabaseService { get; set; }
+    //[Inject]
+    //private WorkOrderService DatabaseService { get; set; }
 
-    private string EnteredName { get; set; } = "";
+    //private string EnteredName { get; set; } = "";
+    //private List<WorkOrder> WorkOrderList { get; set; } = new List<WorkOrder>();
 
-    List<WorkOrder> WorkOrderList { get; set; } = new List<WorkOrder>();
+    //// Do NOT use a constructor for async calls
+    //public CustomerHomePage() { }
 
-    public CustomerHomePage(WorkOrderService databaseService)
-    {
-        DatabaseService = databaseService;
-    }
+    //// Event handler for button click
+    //private async Task GetListOfWorkOrdersAsync()
+    //{
+    //    WorkOrderList.Clear();
+    //    if (string.IsNullOrWhiteSpace(EnteredName)) return;
 
-    public void GetListOfWorkOrders()
-    {
-        WorkOrderList.Clear();
-        var workOrders = DatabaseService.GetWorkOrdersByCustomerName(EnteredName);
-        PopulateWorkOrdersList(workOrders);
-    }
+    //    var workOrders = await DatabaseService.GetWorkOrdersByCustomerNameAsync(EnteredName);
+    //    PopulateWorkOrdersList(workOrders);
+    //}
 
-    private void PopulateWorkOrdersList(List<WorkOrder> workOrders)
-    {
-        foreach (WorkOrder w in workOrders)
-        {
-            WorkOrderList.Add(w);
-        }
-    }
-
-    public void PrintName()
-    {
-        Console.WriteLine(EnteredName);
-    }
+    //private void PopulateWorkOrdersList(List<WorkOrder> workOrders)
+    //{
+    //    if (workOrders == null) return;
+    //    WorkOrderList.Clear();
+    //    WorkOrderList.AddRange(workOrders);
+    //}
 }

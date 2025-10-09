@@ -2,6 +2,7 @@ using KeyKiosk.Components;
 using KeyKiosk.Data;
 using KeyKiosk.Services;
 using Microsoft.EntityFrameworkCore;
+using Blazored.Toast;
 
 namespace KeyKiosk
 {
@@ -11,9 +12,11 @@ namespace KeyKiosk
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // Add services to the container.
             builder.Services.AddRazorComponents()
                 .AddInteractiveServerComponents();
+
+            builder.Services.AddSingleton<ToastService>();
+
 
             var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
