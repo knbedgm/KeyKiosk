@@ -1,102 +1,160 @@
 ﻿@page "/workorderlogs"
 @using KeyKiosk.Data
-@inject KeyKiosk.Services.WorkOrderLogService LogService
+@using KeyKiosk.Services
+@using System.Text
+@inject WorkOrderLogService LogService
 @inject IJSRuntime JS
 
-<h2>Work Order Log Events</h2>
+<h2 class="mb-4"> Work Order Logs </h2>
 
-<div class="filters">
-    <input @bind="filterUser" placeholder="Filter by username" />
-    <input type="number" @bind="filterWorkOrderId" placeholder="Work Order ID" />
-    <input @bind="filterStatus" placeholder="Status" />
-    <input @bind="filterVehiclePlate" placeholder="Vehicle Plate" />
-    <input @bind="searchText" placeholder="Search..." />
-
-    <select @bind="filterEventType">
-        <option value="">All Event Types</option>
-        @foreach (var type in Enum.GetValues<WorkOrderLogEvent.WorkOrderLogEventType>())
-        {
-            <option value="@type">@type</option>
-        }
-    </select>
-
-    <button class="btn btn-primary" @onclick="ApplyFilters">Apply</button>
-    <button class="btn btn-secondary" @onclick="ExportCsv">Export CSV</button>
-
+<!-- Filter Form -->
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="row g-2">
+            <div class="col-md-2">
+                <input class="form-control" placeholder="Username" @bind="username" />
+            </div>
+            <div class="col-md-2">
+                <input class="form-control" placeholder="WorkOrder ID" type="number" @bind="workOrderId" />
+            </div>
+            <div class="col-md-2">
+                <input class="form-control" placeholder="Vehicle Plate" @bind="vehiclePlate" />
+            </div>
+            <div class="col-md-2">
+                <select class="form-select" @bind="eventType">
+                    <option value="">-- Event Type --</option>
+                    @foreach (var type in Enum.GetValues<WorkOrderLogEvent.WorkOrderLogEventType>())
+                    {
+                        <option value="@type">@type</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-2 d-flex gap-2">
+                <button class="btn btn-primary flex-fill" @onclick="LoadLogs">Search</button>
+                <button class="btn btn-outline-secondary flex-fill" @onclick="ExportCsv">Export</button>
+            </div>
+        </div>
+    </div>
 </div>
 
-<table class="table table-striped">
-    <thead>
-        <tr>
-            <th>ID</th>
-            <th>DateTime</th>
-            <th>User</th>
-            <th>Event Type</th>
-            <th>Work Order</th>
-            <th>Status</th>
-            <th>Vehicle Plate</th>
-            <th>Details</th>
-        </tr>
-    </thead>
-    <tbody>
-        @if (logs != null)
-        {
-            @foreach (var log in logs)
-            {
+<!-- Results -->
+@if (logs == null)
+{
+    <p><em>Loading...</em></p>
+}
+else if (!logs.Any())
+{
+    <div class="alert alert-warning">No log events found.</div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead class="table-light">
                 <tr>
-                    <td>@log.ID</td>
-                    <td>@log.DateTime</td>
-                    <td>@log.UserName</td>
-                    <td>@log.EventType</td>
-                    <td>@log.workOrder.Id</td>
-                    <td>@log.workOrder.Status</td>
-                    <td>@log.workOrder.VehiclePlate</td>
-                    <td>@log.workOrder.Details</td>
+                    <th>ID</th>
+                    <th>Date</th>
+                    <th>User</th>
+                    <th>WorkOrder</th>
+                    <th>Customer</th>
+                    <th>Plate</th>
+                    <th>Event</th>
+                    <th>Details</th>
                 </tr>
-            }
-        }
-    </tbody>
-</table>
+            </thead>
+            <tbody>
+                @foreach (var log in logs)
+                {
+                    <tr>
+                        <td>@log.ID</td>
+                        <td>@log.DateTime.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</td>
+                        <td>@log.UserName</td>
+                        <td>@log.workOrder.Id</td>
+                        <td>@log.workOrder.CustomerName</td>
+                        <td>@log.workOrder.VehiclePlate</td>
+                        <td>
+                            <span class="badge bg-info text-dark">@log.EventType</span>
+                        </td>
+                        <td>
+                            @switch (log)
+                            {
+                                case WorkOrderLogEvent.DetailsChangedEvent detailsEvent:
+                                    <details>
+                                        <summary>Details changed</summary>
+                                        <div>Customer: @detailsEvent.CustomerName</div>
+                                        <div>Plate: @detailsEvent.VehiclePlate</div>
+                                        <div>@detailsEvent.Details</div>
+                                    </details>
+                                    break;
+
+                                case WorkOrderLogEvent.TaskAddedEvent taskAdded:
+                                    <span>Task added: <strong>@taskAdded.Task?.Title</strong></span>
+                                    break;
+
+                                case WorkOrderLogEvent.TaskRemovedEvent taskRemoved:
+                                    <span>Task removed: <strong>@taskRemoved.Task?.Title</strong></span>
+                                    break;
+
+                                case WorkOrderLogEvent.TaskDetailsChangedEvent taskDetails:
+                                    <details>
+                                        <summary>Task details changed</summary>
+                                        <div>Task: @taskDetails.Task?.Title</div>
+                                        <div>@taskDetails.Details</div>
+                                        <div>Cost: @(taskDetails.CostCents / 100.0m).ToString("C")</div>
+                                    </details>
+                                    break;
+
+                                case WorkOrderLogEvent.CreateEvent:
+                                    <span class="text-success">Work order created</span>
+                                    break;
+
+                                case WorkOrderLogEvent.StatusChangedEvent statusEvent:
+                                    <span>Status → <strong>@statusEvent.Status</strong></span>
+                                    break;
+
+                                default:
+                                    <span>-</span>
+                                    break;
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
 
 @code {
-    private string? filterUser;
-    private int? filterWorkOrderId;
-    private string? filterStatus;
-    private string? filterVehiclePlate;
-    private string? searchText;
-    private WorkOrderLogEvent.WorkOrderLogEventType? filterEventType;
-    private List<WorkOrderLogEvent> logs = new();
+    private List<WorkOrderLogEvent>? logs;
+
+    private string? username;
+    private int? workOrderId;
+    private string? status;
+    private string? vehiclePlate;
+    private string? search;
+    private WorkOrderLogEvent.WorkOrderLogEventType? eventType;
 
     protected override async Task OnInitializedAsync()
     {
-        logs = await LogService.GetFilteredLogsAsync();
+        await LoadLogs();
     }
 
-    private async Task ApplyFilters()
+    private async Task LoadLogs()
     {
-        logs = await LogService.GetFilteredLogsAsync(
-            filterUser,
-            filterWorkOrderId,
-            filterStatus,
-            filterVehiclePlate,
-            searchText,
-            filterEventType);
+        logs = await LogService.GetFilteredLogsAsync(username, workOrderId, status, vehiclePlate, search, eventType);
     }
 
     private async Task ExportCsv()
     {
-        var csv = await LogService.ExportLogsToCsvAsync(
-            filterUser,
-            filterWorkOrderId,
-            filterStatus,
-            filterVehiclePlate,
-            searchText,
-            filterEventType);
-
-        var bytes = System.Text.Encoding.UTF8.GetBytes(csv);
-        var base64 = Convert.ToBase64String(bytes);
+        var csv = await LogService.ExportLogsToCsvAsync(username, workOrderId, status, vehiclePlate, search, eventType);
+        var bytes = Encoding.UTF8.GetBytes(csv);
         var fileName = $"WorkOrderLogs_{DateTime.Now:yyyyMMddHHmmss}.csv";
 
-        await JS.InvokeVoidAsync("downloadFile", fileName, base64);
+        using var stream = new MemoryStream(bytes);
+        using var streamRef = new DotNetStreamReference(stream: stream);
+
+        await JS.InvokeVoidAsync("downloadFileFromStream", fileName, streamRef);
     }
+
 }

@@ -8,7 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Include="Site.js" />
+    <None Include="wwwroot\js\Site.js" />
   </ItemGroup>
 
   <ItemGroup>
