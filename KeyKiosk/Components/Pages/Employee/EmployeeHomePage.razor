@@ -1,21 +1,25 @@
 ﻿@page "/employee/home"
 @rendermode InteractiveServer
 @layout Layout.MainLayout
+@inject IJSRuntime JS
+
 
 @using KeyKiosk.Data
 @inject KeyKiosk.Services.WorkOrderService WorkOrderService
 @inject KeyKiosk.Services.ToastService ToastService
 
-<h3 style="text-align:center">Employee Home Page</h3>
+<h1 style="text-align:center">Employee Home Page</h1>
 
 <div style="display: flex; gap: 20px; align-items: center;">
-    <div>
+    <button @onclick="LoadAllWorkOrdersAsync">Show All Work Orders</button>
+    <hr class="vertical-hr">
+    <div class="vertical-line">
         <label>Search by Customer Name:</label>
         <input type="text" @bind="EnteredCustomerName" />
         <button @onclick="LoadCustomerWorkOrdersAsync">Search</button>
     </div>
-
-    <div>
+    <hr class="vertical-hr">
+    <div class="vertical-line">
         <label>Search by Vehicle Plate:</label>
         <input type="text" @bind="EnteredVehiclePlate" />
         <button @onclick="LoadVehicleWorkOrdersAsync">Search</button>
@@ -62,6 +66,7 @@
         <thead>
             <tr>
                 <th>Id</th>
+                <th>Customer</th>
                 <th>Vehicle</th>
                 <th>Details</th>
                 <th>Status</th>
@@ -77,6 +82,16 @@
             {
                 <tr>
                     <td>@workOrder.Id</td>
+                    <td>
+                        @if (EditingWorkOrder == workOrder)
+                        {
+                            <input type="text" @bind="workOrder.CustomerName" />
+                        }
+                        else
+                        {
+                            @workOrder.CustomerName
+                        }
+                    </td>
                     <td>
                         @if (EditingWorkOrder == workOrder)
                         {
@@ -137,7 +152,7 @@
                         <ul>
                             @foreach (var task in workOrder.Tasks)
                             {
-                                <li>@task.Description (@task.CostCents)</li>
+                                <li>@task.Title (@task.CostCents)</li>
                             }
                         </ul>
                     </td>
@@ -176,9 +191,15 @@
         Status = WorkOrderStatusType.Created
     };
 
-    private void ShowSuccessToast()
+    
+    protected override async Task OnInitializedAsync()
     {
-        ToastService.ShowToast("Saved successfully!", "success");
+        WorkOrders = await WorkOrderService.GetAllWorkOrdersAsync();
+    }
+
+    private async Task LoadAllWorkOrdersAsync()
+    {
+        WorkOrders = await WorkOrderService.GetAllWorkOrdersAsync();
     }
 
     private async Task LoadCustomerWorkOrdersAsync()
@@ -216,9 +237,15 @@
             return;
         }
 
-        await WorkOrderService.AddWorkOrderAsync(NewWorkOrder);
+        // Save and get back the work order with its ID
+        var createdWorkOrder = await WorkOrderService.AddWorkOrderAsync(NewWorkOrder);
         ToastService.ShowToast("New work order created successfully.", "success");
 
+        // Open new tab with the tasks page
+        var url = $"/employee/workorder/{createdWorkOrder.Id}/tasks";
+        JS.InvokeVoidAsync("open", url, "_blank");
+
+        // Reset form
         NewWorkOrder = new WorkOrder
         {
             CustomerName = string.Empty,
@@ -250,4 +277,5 @@
         ToastService.ShowToast($"Work order {id} deleted.", "info");
         await LoadCustomerWorkOrdersAsync();
     }
+
 }

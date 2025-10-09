@@ -32,17 +32,32 @@ public class WorkOrderService
     }
 
     // Add a new work order
-    public async Task AddWorkOrderAsync(WorkOrder workOrder)
+    public async Task<WorkOrder> AddWorkOrderAsync(WorkOrder workOrder)
     {
         if (workOrder.Tasks == null)
             workOrder.Tasks = new List<WorkOrderTask>();
 
         _dbContext.WorkOrders.Add(workOrder);
         await _dbContext.SaveChangesAsync();
+        return workOrder;
+    }
+
+    //fetch all work orders
+    public async Task<List<WorkOrder>> GetAllAsync()
+    {
+        return await _dbContext.WorkOrders.Include(w => w.Tasks).ToListAsync();
+    }
+
+
+    //fetch work order by id
+    public async Task<WorkOrder?> GetByIdAsync(int id)
+    {
+        return await _dbContext.WorkOrders.Include(w => w.Tasks)
+                                   .FirstOrDefaultAsync(w => w.Id == id);
     }
 
     // Update an existing work order
-public async Task UpdateWorkOrderAsync(WorkOrder workOrder)
+    public async Task UpdateWorkOrderAsync(WorkOrder workOrder)
 {
     // Get the tracked entity if it exists
     var trackedEntity = await _dbContext.WorkOrders
@@ -88,6 +103,4 @@ public async Task UpdateWorkOrderAsync(WorkOrder workOrder)
                                .OrderBy(w => w.StartDate)
                                .ToListAsync();
     }
-
-
 }
