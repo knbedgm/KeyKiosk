@@ -109,6 +109,10 @@ public class WorkOrderLogEventEntityTypeConfiguration : IEntityTypeConfiguration
 			.HasValue<CreateEvent>(WorkOrderLogEventType.Created)
 			.HasValue<StatusChangedEvent>(WorkOrderLogEventType.StatusChanged)
 			.HasValue<DetailsChangedEvent>(WorkOrderLogEventType.DetailsChanged)
+			.HasValue<TaskAddedEvent>(WorkOrderLogEventType.TaskAdded)
+			.HasValue<TaskRemovedEvent>(WorkOrderLogEventType.TaskRemoved)
+			.HasValue<TaskStatusChangedEvent>(WorkOrderLogEventType.TaskStatusChanged)
+			.HasValue<TaskDetailsChangedEvent>(WorkOrderLogEventType.TaskDetailsChanged)
 			;
 	}
 }
