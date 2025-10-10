@@ -1,5 +1,7 @@
-﻿window.downloadFileFromStream = async (fileName, contentStreamReference) => {
-    const arrayBuffer = await contentStreamReference.arrayBuffer();
+﻿///Triggers a file download in the browser using a Base64-encoded string.
+//Automatically downloads the file to the user’s system.
+window.downloadFileFromStream = async (fileName, contentStreamReference) => {
+    const arrayBuffer = await contentStreamReference.arrayBuffer(); 
     const blob = new Blob([arrayBuffer]);
     const url = URL.createObjectURL(blob);
     const anchorElement = document.createElement('a');

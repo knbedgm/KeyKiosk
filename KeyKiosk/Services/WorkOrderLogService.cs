@@ -1,4 +1,5 @@
-﻿using KeyKiosk.Data;
+﻿using KeyKiosk.Components;
+using KeyKiosk.Data;
 using Microsoft.EntityFrameworkCore;
 using System.Text;
 
@@ -17,16 +18,19 @@ namespace KeyKiosk.Services
         }
 
         /// <summary>
-        /// Returns a list of work order log events filtered by the provided parameters 
+        /// Retrieves a filtered list of WorkOrderLogEvent objects from the database.Inputs (all optional):
         /// such as username, work order ID, status, vehicle plate, search term, and event type.  
+        /// All parameters are optional. If no parameters are provided, the method returns all logs.
+        /// Parameters can be combined(e.g., filter by both username and status).
+        /// Designed for UI filtering in Razor pages.
         /// </summary>
-        public async Task<List<WorkOrderLogEvent>> GetFilteredLogsAsync(
-            string? username = null,
-            int? workOrderId = null,
-            string? status = null,
-            string? vehiclePlate = null,
-            string? search = null,
-            WorkOrderLogEvent.WorkOrderLogEventType? eventType = null)
+        public async Task<List<WorkOrderLogEvent>> GetFilteredLogsAsync( 
+            string? username = null, //Filters logs by matching part of the username.
+            int? workOrderId = null, //Filters logs by a specific Work Order ID.
+            string? status = null, //Filters logs by matching the work order status.
+            string? vehiclePlate = null, //Filters logs by vehicle plate
+            string? search = null, //Searches across username and work order details.
+            WorkOrderLogEvent.WorkOrderLogEventType? eventType = null) //Filters logs by event type.
         {
             var query = _context.Set<WorkOrderLogEvent>()
                                 .Include(e => e.workOrder)
@@ -58,7 +62,10 @@ namespace KeyKiosk.Services
 
         /// <summary>
         /// Method reuses the filter logix to export logs as a CSV string filtered by the provided parameters
-        /// such as username, work order ID, status, vehicle plate, search term, and event type.  
+        ///Intended for data export to CSV/Excel.
+        ///Reuses the same filtering logic as GetFilteredLogsAsync.
+        ///Can be combined with the JavaScript helper(Site.js) to trigger a file download in the browser.
+        /// Inputs(all optional, same as GetFilteredLogsAsync) 
         /// </summary>
         public async Task<string> ExportLogsToCsvAsync(
             string? username = null,
