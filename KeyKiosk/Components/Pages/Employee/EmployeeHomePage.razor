@@ -215,6 +215,7 @@
     private string FilterTotalCost { get; set; } = "";
     private string FilterTask { get; set; } = "";
 
+    // Filtering logic for all work orders based on user input
     private IEnumerable<WorkOrder> FilteredWorkOrders => WorkOrders
         .Where(w =>
             (string.IsNullOrWhiteSpace(FilterCustomer) || w.CustomerName.Contains(FilterCustomer, StringComparison.OrdinalIgnoreCase)) &&
@@ -227,16 +228,22 @@
             (string.IsNullOrWhiteSpace(FilterTask) || w.Tasks.Any(t => t.Title.Contains(FilterTask, StringComparison.OrdinalIgnoreCase)))
         );
 
+    // Toggles visibility of the "Create Work Order" form
     private void ToggleCreateForm() => ShowCreateForm = !ShowCreateForm;
 
+    // Loads all work orders when the page initializes
     protected override async Task OnInitializedAsync()
     {
         WorkOrders = await WorkOrderService.GetAllWorkOrdersAsync();
     }
 
+    // Enables edit mode for a specific work order
     private void EditWorkOrder(WorkOrder workOrder) => EditingWorkOrder = workOrder;
+
+    // Cancels editing mode
     private void CancelEdit() => EditingWorkOrder = null;
 
+    // Saves updates made to an existing work order
     private async Task SaveWorkOrderAsync(WorkOrder workOrder)
     {
         await WorkOrderService.UpdateWorkOrderAsync(workOrder);
@@ -244,6 +251,7 @@
         ToastService.ShowToast($"Work order {workOrder.Id} updated successfully.", "success");
     }
 
+    // Deletes a work order and refreshes the list
     private async Task DeleteWorkOrderAsync(int id)
     {
         await WorkOrderService.DeleteWorkOrderAsync(id);
@@ -251,15 +259,18 @@
         WorkOrders = await WorkOrderService.GetAllWorkOrdersAsync();
     }
 
+    // Formats date values for display
     private string FormatDate(DateTimeOffset? date)
         => date?.ToLocalTime().ToString("yyyy-MM-dd HH:mm") ?? "-";
 
+    // Opens the tasks page for a specific work order in a new tab
     private void GoToTasks(int workOrderId)
     {
         var url = $"/employee/workorder/{workOrderId}/tasks";
         JS.InvokeVoidAsync("open", url, "_blank");
     }
 
+    // Creates a new work order and resets the form
     private async Task CreateWorkOrderAsync()
     {
         if (string.IsNullOrWhiteSpace(NewWorkOrder.CustomerName) ||
@@ -273,6 +284,7 @@
         ToastService.ShowToast("New work order created successfully.", "success");
         JS.InvokeVoidAsync("open", $"/employee/workorder/{created.Id}/tasks", "_blank");
 
+        // Reset form fields
         NewWorkOrder = new()
         {
             CustomerName = "",
@@ -287,6 +299,7 @@
         WorkOrders = await WorkOrderService.GetAllWorkOrdersAsync();
     }
 
+    // Converts total cost in cents to a formatted dollar amount
     private string FormatCost(int totalCostCents)
     {
         decimal dollars = totalCostCents / 100.0m;

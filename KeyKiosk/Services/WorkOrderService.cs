@@ -94,7 +94,7 @@ public class WorkOrderService
             await _dbContext.SaveChangesAsync();
         }
     }
-
+    // Get work orders by vehicle plate
     public async Task<List<WorkOrder>> GetWorkOrdersByVehiclePlateAsync(string plate)
     {
         return await _dbContext.WorkOrders
