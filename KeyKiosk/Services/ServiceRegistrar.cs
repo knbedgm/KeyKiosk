@@ -10,6 +10,7 @@ namespace KeyKiosk.Services
 			// Scoped services exist for the length of a connection and every connection recieves a different instance
 
 			builder.Services.AddSingleton<SerialTest>();
+			builder.Services.AddScoped<ToastService>();
 			builder.Services.AddScoped<ScopedTest>();
 			builder.Services.AddScoped<KioskUserSessionService>();
 			builder.Services.AddScoped<KioskNavAuthService>();
