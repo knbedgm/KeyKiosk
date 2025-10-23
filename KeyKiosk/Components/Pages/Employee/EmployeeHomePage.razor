@@ -201,7 +201,7 @@
     private List<WorkOrder> WorkOrders { get; set; } = new();
     private WorkOrder? EditingWorkOrder { get; set; }
 
-    [Inject] private ReportService ReportService { get; set; } = default!;
+    [Inject] private PDFService ReportService { get; set; } = default!;
     [Inject] private IJSRuntime JSRuntime { get; set; } = default!;
 
     private async Task GeneratePdfAsync(WorkOrder workOrder)
