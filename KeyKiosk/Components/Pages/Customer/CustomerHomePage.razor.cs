@@ -1,7 +1,7 @@
 ﻿using KeyKiosk.Data;
 using KeyKiosk.Services;
 using Microsoft.AspNetCore.Components;
-using Microsoft.EntityFrameworkCore;
+using System.Threading.Tasks;
 
 namespace KeyKiosk.Components.Pages.Customer;
 
@@ -20,18 +20,19 @@ public partial class CustomerHomePage
     /// </summary>
     List<WorkOrder> WorkOrderList { get; set; } = new List<WorkOrder>();
 
-    public CustomerHomePage(WorkOrderService databaseService)
-    {
-        DatabaseService = databaseService;
-    }
+    //// Event handler for button click
+    //private async Task GetListOfWorkOrdersAsync()
+    //{
+    //    WorkOrderList.Clear();
+    //    if (string.IsNullOrWhiteSpace(EnteredName)) return;
 
     /// <summary>
     /// Gets list of work orders based on entered name
     /// </summary>
-    public void GetListOfWorkOrders()
+    public async Task GetListOfWorkOrders()
     {
         WorkOrderList.Clear();
-        var workOrders = DatabaseService.GetWorkOrdersByCustomerName(EnteredName);
+        var workOrders = await DatabaseService.GetWorkOrdersByCustomerNameAsync(EnteredName);
         PopulateWorkOrdersList(workOrders);
     }
 

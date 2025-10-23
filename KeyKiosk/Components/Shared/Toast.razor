@@ -1,0 +1,52 @@
+﻿@inject KeyKiosk.Services.ToastService ToastService
+
+@if (IsVisible)
+{
+    <div class="toast @ToastType">@Message</div>
+}
+
+@code {
+    private bool IsVisible;
+    private string Message = "";
+    private string ToastType = "info";
+
+    protected override void OnInitialized()
+    {
+        // Subscribe to events safely
+        if (ToastService != null)
+        {
+            ToastService.OnShow += ShowToast;
+            ToastService.OnHide += HideToast;
+        }
+    }
+
+    private void ShowToast(string message, string type)
+    {
+        Message = message;
+        ToastType = type ?? "info";
+        IsVisible = true;
+
+        // Hide after 3 seconds automatically
+        _ = Task.Delay(3000).ContinueWith(_ =>
+        {
+            HideToast();
+        });
+
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void HideToast()
+    {
+        IsVisible = false;
+        InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        if (ToastService != null)
+        {
+            ToastService.OnShow -= ShowToast;
+            ToastService.OnHide -= HideToast;
+        }
+    }
+}

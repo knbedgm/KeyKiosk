@@ -1,160 +1,308 @@
 ﻿@page "/employee/home"
 @rendermode InteractiveServer
 @layout Layout.MainLayout
+@inject IJSRuntime JS
 
 @using KeyKiosk.Data
-@using Microsoft.EntityFrameworkCore
-@inject ApplicationDbContext Db
+@inject KeyKiosk.Services.WorkOrderService WorkOrderService
+@inject KeyKiosk.Services.ToastService ToastService
+<link href="app.css" rel="stylesheet" />
 
-<h3>Employee Home - Work Orders Management</h3>
+<h1 style="text-align:center">Employee HomePage</h1>
+<hr />
 
-<button class="btn btn-primary mb-3" @onclick="NewWorkOrder">New Work Order</button>
-
-@if (workOrders == null)
+@if (WorkOrders != null && WorkOrders.Count > 0)
 {
-    <p><em>Loading...</em></p>
-}
-else
-{
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Customer</th>
-                <th>Vehicle Plate</th>
-                <th>Status</th>
-                <th>Start</th>
-                <th>End</th>
-                <th>Total Cost</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var wo in workOrders)
-            {
+    <h2 style="text-align:center">Work Orders</h2>
+
+    <div class="workorders-table-container">
+        <table class="workorders-table">
+            <thead>
                 <tr>
-                    <td>@wo.Id</td>
-                    <td>@wo.CustomerName</td>
-                    <td>@wo.VehiclePlate</td>
-                    <td>@wo.Status</td>
-                    <td>@wo.StartDate?.ToString("yyyy-MM-dd")</td>
-                    <td>@wo.EndDate?.ToString("yyyy-MM-dd")</td>
-                    <td>@($"{wo.TotalCostCents / 100.0:C}")</td>
-                    <td>
-                        <button class="btn btn-sm btn-secondary me-2" @onclick="() => EditWorkOrder(wo.Id)">Edit</button>
-                        <button class="btn btn-sm btn-danger" @onclick="() => DeleteWorkOrder(wo.Id)">Delete</button>
-                    </td>
+                    <th>Id</th>
+                    <th>Customer</th>
+                    <th>Vehicle</th>
+                    <th>Details</th>
+                    <th>Status</th>
+                    <th>Start Date</th>
+                    <th>End Date</th>
+                    <th>Total Cost</th>
+                    <th>Tasks</th>
+                    <th>Actions</th>
                 </tr>
-            }
-        </tbody>
-    </table>
-}
 
-@if (editWorkOrder != null)
-{
-    <EditForm Model="editWorkOrder" OnValidSubmit="SaveWorkOrder">
-        <DataAnnotationsValidator />
-        <ValidationSummary />
+                <!-- Filter Row -->
+                <tr>
+                    <th></th>
+                    <th><input type="text" placeholder="Filter" @bind="FilterCustomer" /></th>
+                    <th><input type="text" placeholder="Filter" @bind="FilterVehicle" /></th>
+                    <th><input type="text" placeholder="Filter" @bind="FilterDetails" /></th>
+                    <th>
+                        <select @bind="FilterStatus">
+                            <option value="">All</option>
+                            @foreach (var status in Enum.GetValues(typeof(WorkOrderStatusType)))
+                            {
+                                <option value="@status">@status</option>
+                            }
+                        </select>
+                    </th>
+                    <th><input type="date" @bind="FilterStartDate" /></th>
+                    <th><input type="date" @bind="FilterEndDate" /></th>
+                    <th><input type="text" placeholder="Cost" @bind="FilterTotalCost" /></th>
+                    <th><input type="text" placeholder="Task Title" @bind="FilterTask" /></th>
+                    <th></th>
+                </tr>
+            </thead>
 
-        <div class="mb-2">
-            <label>Customer Name</label>
-            <InputText class="form-control" @bind-Value="editWorkOrder.CustomerName" />
-        </div>
-
-        <div class="mb-2">
-            <label>Vehicle Plate</label>
-            <InputText class="form-control" @bind-Value="editWorkOrder.VehiclePlate" />
-        </div>
-
-        <div class="mb-2">
-            <label>Status</label>
-            <InputSelect class="form-control" @bind-Value="editWorkOrder.Status">
-                @foreach (var s in Enum.GetValues<WorkOrderStatusType>())
+            <tbody>
+                @foreach (var workOrder in FilteredWorkOrders)
                 {
-                    <option value="@s">@s</option>
+                    <tr>
+                        <td>@workOrder.Id</td>
+                        <td>
+                            @if (EditingWorkOrder == workOrder)
+                            {
+                                <input type="text" @bind="workOrder.CustomerName" class="table-input" />
+                            }
+                            else
+                            {
+                                @workOrder.CustomerName
+                            }
+                        </td>
+                        <td>
+                            @if (EditingWorkOrder == workOrder)
+                            {
+                                <input type="text" @bind="workOrder.VehiclePlate" class="table-input" />
+                            }
+                            else
+                            {
+                                @workOrder.VehiclePlate
+                            }
+                        </td>
+                        <td>
+                            @if (EditingWorkOrder == workOrder)
+                            {
+                                <input type="text" @bind="workOrder.Details" class="table-input" />
+                            }
+                            else
+                            {
+                                @workOrder.Details
+                            }
+                        </td>
+                        <td>
+                            @if (EditingWorkOrder == workOrder)
+                            {
+                                <select @bind="workOrder.Status" class="table-select">
+                                    @foreach (var status in Enum.GetValues(typeof(WorkOrderStatusType)))
+                                    {
+                                        <option value="@status">@status</option>
+                                    }
+                                </select>
+                            }
+                            else
+                            {
+                                @workOrder.Status
+                            }
+                        </td>
+                        <td>
+                            @if (EditingWorkOrder == workOrder)
+                            {
+                                <input type="datetime-local" @bind="workOrder.StartDate" class="table-input" />
+                            }
+                            else
+                            {
+                                @FormatDate(workOrder.StartDate)
+                            }
+                        </td>
+                        <td>
+                            @if (EditingWorkOrder == workOrder)
+                            {
+                                <input type="datetime-local" @bind="workOrder.EndDate" class="table-input" />
+                            }
+                            else
+                            {
+                                @FormatDate(workOrder.EndDate)
+                            }
+                        </td>
+                        <td>@FormatCost(workOrder.TotalCostCents)</td>
+                        <td>
+                            <ul class="tasks-list">
+                                @foreach (var task in workOrder.Tasks)
+                                {
+                                    <li>@task.Title (@FormatCost(task.CostCents))</li>
+                                }
+                            </ul>
+                        </td>
+                        <td style="white-space: nowrap;">
+                            @if (EditingWorkOrder == workOrder)
+                            {
+                                <button class="save-btn small-btn" @onclick="() => SaveWorkOrderAsync(workOrder)">Save</button>
+                                <button class="cancel-btn small-btn" @onclick="CancelEdit">Cancel</button>
+                            }
+                            else
+                            {
+                                <button class="edit-btn small-btn" @onclick="() => EditWorkOrder(workOrder)">Edit</button>
+                                <button class="btn-primary small-btn" @onclick="() => GoToTasks(workOrder.Id)">Tasks</button>
+                                <button class="delete-btn small-btn" @onclick="() => DeleteWorkOrderAsync(workOrder.Id)">Del</button>
+                            }
+                        </td>
+                    </tr>
                 }
-            </InputSelect>
-        </div>
+            </tbody>
+        </table>
+    </div>
 
-        <div class="mb-2">
-            <label>Details</label>
-            <InputTextArea class="form-control" @bind-Value="editWorkOrder.Details" />
-        </div>
+    <div style="text-align:center; margin-bottom: 1rem;">
+        <button class="btn-primary" @onclick="ToggleCreateForm">
+            @(ShowCreateForm ? "Hide Create Work Order" : "Create New Work Order")
+        </button>
+    </div>
 
-        <div class="mb-2">
-            <label>Start Date</label>
-            <InputDate class="form-control" @bind-Value="editWorkOrder.StartDate" />
-        </div>
+    @if (ShowCreateForm)
+    {
+        <div class="new-workorder-form">
+            <label>Customer Name:</label>
+            <input type="text" @bind="NewWorkOrder.CustomerName" />
 
-        <div class="mb-2">
-            <label>End Date</label>
-            <InputDate class="form-control" @bind-Value="editWorkOrder.EndDate" />
-        </div>
+            <label>Vehicle Plate:</label>
+            <input type="text" @bind="NewWorkOrder.VehiclePlate" />
 
-        <button type="submit" class="btn btn-success">Save</button>
-        <button type="button" class="btn btn-secondary" @onclick="CancelEdit">Cancel</button>
-    </EditForm>
+            <label>Details:</label>
+            <input type="text" @bind="NewWorkOrder.Details" />
+
+            <label>Status:</label>
+            <select @bind="NewWorkOrder.Status">
+                @foreach (var status in Enum.GetValues(typeof(WorkOrderStatusType)))
+                {
+                    <option value="@status">@status</option>
+                }
+            </select>
+
+            <label>Start Date:</label>
+            <input type="datetime-local" @bind="NewWorkOrder.StartDate" />
+
+            <label>End Date:</label>
+            <input type="datetime-local" @bind="NewWorkOrder.EndDate" />
+
+            <button class="btn-primary" @onclick="CreateWorkOrderAsync">Add Work Order</button>
+        </div>
+    }
 }
 
 @code {
-    private List<WorkOrder>? workOrders;
-    private WorkOrder? editWorkOrder;
+    private List<WorkOrder> WorkOrders { get; set; } = new();
+    private WorkOrder? EditingWorkOrder { get; set; }
 
+    private WorkOrder NewWorkOrder { get; set; } = new()
+    {
+        CustomerName = "",
+        VehiclePlate = "",
+        Details = "",
+        Tasks = new List<WorkOrderTask>(),
+        StartDate = DateTime.Now,
+        EndDate = DateTime.Now.AddDays(1),
+        Status = WorkOrderStatusType.Created
+    };
+
+    private bool ShowCreateForm { get; set; } = false;
+
+    private string FilterCustomer { get; set; } = "";
+    private string FilterVehicle { get; set; } = "";
+    private string FilterDetails { get; set; } = "";
+    private string FilterStatus { get; set; } = "";
+    private DateTime? FilterStartDate { get; set; }
+    private DateTime? FilterEndDate { get; set; }
+    private string FilterTotalCost { get; set; } = "";
+    private string FilterTask { get; set; } = "";
+
+    // Filtering logic for all work orders based on user input
+    private IEnumerable<WorkOrder> FilteredWorkOrders => WorkOrders
+        .Where(w =>
+            (string.IsNullOrWhiteSpace(FilterCustomer) || w.CustomerName.Contains(FilterCustomer, StringComparison.OrdinalIgnoreCase)) &&
+            (string.IsNullOrWhiteSpace(FilterVehicle) || w.VehiclePlate.Contains(FilterVehicle, StringComparison.OrdinalIgnoreCase)) &&
+            (string.IsNullOrWhiteSpace(FilterDetails) || w.Details.Contains(FilterDetails, StringComparison.OrdinalIgnoreCase)) &&
+            (string.IsNullOrWhiteSpace(FilterStatus) || w.Status.ToString() == FilterStatus) &&
+            (!FilterStartDate.HasValue || (w.StartDate.HasValue && w.StartDate.Value.Date == FilterStartDate.Value.Date)) &&
+            (!FilterEndDate.HasValue || (w.EndDate.HasValue && w.EndDate.Value.Date == FilterEndDate.Value.Date)) &&
+            (string.IsNullOrWhiteSpace(FilterTotalCost) || w.TotalCostCents.ToString().Contains(FilterTotalCost)) &&
+            (string.IsNullOrWhiteSpace(FilterTask) || w.Tasks.Any(t => t.Title.Contains(FilterTask, StringComparison.OrdinalIgnoreCase)))
+        );
+
+    // Toggles visibility of the "Create Work Order" form
+    private void ToggleCreateForm() => ShowCreateForm = !ShowCreateForm;
+
+    // Loads all work orders when the page initializes
     protected override async Task OnInitializedAsync()
     {
-        workOrders = await Db.WorkOrders.Include(w => w.Tasks).ToListAsync();
+        WorkOrders = await WorkOrderService.GetAllWorkOrdersAsync();
     }
 
-    private void NewWorkOrder()
+    // Enables edit mode for a specific work order
+    private void EditWorkOrder(WorkOrder workOrder) => EditingWorkOrder = workOrder;
+
+    // Cancels editing mode
+    private void CancelEdit() => EditingWorkOrder = null;
+
+    // Saves updates made to an existing work order
+    private async Task SaveWorkOrderAsync(WorkOrder workOrder)
     {
-        editWorkOrder = new WorkOrder
+        await WorkOrderService.UpdateWorkOrderAsync(workOrder);
+        EditingWorkOrder = null;
+        ToastService.ShowToast($"Work order {workOrder.Id} updated successfully.", "success");
+    }
+
+    // Deletes a work order and refreshes the list
+    private async Task DeleteWorkOrderAsync(int id)
+    {
+        await WorkOrderService.DeleteWorkOrderAsync(id);
+        ToastService.ShowToast($"Work order {id} deleted.", "info");
+        WorkOrders = await WorkOrderService.GetAllWorkOrdersAsync();
+    }
+
+    // Formats date values for display
+    private string FormatDate(DateTimeOffset? date)
+        => date?.ToLocalTime().ToString("yyyy-MM-dd HH:mm") ?? "-";
+
+    // Opens the tasks page for a specific work order in a new tab
+    private void GoToTasks(int workOrderId)
+    {
+        var url = $"/employee/workorder/{workOrderId}/tasks";
+        JS.InvokeVoidAsync("open", url, "_blank");
+    }
+
+    // Creates a new work order and resets the form
+    private async Task CreateWorkOrderAsync()
+    {
+        if (string.IsNullOrWhiteSpace(NewWorkOrder.CustomerName) ||
+            string.IsNullOrWhiteSpace(NewWorkOrder.VehiclePlate))
+        {
+            ToastService.ShowToast("Please fill all required fields.", "warning");
+            return;
+        }
+
+        var created = await WorkOrderService.AddWorkOrderAsync(NewWorkOrder);
+        ToastService.ShowToast("New work order created successfully.", "success");
+        JS.InvokeVoidAsync("open", $"/employee/workorder/{created.Id}/tasks", "_blank");
+
+        // Reset form fields
+        NewWorkOrder = new()
         {
             CustomerName = "",
-            Details = "",
             VehiclePlate = "",
-            StartDate = DateTimeOffset.Now,
-            EndDate = DateTimeOffset.Now.AddDays(1),
-            Status = WorkOrderStatusType.Created,
-            Tasks = new List<WorkOrderTask>()
+            Details = "",
+            Tasks = new List<WorkOrderTask>(),
+            StartDate = DateTime.Now,
+            EndDate = DateTime.Now.AddDays(1),
+            Status = WorkOrderStatusType.Created
         };
+
+        WorkOrders = await WorkOrderService.GetAllWorkOrdersAsync();
     }
 
-    private async Task EditWorkOrder(int id)
+    // Converts total cost in cents to a formatted dollar amount
+    private string FormatCost(int totalCostCents)
     {
-        editWorkOrder = await Db.WorkOrders
-            .Include(w => w.Tasks)
-            .FirstOrDefaultAsync(w => w.Id == id);
-    }
-
-    private async Task SaveWorkOrder()
-    {
-        if (editWorkOrder!.Id == 0)
-        {
-            Db.WorkOrders.Add(editWorkOrder);
-        }
-        else
-        {
-            Db.WorkOrders.Update(editWorkOrder);
-        }
-
-        await Db.SaveChangesAsync();
-        workOrders = await Db.WorkOrders.Include(w => w.Tasks).ToListAsync();
-        editWorkOrder = null;
-    }
-
-    private async Task DeleteWorkOrder(int id)
-    {
-        var wo = await Db.WorkOrders.FindAsync(id);
-        if (wo != null)
-        {
-            Db.WorkOrders.Remove(wo);
-            await Db.SaveChangesAsync();
-            workOrders = await Db.WorkOrders.Include(w => w.Tasks).ToListAsync();
-        }
-    }
-
-    private void CancelEdit()
-    {
-        editWorkOrder = null;
+        decimal dollars = totalCostCents / 100.0m;
+        return dollars.ToString("C"); // Formats as currency (like: $85.00)
     }
 }
