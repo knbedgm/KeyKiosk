@@ -43,6 +43,8 @@ else
                     <td>
                         <button class="btn btn-sm btn-secondary me-2" @onclick="() => EditWorkOrder(wo.Id)">Edit</button>
                         <button class="btn btn-sm btn-danger" @onclick="() => DeleteWorkOrder(wo.Id)">Delete</button>
+                        <button class="btn btn-sm btn-danger" @onclick="() => GeneratePdfAsync(wo)">DownloadPDF</button>
+                        <button class="btn btn-sm btn-danger" @onclick="() => PreviewPdfAsync(wo)">PreviewPDF</button>
                     </td>
                 </tr>
             }
@@ -94,67 +96,4 @@ else
         <button type="submit" class="btn btn-success">Save</button>
         <button type="button" class="btn btn-secondary" @onclick="CancelEdit">Cancel</button>
     </EditForm>
-}
-
-@code {
-    private List<WorkOrder>? workOrders;
-    private WorkOrder? editWorkOrder;
-
-    protected override async Task OnInitializedAsync()
-    {
-        workOrders = await Db.WorkOrders.Include(w => w.Tasks).ToListAsync();
-    }
-
-    private void NewWorkOrder()
-    {
-        editWorkOrder = new WorkOrder
-        {
-            CustomerName = "",
-            Details = "",
-            VehiclePlate = "",
-            StartDate = DateTimeOffset.Now,
-            EndDate = DateTimeOffset.Now.AddDays(1),
-            Status = WorkOrderStatusType.Created,
-            Tasks = new List<WorkOrderTask>()
-        };
-    }
-
-    private async Task EditWorkOrder(int id)
-    {
-        editWorkOrder = await Db.WorkOrders
-            .Include(w => w.Tasks)
-            .FirstOrDefaultAsync(w => w.Id == id);
-    }
-
-    private async Task SaveWorkOrder()
-    {
-        if (editWorkOrder!.Id == 0)
-        {
-            Db.WorkOrders.Add(editWorkOrder);
-        }
-        else
-        {
-            Db.WorkOrders.Update(editWorkOrder);
-        }
-
-        await Db.SaveChangesAsync();
-        workOrders = await Db.WorkOrders.Include(w => w.Tasks).ToListAsync();
-        editWorkOrder = null;
-    }
-
-    private async Task DeleteWorkOrder(int id)
-    {
-        var wo = await Db.WorkOrders.FindAsync(id);
-        if (wo != null)
-        {
-            Db.WorkOrders.Remove(wo);
-            await Db.SaveChangesAsync();
-            workOrders = await Db.WorkOrders.Include(w => w.Tasks).ToListAsync();
-        }
-    }
-
-    private void CancelEdit()
-    {
-        editWorkOrder = null;
-    }
 }
