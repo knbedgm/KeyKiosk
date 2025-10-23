@@ -13,10 +13,10 @@ public partial class WorkOrderTasksPage : ComponentBase
     [Inject]
     private WorkOrderService WorkOrderService { get; set; }
     [Inject]
-	private WorkOrderTaskTemplateService TemplateService { get; set; }
+    private WorkOrderTaskTemplateService TemplateService { get; set; }
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
 
-	[Parameter] public int WorkOrderId { get; set; }
+    [Parameter] public int WorkOrderId { get; set; }
     private WorkOrder? WorkOrder;
 
     private List<WorkOrderTaskTemplate> TemplateList { get; set; } = new List<WorkOrderTaskTemplate>();
@@ -36,24 +36,24 @@ public partial class WorkOrderTasksPage : ComponentBase
     /// </summary>
     private UpdateWorkOrderTaskModel TaskToUpdate { get; set; } = new UpdateWorkOrderTaskModel();
     private WorkOrderTask? TaskToUpdateOriginal { get; set; }
-	private int? TaskToUpdateId { get; set; }
+    private int? TaskToUpdateId { get; set; }
 
-	/// <summary>
-	/// Loads existing tasks to display on page
-	/// </summary>
-	/// <returns></returns>
-	protected override Task OnInitializedAsync()
+    /// <summary>
+    /// Loads existing tasks to display on page
+    /// </summary>
+    /// <returns></returns>
+    protected override Task OnInitializedAsync()
     {
         TemplateList.AddRange(TemplateService.GetAllTaskTemplates());
         RefreshTasksList();
         return Task.CompletedTask;
     }
 
-	protected override async Task OnParametersSetAsync()
-	{
-		WorkOrder = await WorkOrderService.GetByIdAsync(WorkOrderId);
+    protected override async Task OnParametersSetAsync()
+    {
+        WorkOrder = await WorkOrderService.GetByIdAsync(WorkOrderId);
         RefreshTasksList();
-	}
+    }
 
     /// <summary>
     /// Refreshes displayed tasks after changes are made
@@ -106,22 +106,22 @@ public partial class WorkOrderTasksPage : ComponentBase
         var t = WorkOrder!.Tasks.First(t => t.Id == TaskToUpdateId);
         TaskToUpdateOriginal = t;
 
-		TaskToUpdate = new UpdateWorkOrderTaskModel
-		{
+        TaskToUpdate = new UpdateWorkOrderTaskModel
+        {
             Details = t.Details,
             StartDate = t.StartDate,
             EndDate = t.EndDate,
             Status = t.Status,
             CostCents = t.CostCents,
         };
-	}
+    }
 
     private void ClearTaskToUpdate()
     {
-		TaskToUpdateId = null;
-		TaskToUpdateOriginal = null;
-		TaskToUpdate = new UpdateWorkOrderTaskModel();
-	}
+        TaskToUpdateId = null;
+        TaskToUpdateOriginal = null;
+        TaskToUpdate = new UpdateWorkOrderTaskModel();
+    }
 
     /// <summary>
     /// Method to add new task
@@ -151,5 +151,5 @@ public partial class WorkOrderTasksPage : ComponentBase
         TaskService.UpdateWorkOrderTask(TaskToUpdateId!.Value, TaskToUpdate);
         RefreshTasksList();
         ClearTaskToUpdate();
-	}
+    }
 }

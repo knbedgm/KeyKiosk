@@ -1,0 +1,204 @@
+/* Forms */
+.new-workorder-form {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 10px;
+	margin: 20px auto;
+	max-width: 300px;
+	padding: 15px;
+	border: 1px solid #ccc;
+	border-radius: 8px;
+	background-color: #f9f9f9;
+}
+
+.new-workorder-form input,
+.new-workorder-form select {
+	width: 100%;
+	padding: 6px 8px;
+	border: 1px solid #ccc;
+	border-radius: 4px;
+}
+
+/* Headings */
+h1 {
+	text-align: center;
+	font-size: 2.5rem;
+	font-weight: 700;
+	margin-bottom: 1rem;
+}
+
+h2 {
+	text-align: center;
+	font-size: 2rem;
+	font-weight: 600;
+	margin: 1.5rem 0;
+	color: #222;
+	line-height: 1.3;
+}
+
+h4 {
+	text-align: center;
+}
+
+/* Table Container */
+.workorders-table-container {
+	overflow-x: auto;
+	margin: 20px auto;
+	display: flex;
+	justify-content: center;
+}
+
+/* Tables */
+.workorders-table {
+	width: auto;
+	min-width: 600px;
+	border-collapse: collapse;
+	font-family: Arial, sans-serif;
+}
+
+.workorders-table th,
+.workorders-table td {
+	border: 1px solid #ddd;
+	padding: 4px;
+	text-align: left;
+}
+
+/* Header */
+.workorders-table th {
+	background-color: #4caf50;
+	color: white;
+	font-weight: bold;
+	position: relative; /* for filter inputs */
+}
+
+/* Even rows */
+.workorders-table tr:nth-child(even) {
+	background-color: #f9f9f9;
+}
+
+/* Hover */
+.workorders-table tr:hover {
+	background-color: #e6f2ff;
+}
+
+.workorders-table thead input,
+.workorders-table thead select {
+	width: 100%;
+	padding: 4px 6px;
+	box-sizing: border-box;
+	border: 1px solid #ccc;
+	border-radius: 4px;
+	color: #000; /* black text */
+	background-color: #fff; /* white background */
+	font-size: 0.85rem;
+}
+/* Placeholder text visibility */
+.workorders-table thead input::placeholder {
+	color: #888;
+}
+
+/* Optional: focus styling for clarity */
+.workorders-table thead input:focus,
+.workorders-table thead select:focus {
+	outline: 2px solid #4caf50;
+}
+
+/* Table cells input/select styling */
+.table-input,
+.table-select {
+	width: 100%;
+	padding: 4px 6px;
+	box-sizing: border-box;
+	border: 1px solid #ccc;
+	border-radius: 4px;
+	color: #000; /* black text for visibility */
+	background-color: #fff; /* white background */
+}
+
+/* Optional: placeholder styling for inputs */
+.table-input::placeholder {
+	color: #888;
+}
+
+/* Tasks list inside table */
+.tasks-list {
+	max-height: 80px;
+	overflow-y: auto;
+	padding-left: 20px;
+	margin: 0;
+}
+
+/* Optional: make filter inputs smaller in headers */
+.workorders-table thead .table-input,
+.workorders-table thead .table-select {
+	font-size: 0.85rem;
+	padding: 2px 4px;
+}
+
+/* Search Section */
+.search-and-actions {
+	display: flex;
+	justify-content: space-between;
+	align-items: flex-start;
+	margin-bottom: 20px;
+	flex-wrap: wrap;
+}
+
+.search-section {
+	display: flex;
+	gap: 20px;
+	align-items: center;
+	flex-wrap: wrap;
+}
+
+.search-block {
+	display: flex;
+	gap: 5px;
+	align-items: center;
+}
+
+.search-block input {
+	width: 200px;
+	padding: 6px 8px;
+	border: 1px solid #ccc;
+	border-radius: 4px;
+}
+
+.search-block button {
+	background-color: #007bff; /* blue */
+	color: white;
+	border: none;
+	border-radius: 4px;
+	padding: 6px 12px;
+	cursor: pointer;
+	transition: background-color 0.2s ease, transform 0.1s ease;
+}
+.search-divider {
+	width: 1px;
+	background-color: #ccc;
+	margin: 0 10px;
+}
+
+/* Show All Button */
+.show-all-button button {
+	padding: 6px 12px;
+	border-radius: 4px;
+}
+
+.search-block button:hover {
+	background-color: #0056b3; /* darker blue on hover */
+	transform: scale(1.05); /* slightly bigger on hover */
+}
+
+/* Smaller action buttons */
+td .edit-btn,
+td .btn-primary,
+td .delete-btn {
+	padding: 2px 6px; /* smaller padding */
+	font-size: 0.8rem; /* smaller text */
+	min-width: 60px; /* optional, keep a consistent width */
+	display: inline-block;
+	margin-right: 4px; /* spacing between buttons */
+}

@@ -22,15 +22,15 @@ namespace KeyKiosk.Data
 			new WorkOrderLogEventEntityTypeConfiguration().Configure(modelBuilder.Entity<WorkOrderLogEvent>());
 		}
 
-		protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
-		{
-			configurationBuilder
-				.Properties<DateTimeOffset>()
-				.HaveConversion<DateTimeOffsetConverter>();
-			configurationBuilder.Properties<Enum>().HaveConversion<string>();
-		}
+        protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
+        {
+            configurationBuilder
+                .Properties<DateTimeOffset>()
+                .HaveConversion<DateTimeOffsetConverter>();
+            configurationBuilder.Properties<Enum>().HaveConversion<string>();
+        }
 
-	}
+    }
 
 
     //public class ApplicationDbContexttFactory : IDesignTimeDbContextFactory<ApplicationDbContext>
@@ -48,10 +48,10 @@ namespace KeyKiosk.Data
 
 public class DateTimeOffsetConverter : ValueConverter<DateTimeOffset, DateTimeOffset>
 {
-	public DateTimeOffsetConverter()
-		: base(
-			d => d.ToUniversalTime(),
-			d => d.ToUniversalTime())
-	{
-	}
+    public DateTimeOffsetConverter()
+        : base(
+            d => d.ToUniversalTime(),
+            d => d.ToUniversalTime())
+    {
+    }
 }

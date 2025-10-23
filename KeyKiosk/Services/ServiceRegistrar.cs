@@ -10,6 +10,7 @@ namespace KeyKiosk.Services
 			// Scoped services exist for the length of a connection and every connection recieves a different instance
 
 			builder.Services.AddSingleton<SerialTest>();
+			builder.Services.AddScoped<ToastService>();
 			builder.Services.AddScoped<ScopedTest>();
 			builder.Services.AddScoped<KioskUserSessionService>();
 			builder.Services.AddScoped<KioskNavAuthService>();
@@ -17,6 +18,9 @@ namespace KeyKiosk.Services
 			builder.Services.AddScoped<WorkOrderTaskService>();
 			builder.Services.AddScoped<WorkOrderTaskTemplateService>();
             builder.Services.AddScoped<ReportService>();
+
+            builder.Services.AddScoped<WorkOrderLogService>();
+
 
             // Drawer Serial Interface Service
             //string port = builder.Configuration.GetRequiredSection("DrawerSerialPort").Value ?? throw new InvalidOperationException("Configuration string 'DrawerSerialPort' not found.");
