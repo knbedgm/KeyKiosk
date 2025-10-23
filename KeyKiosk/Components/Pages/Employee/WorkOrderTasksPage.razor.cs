@@ -88,6 +88,7 @@ public partial class WorkOrderTasksPage : ComponentBase
     {
         int selectedTemplateId = Int32.Parse(e.Value?.ToString());
         WorkOrderTaskTemplate tempTemplate = TemplateService.GetWorkOrderTaskTemplateById(selectedTemplateId);
+        TaskToUpdate.TaskTitle = tempTemplate.TaskTitle;
         TaskToUpdate.Details = tempTemplate.TaskDetails;
         TaskToUpdate.CostCents = tempTemplate.TaskCostCents;
     }

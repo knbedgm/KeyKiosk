@@ -99,6 +99,7 @@ public class WorkOrderTaskService
 
 	public class UpdateWorkOrderTaskModel
 	{
+		public string TaskTitle { get; set; } = "";
 		public string Details { get; set; } = "";
 		public DateTimeOffset? StartDate { get; set; }
 		public DateTimeOffset? EndDate { get; set; }
