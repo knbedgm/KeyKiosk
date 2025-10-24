@@ -150,7 +150,7 @@
                                 <button class="edit-btn small-btn" @onclick="() => EditWorkOrder(workOrder)">Edit</button>
                                 <button class="btn-primary small-btn" @onclick="() => GoToTasks(workOrder.Id)">Tasks</button>
                                 <button class="delete-btn small-btn" @onclick="() => DeleteWorkOrderAsync(workOrder.Id)">Del</button>
-                                <button class="delete-btn small-btn" @onclick="() => GeneratePdfAsync(workOrder)">Download</button>
+                                <button class="delete-btn small-btn" @onclick="() => DownloadPdfAsync(workOrder)">Download</button>
                                 <button class="delete-btn small-btn" @onclick="() => PreviewPdfAsync(workOrder)">Preview</button>
                             }
                         </td>
@@ -201,12 +201,12 @@
     private List<WorkOrder> WorkOrders { get; set; } = new();
     private WorkOrder? EditingWorkOrder { get; set; }
 
-    [Inject] private PDFService ReportService { get; set; } = default!;
+    [Inject] private PDFService PDFService { get; set; } = default!;
     [Inject] private IJSRuntime JSRuntime { get; set; } = default!;
 
-    private async Task GeneratePdfAsync(WorkOrder workOrder)
+    private async Task DownloadPdfAsync(WorkOrder workOrder)
     {
-        var pdfBytes = ReportService.GenerateReport(workOrder);
+        var pdfBytes = PDFService.GenerateWorkOrderWithTasksPDF(workOrder);
 
         // Download the PDF in the browser
         var base64 = Convert.ToBase64String(pdfBytes);
@@ -227,7 +227,7 @@
 
     private async Task PreviewPdfAsync(WorkOrder workOrder)
     {
-        var pdfBytes = ReportService.GenerateReport(workOrder);
+        var pdfBytes = PDFService.GenerateWorkOrderWithTasksPDF(workOrder);
 
         // Convert PDF bytes to base64 string
         var base64 = Convert.ToBase64String(pdfBytes);
