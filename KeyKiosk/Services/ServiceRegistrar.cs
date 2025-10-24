@@ -10,6 +10,8 @@ namespace KeyKiosk.Services
 			// Scoped services exist for the length of a connection and every connection recieves a different instance
 
 			builder.Services.AddSingleton<SerialTest>();
+			builder.Services.AddSingleton<HSimService>();
+			builder.Services.AddSingleton<IRFIDReader>(sp => sp.GetRequiredService<HSimService>());
 			builder.Services.AddScoped<ToastService>();
 			builder.Services.AddScoped<ScopedTest>();
 			builder.Services.AddScoped<KioskUserSessionService>();
@@ -25,7 +27,8 @@ namespace KeyKiosk.Services
             // Drawer Serial Interface Service
             //string port = builder.Configuration.GetRequiredSection("DrawerSerialPort").Value ?? throw new InvalidOperationException("Configuration string 'DrawerSerialPort' not found.");
             //builder.Services.AddSingleton<IPhysicalDrawerController>(new DenkoviDrawerController(port));
-            builder.Services.AddSingleton<IPhysicalDrawerController, TestConsoleDrawerController>();
+            //builder.Services.AddSingleton<IPhysicalDrawerController, TestConsoleDrawerController>();
+			builder.Services.AddSingleton<IPhysicalDrawerController>(sp => sp.GetRequiredService<HSimService>());
 
 			// Drawer High-level control service
 			var drawerConfigs = builder.Configuration.GetDrawerConfigs();
