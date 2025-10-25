@@ -1,0 +1,32 @@
+﻿@page "/rfidtest"
+@layout Layout.BlankLayout;
+
+<h1>Readers:</h1>
+@foreach (var reader in PCSCReaderService.GetReaderNames())
+{
+	<pre>@reader</pre>
+}
+<br />
+<h1>Cards:</h1>
+@foreach (var card in uids.AsEnumerable().Reverse())
+{
+	<pre>@card</pre>
+}
+
+@code {
+	[Inject]
+	IRFIDReader rfid { get; set; }
+
+	List<string> uids = new List<string>();
+
+	protected override void OnInitialized()
+	{
+		rfid.OnCardScannedEvent += this.OnRead;
+	}
+
+	private void OnRead(object? source, OnCardScannedEventArgs e)
+	{
+		uids.Add(e.CardId);
+		this.InvokeAsync(() => this.StateHasChanged());
+	}
+}

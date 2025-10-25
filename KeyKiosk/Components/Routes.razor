@@ -11,7 +11,7 @@
 </Router>
 
 @code {
-    void authHandler(NavigationContext ctx)
+    void authHandler(Microsoft.AspNetCore.Components.Routing.NavigationContext ctx)
     {
         var newpath = navAuth.UserCanAccessPath(ctx.Path);
         if (!(newpath is null))

@@ -2,6 +2,16 @@
 @inject KioskUserSessionService session
 @inject NavigationManager nav
 
+@* Required *@
+<MudThemeProvider />
+<MudPopoverProvider />
+
+@* Needed for dialogs *@
+<MudDialogProvider />
+
+@* Needed for snackbars *@
+<MudSnackbarProvider />
+
 <CascadingValue Value="this">
     <div class="page">
 
