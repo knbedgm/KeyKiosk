@@ -1,9 +1,10 @@
-﻿using KeyKiosk.Data;
+﻿using System.IO;
+using System.Threading.Tasks;
+using KeyKiosk.Data;
 using KeyKiosk.Migrations;
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
-using System.IO;
 
 namespace KeyKiosk.Services;
 
@@ -56,7 +57,7 @@ public class PDFService
                         {
                             table.Cell().Element(CellStyle).Text(task.Title);
                             table.Cell().Element(CellStyle).Text(task.Details);
-                            table.Cell().Element(CellStyle).Text(ConvertStatus(task.Status));
+                            table.Cell().Element(CellStyle).Text(ConvertTaskStatus(task.Status));
 
                             IContainer CellStyle(IContainer container)
                             {
@@ -86,7 +87,7 @@ public class PDFService
         return document.GeneratePdf();
     }
 
-    public string ConvertStatus(WorkOrderTaskStatusType enumStatus)
+    public string ConvertTaskStatus(WorkOrderTaskStatusType enumStatus)
     {
         if (enumStatus == WorkOrderTaskStatusType.Created)
         {
@@ -106,8 +107,146 @@ public class PDFService
         }
     }
 
-    public byte[] GenerateEfficiencyReport(List<WorkOrder> workOrderList, 
-                                            List<WorkOrderTaskTemplate> templateList, 
+    public byte[] GenerateWorkOrdersReport(List<WorkOrder> workOrderList, 
+                                            DateTimeOffset startDate,
+                                            DateTimeOffset endDate)
+    {
+        if (workOrderList == null || workOrderList.Count() == 0)
+        {
+            var document = Document.Create(container =>
+            {
+                container.Page(page =>
+                {
+                    page.Margin(50);
+
+                    page.Header().Text(text =>
+                    {
+                        text.AlignCenter();
+                        text.Span("There were no work orders between").FontSize(30).Bold();
+                        text.EmptyLine();
+                        text.EmptyLine();
+                        text.Span($"{startDate.Date:MMMM dd, yyyy}").FontSize(30).Bold();
+                        text.EmptyLine();
+                        text.Span("and").FontSize(30).Bold();
+                        text.EmptyLine();
+                        text.Span($"{endDate.Date:MMMM dd, yyyy}").FontSize(30).Bold();
+                    });
+                });
+            });
+            return document.GeneratePdf();
+        }
+        else
+        {
+            var document = Document.Create(container =>
+            {
+                container.Page(page =>
+                {
+                    page.Margin(50);
+
+                    page.Header().Text(text =>
+                    {
+                        text.AlignCenter();
+                        text.Span("Work Orders Report").FontSize(30).Bold();
+                        text.EmptyLine();
+                        text.EmptyLine();
+                        text.Span($"{startDate.Date:MMMM dd, yyyy} - {endDate.Date:MMMM dd, yyyy}").FontSize(20).Bold();
+                    });
+
+                    page.Content().PaddingVertical(1, Unit.Centimetre).Column(col =>
+                    {
+                        col.Item().Text($"Number of work orders: {workOrderList.Count}");
+
+                        col.Item().PaddingTop(40).Table(table =>
+                        {
+                            table.ColumnsDefinition(columns =>
+                            {
+                                columns.RelativeColumn(1);
+                                columns.RelativeColumn(2);
+                                columns.RelativeColumn(2);
+                                columns.RelativeColumn(1);
+                            });
+
+                            table.Header(header =>
+                            {
+                                header.Cell().Element(CellStyle).Text("ID");
+                                header.Cell().Element(CellStyle).Text("Vehicle Plate");
+                                header.Cell().Element(CellStyle).Text("Start Date");
+                                header.Cell().Element(CellStyle).Text("Status");
+
+                                static IContainer CellStyle(IContainer container)
+                                {
+                                    return container
+                                        .Background(Colors.Blue.Darken2)
+                                        .DefaultTextStyle(x => x.FontColor(Colors.White).Bold())
+                                        .PaddingVertical(8)
+                                        .PaddingHorizontal(16);
+                                }
+                            });
+
+                            int tableCellColourIndex = 0;
+                            foreach (WorkOrder item in workOrderList)
+                            {
+                                table.Cell().Element(CellStyle).Text(item.Id.ToString());
+                                table.Cell().Element(CellStyle).Text(item.VehiclePlate);
+                                table.Cell().Element(CellStyle).Text($"{item.StartDate:MMMM dd, yyyy}");
+                                table.Cell().Element(CellStyle).Text(ConvertWorkOrderStatus(item.Status));
+
+                                IContainer CellStyle(IContainer container)
+                                {
+                                    var backgroundColor = tableCellColourIndex % 2 == 0
+                                        ? Colors.Blue.Lighten5
+                                        : Colors.Blue.Lighten4;
+
+                                    return container
+                                        .Background(backgroundColor)
+                                        .PaddingVertical(8)
+                                        .PaddingHorizontal(16);
+                                }
+
+                                tableCellColourIndex++;
+                            }
+                        });
+                    });
+
+                    page.Footer().AlignCenter().Text(x =>
+                    {
+                        x.Span("Page ");
+                        x.CurrentPageNumber();
+                    });
+                });
+            });
+
+            return document.GeneratePdf();
+        }
+    }
+
+    public string ConvertWorkOrderStatus(WorkOrderStatusType enumStatus)
+    {
+        if (enumStatus == WorkOrderStatusType.Created)
+        {
+            return "Todo";
+        }
+        else if (enumStatus == WorkOrderStatusType.WorkStarted)
+        {
+            return "Started";
+        }
+        else if (enumStatus == WorkOrderStatusType.WorkFinished)
+        {
+            return "Finished";
+        }
+        else if (enumStatus == WorkOrderStatusType.Closed)
+        {
+            return "Closed";
+        }
+        else
+        {
+            return "Error";
+        }
+    }
+
+
+    public byte[] GenerateEfficiencyReport(List<WorkOrder> workOrderList,
+                                            List<WorkOrderTaskTemplate> templateList,
                                             DateTimeOffset startDate,
                                             DateTimeOffset endDate)
     {
@@ -184,14 +323,14 @@ public class PDFService
                         text.Span("Efficiency Report").FontSize(30).Bold();
                         text.EmptyLine();
                         text.EmptyLine();
-                        text.Span($"{startDate.Date:MMMM dd, yyyy} to {endDate.Date:MMMM dd, yyyy}").FontSize(20).Bold();
+                        text.Span($"{startDate.Date:MMMM dd, yyyy} - {endDate.Date:MMMM dd, yyyy}").FontSize(20).Bold();
                     });
 
                     page.Content().PaddingVertical(1, Unit.Centimetre).Column(col =>
                     {
                         col.Item().PaddingBottom(10).Text($"The total expected time for tasks is {totalTheoreticalDays}");
                         col.Item().PaddingBottom(10).Text($"The total actual time for tasks is {totalActualDays}");
-                        col.Item().Text($"The efficiency is %{Math.Round(((float)totalTheoreticalDays / (float)totalActualDays) * 100, 2)}");
+                        col.Item().Text($"The efficiency is {Math.Round(((float)totalTheoreticalDays / (float)totalActualDays) * 100, 2)}%");
 
                         foreach (EfficiencyReportData item in efficiencyList)
                         {
@@ -200,7 +339,8 @@ public class PDFService
                             {
                                 col.Item().PaddingBottom(15).Text($"Tasks for: {item.VehiclePlate}                        Date: {item.WorkOrderDate:MMMM dd, yyyy}").Bold();
                             }
-                            else { 
+                            else
+                            {
                                 col.Item().PaddingBottom(15).Text($"Tasks for: {item.VehiclePlate}").Bold();
                             }
 
