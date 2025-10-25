@@ -187,11 +187,7 @@ else if (WorkOrders.Count > 0)
                                         @onclick="() => GoToDetails(workOrder.Id)">
                                     Details
                                 </button>
-                                <button class="small-btn" title="Download PDF"
-                                        @onclick="() => GeneratePdfAsync(workOrder)">
-                                    Download
-                                </button>
-                                <button class="small-btn" title="Preview PDF"
+                                <button class="btn-primary small-btn" title="Preview PDF"
                                         @onclick="() => PreviewPdfAsync(workOrder)">
                                     Preview
                                 </button>

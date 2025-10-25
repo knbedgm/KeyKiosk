@@ -3,27 +3,25 @@
 @inject NavigationManager Nav
 
 <div class="layout-shell">
-    <!-- Horizontal top navbar -->
-    <header class="top-nav">
-        <nav class="nav-container">
-            <div class="nav-left">
-                <NavLink href="employee/home" class="nav-link" Match="NavLinkMatch.All">Home</NavLink>
-            </div>
+    @if (!IsLoginPage)
+    {
+        <!-- Horizontal top navbar (hidden on /employee/login) -->
+        <header class="top-nav">
+            <nav class="nav-container">
+                <div class="nav-left">
+                    <NavLink href="employee/home" class="nav-link" Match="NavLinkMatch.All">Home</NavLink>
+                </div>
 
-            <div class="nav-center">
-                <img src="/images/KEYOSK_icon.png" alt="KeyOSk Logo" class="nav-logo" />
-            </div>
+                <div class="nav-center">
+                    <img src="/images/KEYOSK_icon.png" alt="KeyOSk Logo" class="nav-logo" />
+                </div>
 
-            <div class="nav-right">
-                <button class="btn-primary" @onclick="OpenCreateFromNav">New Work Order</button>
-            </div>
-        </nav>
-    </header>
-
-    @* <!-- (optional) tiny utility row -->
-    <div class="top-row px-4 util-bar">
-        <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
-    </div> *@
+                <div class="nav-right">
+                    <button class="btn-primary" @onclick="OpenCreateFromNav">New Work Order</button>
+                </div>
+            </nav>
+        </header>
+    }
 
     <!-- Constrained content area -->
     <main class="page-body">
@@ -37,8 +35,10 @@
 </div>
 
 @code {
+    private bool IsLoginPage => Nav.Uri.Contains("/employee/login", StringComparison.OrdinalIgnoreCase);
+
     private void OpenCreateFromNav()
     {
-        Nav.NavigateTo("/employee/home?new=true");
+        Nav.NavigateTo("/employee/home?new=1");
     }
 }
