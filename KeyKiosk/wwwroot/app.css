@@ -151,3 +151,91 @@ h1:focus {
 .darker-border-checkbox.form-check-input {
     border-color: #929292;
 }
+
+/* Layout shell */
+.layout-shell {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+/* Horizontal top navbar */
+.top-nav {
+    width: 100%;
+    background-color: #1e293b;
+    color: #fff;
+    border-bottom: 3px solid #3b82f6;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+.nav-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    /* set your horizontal margins via max-width container */
+    max-width: 1200px; /* <-- controls page width */
+    margin: 0 auto; /* center */
+    padding: 0.75rem 1.25rem; /* breathing room */
+}
+
+.nav-left, .nav-right {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    min-width: 140px; /* keeps logo visually centered */
+}
+
+.nav-center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex: 1;
+}
+
+.nav-link {
+    color: #e2e8f0;
+    font-weight: 600;
+    text-decoration: none;
+    padding: 0.4rem 0.8rem;
+    border-radius: 8px;
+    transition: background-color .2s;
+}
+
+    .nav-link.active, .nav-link:hover {
+        background: #3b82f6;
+        color: #fff;
+    }
+
+/* Logo */
+.nav-logo {
+    height: 100px;
+    width: auto;
+    display: block;
+}
+
+/* Optional slim utility bar under the navbar */
+.util-bar {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: .5rem 1.25rem;
+}
+
+/* Page content wrapper (controls horizontal margins site-wide) */
+.page-body {
+    flex: 1;
+    width: 100%;
+    /* match navbar/container width */
+    max-width: 2000px;
+    margin: 0 auto; /* center */
+    padding: 1.5rem 1.25rem;
+    background-color: #f8fafc;
+}
+
+h1 {
+    text-align: center;
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+}

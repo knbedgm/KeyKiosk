@@ -1,26 +1,46 @@
 ﻿@page "/employee/home"
 @rendermode InteractiveServer
 @layout Layout.MainLayout
-@inject IJSRuntime JS
 
 @using KeyKiosk.Data
+@using Microsoft.AspNetCore.Components
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.JSInterop
 @inject KeyKiosk.Services.WorkOrderService WorkOrderService
 @inject KeyKiosk.Services.ToastService ToastService
+@inject IJSRuntime JSRuntime
+@inject NavigationManager Nav
+@inject ReportService ReportService
+
 <link href="app.css" rel="stylesheet" />
 
-@using System.Xml.Linq;
-@using KeyKiosk.Services;
-@using Microsoft.AspNetCore.Components;
-@using Microsoft.EntityFrameworkCore;
-@using Microsoft.JSInterop;
-
-<h1 style="text-align:center">Employee HomePage</h1>
+<h1 style="text-align:center">Employee Home</h1>
 <hr />
 
-@if (WorkOrders != null && WorkOrders.Count > 0)
-{
-    <h2 style="text-align:center">Work Orders</h2>
+<!-- Search by vehicle plate (submitting opens details page) -->
+<div class="card-like" style="padding:1rem;border:1px solid #e5e7eb;border-radius:12px;max-width:840px;margin:0 auto 1rem;">
+    <EditForm Model="@SearchModel" OnValidSubmit="OnSearchSubmit">
+        <div style="display:flex;gap:.5rem;align-items:center;justify-content:center;flex-wrap:wrap">
+            <InputText class="table-input" style="min-width:280px"
+                       placeholder="Search by plate (e.g., ABCD-123)"
+                       @bind-Value="SearchModel.Plate" />
+            <button class="btn-primary" type="submit">Open Details</button>
+        </div>
+        @if (!string.IsNullOrWhiteSpace(SearchError))
+        {
+            <div style="margin-top:.5rem;color:#b91c1c;font-size:.9rem;text-align:center">@SearchError</div>
+        }
+    </EditForm>
+</div>
 
+<h2 style="text-align:center">Work Orders</h2>
+
+@if (WorkOrders is null)
+{
+    <p class="text-center">Loading…</p>
+}
+else if (WorkOrders.Count > 0)
+{
     <div class="workorders-table-container">
         <table class="workorders-table">
             <thead>
@@ -32,19 +52,19 @@
                     <th>Status</th>
                     <th>Start Date</th>
                     <th>End Date</th>
-                    <th>Total Cost</th>
-                    <th>Tasks</th>
+                    <th>Tasks (#)</th>
+                    <th>Subtotal Cost</th>
                     <th>Actions</th>
                 </tr>
 
-                <!-- Filter Row -->
+                <!-- Filter Row (trimmed to match columns) -->
                 <tr>
                     <th></th>
-                    <th><input type="text" placeholder="Filter" @bind="FilterCustomer" /></th>
-                    <th><input type="text" placeholder="Filter" @bind="FilterVehicle" /></th>
-                    <th><input type="text" placeholder="Filter" @bind="FilterDetails" /></th>
+                    <th><input class="table-input" type="text" placeholder="Filter" @bind="FilterCustomer" @bind:event="oninput" /></th>
+                    <th><input class="table-input" type="text" placeholder="Filter" @bind="FilterVehicle" @bind:event="oninput" /></th>
+                    <th><input class="table-input" type="text" placeholder="Filter" @bind="FilterDetails" @bind:event="oninput" /></th>
                     <th>
-                        <select @bind="FilterStatus">
+                        <select class="table-select" @bind="FilterStatus">
                             <option value="">All</option>
                             @foreach (var status in Enum.GetValues(typeof(WorkOrderStatusType)))
                             {
@@ -52,10 +72,10 @@
                             }
                         </select>
                     </th>
-                    <th><input type="date" @bind="FilterStartDate" /></th>
-                    <th><input type="date" @bind="FilterEndDate" /></th>
-                    <th><input type="text" placeholder="Cost" @bind="FilterTotalCost" /></th>
-                    <th><input type="text" placeholder="Task Title" @bind="FilterTask" /></th>
+                    <th><input class="table-input" type="date" @bind="FilterStartDate" /></th>
+                    <th><input class="table-input" type="date" @bind="FilterEndDate" /></th>
+                    <th></th>
+                    <th><input class="table-input" type="text" placeholder="Cost" @bind="FilterTotalCost" @bind:event="oninput" /></th>
                     <th></th>
                 </tr>
             </thead>
@@ -65,6 +85,8 @@
                 {
                     <tr>
                         <td>@workOrder.Id</td>
+
+                        <!-- Customer -->
                         <td>
                             @if (EditingWorkOrder == workOrder)
                             {
@@ -72,9 +94,12 @@
                             }
                             else
                             {
+
                                 @workOrder.CustomerName
                             }
                         </td>
+
+                        <!-- Vehicle -->
                         <td>
                             @if (EditingWorkOrder == workOrder)
                             {
@@ -82,9 +107,12 @@
                             }
                             else
                             {
+
                                 @workOrder.VehiclePlate
                             }
                         </td>
+
+                        <!-- Details -->
                         <td>
                             @if (EditingWorkOrder == workOrder)
                             {
@@ -92,9 +120,12 @@
                             }
                             else
                             {
+
                                 @workOrder.Details
                             }
                         </td>
+
+                        <!-- Status -->
                         <td>
                             @if (EditingWorkOrder == workOrder)
                             {
@@ -107,9 +138,12 @@
                             }
                             else
                             {
+
                                 @workOrder.Status
                             }
                         </td>
+
+                        <!-- Dates -->
                         <td>
                             @if (EditingWorkOrder == workOrder)
                             {
@@ -117,6 +151,7 @@
                             }
                             else
                             {
+
                                 @FormatDate(workOrder.StartDate)
                             }
                         </td>
@@ -127,19 +162,19 @@
                             }
                             else
                             {
+
                                 @FormatDate(workOrder.EndDate)
                             }
                         </td>
+
+                        <!-- Tasks: show only the count -->
+                        <td>@(workOrder.Tasks?.Count ?? 0)</td>
+
+                        <!-- Total -->
                         <td>@FormatCost(workOrder.TotalCostCents)</td>
-                        <td>
-                            <ul class="tasks-list">
-                                @foreach (var task in workOrder.Tasks)
-                                {
-                                    <li>@task.Title (@FormatCost(task.CostCents))</li>
-                                }
-                            </ul>
-                        </td>
-                        <td style="white-space: nowrap;">
+
+                        <!-- Actions -->
+                        <td style="white-space:nowrap;">
                             @if (EditingWorkOrder == workOrder)
                             {
                                 <button class="save-btn small-btn" @onclick="() => SaveWorkOrderAsync(workOrder)">Save</button>
@@ -148,10 +183,18 @@
                             else
                             {
                                 <button class="edit-btn small-btn" @onclick="() => EditWorkOrder(workOrder)">Edit</button>
-                                <button class="btn-primary small-btn" @onclick="() => GoToTasks(workOrder.Id)">Tasks</button>
-                                <button class="delete-btn small-btn" @onclick="() => DeleteWorkOrderAsync(workOrder.Id)">Del</button>
-                                <button class="delete-btn small-btn" @onclick="() => GeneratePdfAsync(workOrder)">Download</button>
-                                <button class="delete-btn small-btn" @onclick="() => PreviewPdfAsync(workOrder)">Preview</button>
+                                <button class="btn-primary small-btn" title="Open details"
+                                        @onclick="() => GoToDetails(workOrder.Id)">
+                                    Details
+                                </button>
+                                <button class="small-btn" title="Download PDF"
+                                        @onclick="() => GeneratePdfAsync(workOrder)">
+                                    Download
+                                </button>
+                                <button class="small-btn" title="Preview PDF"
+                                        @onclick="() => PreviewPdfAsync(workOrder)">
+                                    Preview
+                                </button>
                             }
                         </td>
                     </tr>
@@ -159,95 +202,107 @@
             </tbody>
         </table>
     </div>
-
-    <div style="text-align:center; margin-bottom: 1rem;">
-        <button class="btn-primary" @onclick="ToggleCreateForm">
-            @(ShowCreateForm ? "Hide Create Work Order" : "Create New Work Order")
-        </button>
+}
+else
+{
+    <!-- Empty state -->
+    <div class="card-like" style="padding:1rem;border:1px solid #e5e7eb;border-radius:12px;max-width:760px;margin:0 auto 1rem;">
+        <p style="margin:0;text-align:center;color:#6b7280">
+            No work orders yet. Create your first work order below.
+        </p>
     </div>
-
-    @if (ShowCreateForm)
-    {
-        <div class="new-workorder-form">
-            <label>Customer Name:</label>
-            <input type="text" @bind="NewWorkOrder.CustomerName" />
-
-            <label>Vehicle Plate:</label>
-            <input type="text" @bind="NewWorkOrder.VehiclePlate" />
-
-            <label>Details:</label>
-            <input type="text" @bind="NewWorkOrder.Details" />
-
-            <label>Status:</label>
-            <select @bind="NewWorkOrder.Status">
-                @foreach (var status in Enum.GetValues(typeof(WorkOrderStatusType)))
-                {
-                    <option value="@status">@status</option>
-                }
-            </select>
-
-            <label>Start Date:</label>
-            <input type="datetime-local" @bind="NewWorkOrder.StartDate" />
-
-            <label>End Date:</label>
-            <input type="datetime-local" @bind="NewWorkOrder.EndDate" />
-
-            <button class="btn-primary" @onclick="CreateWorkOrderAsync">Add Work Order</button>
-        </div>
-    }
 }
 
+<!-- Create button opens modal (popup) -->
+<div style="text-align:center; margin-bottom: 1rem;">
+    <button class="btn-primary" @onclick="OpenCreateModal">Create New Work Order</button>
+</div>
+
+<!-- Create Work Order Modal -->
+@if (ShowCreateModal)
+{
+    <div class="modal-backdrop" @onclick="CloseCreateModal">
+        <div class="modal-card" @onclick:stopPropagation>
+            <div class="modal-header">
+                <h3 style="margin:0;">New Work Order</h3>
+                <button class="modal-close" title="Close" @onclick="CloseCreateModal">×</button>
+            </div>
+
+            <EditForm Model="@NewWorkOrder" OnValidSubmit="@CreateWorkOrderAsync">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+
+                <div class="modal-grid">
+                    <div>
+                        <label>Customer Name</label>
+                        <InputText class="table-input" @bind-Value="NewWorkOrder.CustomerName" />
+                    </div>
+
+                    <div>
+                        <label>Vehicle Plate</label>
+                        <InputText class="table-input" @bind-Value="NewWorkOrder.VehiclePlate" />
+                    </div>
+
+                    <div class="span-2">
+                        <label>Details</label>
+                        <InputText class="table-input" @bind-Value="NewWorkOrder.Details" />
+                    </div>
+
+                    <div>
+                        <label>Status</label>
+                        <InputSelect class="table-select" @bind-Value="NewWorkOrder.Status">
+                            @foreach (var status in Enum.GetValues(typeof(WorkOrderStatusType)))
+                            {
+                                <option value="@status">@status</option>
+                            }
+                        </InputSelect>
+                    </div>
+
+                    <div>
+                        <label>Start Date</label>
+                        <InputDate class="table-input" @bind-Value="NewWorkOrder.StartDate" />
+                    </div>
+
+                    <div>
+                        <label>End Date</label>
+                        <InputDate class="table-input" @bind-Value="NewWorkOrder.EndDate" />
+                    </div>
+                </div>
+
+                <div class="modal-actions">
+                    <button class="btn-primary" type="submit">Create</button>
+                    <button class="cancel-btn" type="button" @onclick="CloseCreateModal">Cancel</button>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+}
+
+
 @code {
+
+    [SupplyParameterFromQuery(Name = "new")]
+    public bool OpenNew { get; set; }
+
     private List<WorkOrder> WorkOrders { get; set; } = new();
     private WorkOrder? EditingWorkOrder { get; set; }
 
-    [Inject] private ReportService ReportService { get; set; } = default!;
-    [Inject] private IJSRuntime JSRuntime { get; set; } = default!;
+    // ----- Search (EditForm requires a model) -----
+    private class WorkOrderSearch { public string Plate { get; set; } = string.Empty; }
+    private WorkOrderSearch SearchModel { get; set; } = new();
+    private string? SearchError { get; set; }
 
-    private async Task GeneratePdfAsync(WorkOrder workOrder)
-    {
-        var pdfBytes = ReportService.GenerateReport(workOrder);
+    // Filters (trimmed; no Task Title filter)
+    private string FilterCustomer { get; set; } = "";
+    private string FilterVehicle { get; set; } = "";
+    private string FilterDetails { get; set; } = "";
+    private string FilterStatus { get; set; } = "";
+    private DateTime? FilterStartDate { get; set; }
+    private DateTime? FilterEndDate { get; set; }
+    private string FilterTotalCost { get; set; } = "";
 
-        // Download the PDF in the browser
-        var base64 = Convert.ToBase64String(pdfBytes);
-
-        // Inject JS function directly here
-        var js = @"
-            window.downloadFileFromBytes = (filename, base64) => {
-                const link = document.createElement('a');
-                link.href = 'data:application/pdf;base64,' + base64;
-                link.download = filename;
-                link.click();
-            };
-        ";
-        await JSRuntime.InvokeVoidAsync("eval", js);
-
-        await JSRuntime.InvokeVoidAsync("downloadFileFromBytes", "report.pdf", base64);
-    }
-
-    private async Task PreviewPdfAsync(WorkOrder workOrder)
-    {
-        var pdfBytes = ReportService.GenerateReport(workOrder);
-
-        // Convert PDF bytes to base64 string
-        var base64 = Convert.ToBase64String(pdfBytes);
-
-        // Inject JS function directly here
-        var js = @"
-            window.openPdfPreview = (base64) => {
-                const pdfDataUri = ""data:application/pdf;base64,"" + base64;
-                const win = window.open();
-                win.document.write(
-                    ""<iframe src='"" + pdfDataUri + ""' "" +
-                    ""frameborder='0' style='width:100%;height:100%;'></iframe>""
-                );
-            };
-        ";
-        await JSRuntime.InvokeVoidAsync("eval", js);
-
-        // Call JS function to open in new tab
-        await JSRuntime.InvokeVoidAsync("openPdfPreview", base64);
-    }
+    // Modal state
+    private bool ShowCreateModal { get; set; } = false;
 
     private WorkOrder NewWorkOrder { get; set; } = new()
     {
@@ -260,46 +315,58 @@
         Status = WorkOrderStatusType.Created
     };
 
-    private bool ShowCreateForm { get; set; } = false;
-
-    private string FilterCustomer { get; set; } = "";
-    private string FilterVehicle { get; set; } = "";
-    private string FilterDetails { get; set; } = "";
-    private string FilterStatus { get; set; } = "";
-    private DateTime? FilterStartDate { get; set; }
-    private DateTime? FilterEndDate { get; set; }
-    private string FilterTotalCost { get; set; } = "";
-    private string FilterTask { get; set; } = "";
-
-    // Filtering logic for all work orders based on user input
-    private IEnumerable<WorkOrder> FilteredWorkOrders => WorkOrders
-        .Where(w =>
-            (string.IsNullOrWhiteSpace(FilterCustomer) || w.CustomerName.Contains(FilterCustomer, StringComparison.OrdinalIgnoreCase)) &&
-            (string.IsNullOrWhiteSpace(FilterVehicle) || w.VehiclePlate.Contains(FilterVehicle, StringComparison.OrdinalIgnoreCase)) &&
-            (string.IsNullOrWhiteSpace(FilterDetails) || w.Details.Contains(FilterDetails, StringComparison.OrdinalIgnoreCase)) &&
-            (string.IsNullOrWhiteSpace(FilterStatus) || w.Status.ToString() == FilterStatus) &&
-            (!FilterStartDate.HasValue || (w.StartDate.HasValue && w.StartDate.Value.Date == FilterStartDate.Value.Date)) &&
-            (!FilterEndDate.HasValue || (w.EndDate.HasValue && w.EndDate.Value.Date == FilterEndDate.Value.Date)) &&
-            (string.IsNullOrWhiteSpace(FilterTotalCost) || w.TotalCostCents.ToString().Contains(FilterTotalCost)) &&
-            (string.IsNullOrWhiteSpace(FilterTask) || w.Tasks.Any(t => t.Title.Contains(FilterTask, StringComparison.OrdinalIgnoreCase)))
-        );
-
-    // Toggles visibility of the "Create Work Order" form
-    private void ToggleCreateForm() => ShowCreateForm = !ShowCreateForm;
-
-    // Loads all work orders when the page initializes
     protected override async Task OnInitializedAsync()
     {
         WorkOrders = await WorkOrderService.GetAllWorkOrdersAsync();
     }
 
-    // Enables edit mode for a specific work order
-    private void EditWorkOrder(WorkOrder workOrder) => EditingWorkOrder = workOrder;
+    protected override async Task OnParametersSetAsync()
+    {
+        // If the nav bar sent ?new=1, open the modal then clear the query
+        if (OpenNew && !ShowCreateModal)
+        {
+            OpenCreateModal();
+            // Clear the query so the modal doesn't re-open on refresh/back
+            Nav.NavigateTo("/employee/home", replace: true);
+        }
 
-    // Cancels editing mode
+        await base.OnParametersSetAsync();
+    }
+
+    // ----- Search submit -> open details page -----
+    private async Task OnSearchSubmit()
+    {
+        SearchError = null;
+        var plate = (SearchModel.Plate ?? "").Trim();
+        if (string.IsNullOrWhiteSpace(plate))
+        {
+            SearchError = "Enter a license plate.";
+            return;
+        }
+
+        var match = WorkOrders.FirstOrDefault(w =>
+            string.Equals(w.VehiclePlate, plate, StringComparison.OrdinalIgnoreCase))
+            ?? WorkOrders.FirstOrDefault(w =>
+                w.VehiclePlate?.Contains(plate, StringComparison.OrdinalIgnoreCase) == true);
+
+        if (match is null)
+        {
+            SearchError = "No work order found for that plate.";
+            return;
+        }
+
+        GoToDetails(match.Id);
+    }
+
+    private void GoToDetails(int workOrderId)
+    {
+        Nav.NavigateTo($"/employee/workorder/{workOrderId}/tasks");
+    }
+
+    // ----- Inline edit (optional) -----
+    private void EditWorkOrder(WorkOrder workOrder) => EditingWorkOrder = workOrder;
     private void CancelEdit() => EditingWorkOrder = null;
 
-    // Saves updates made to an existing work order
     private async Task SaveWorkOrderAsync(WorkOrder workOrder)
     {
         await WorkOrderService.UpdateWorkOrderAsync(workOrder);
@@ -307,26 +374,31 @@
         ToastService.ShowToast($"Work order {workOrder.Id} updated successfully.", "success");
     }
 
-    // Deletes a work order and refreshes the list
-    private async Task DeleteWorkOrderAsync(int id)
+    // ----- Modal open/close -----
+    private void OpenCreateModal()
     {
-        await WorkOrderService.DeleteWorkOrderAsync(id);
-        ToastService.ShowToast($"Work order {id} deleted.", "info");
-        WorkOrders = await WorkOrderService.GetAllWorkOrdersAsync();
+        // (Re)initialize defaults each time
+        NewWorkOrder = new WorkOrder
+        {
+            CustomerName = "",
+            VehiclePlate = "",
+            Details = "",
+            Tasks = new List<WorkOrderTask>(),
+            StartDate = DateTime.Now,
+            EndDate = DateTime.Now.AddDays(1),
+            Status = WorkOrderStatusType.Created
+        };
+        ShowCreateModal = true;
+        StateHasChanged();
     }
 
-    // Formats date values for display
-    private string FormatDate(DateTimeOffset? date)
-        => date?.ToLocalTime().ToString("yyyy-MM-dd HH:mm") ?? "-";
-
-    // Opens the tasks page for a specific work order in a new tab
-    private void GoToTasks(int workOrderId)
+    private void CloseCreateModal()
     {
-        var url = $"/employee/workorder/{workOrderId}/tasks";
-        JS.InvokeVoidAsync("open", url, "_blank");
+        ShowCreateModal = false;
+        StateHasChanged();
     }
 
-    // Creates a new work order and resets the form
+    // ----- Create Work Order from modal -----
     private async Task CreateWorkOrderAsync()
     {
         if (string.IsNullOrWhiteSpace(NewWorkOrder.CustomerName) ||
@@ -338,27 +410,65 @@
 
         var created = await WorkOrderService.AddWorkOrderAsync(NewWorkOrder);
         ToastService.ShowToast("New work order created successfully.", "success");
-        await JS.InvokeVoidAsync("open", $"/employee/workorder/{created.Id}/tasks", "_blank");
 
-        // Reset form fields
-        NewWorkOrder = new()
-        {
-            CustomerName = "",
-            VehiclePlate = "",
-            Details = "",
-            Tasks = new List<WorkOrderTask>(),
-            StartDate = DateTime.Now,
-            EndDate = DateTime.Now.AddDays(1),
-            Status = WorkOrderStatusType.Created
-        };
-
+        // Refresh list and go to details
         WorkOrders = await WorkOrderService.GetAllWorkOrdersAsync();
+        CloseCreateModal();
+        GoToDetails(created.Id);
     }
 
-    // Converts total cost in cents to a formatted dollar amount
-    private string FormatCost(int totalCostCents)
+    // Filtering logic (no per-task filter; Tasks column is a count)
+    private IEnumerable<WorkOrder> FilteredWorkOrders => WorkOrders
+        .Where(w =>
+            (string.IsNullOrWhiteSpace(FilterCustomer) || w.CustomerName.Contains(FilterCustomer, StringComparison.OrdinalIgnoreCase)) &&
+            (string.IsNullOrWhiteSpace(FilterVehicle) || w.VehiclePlate.Contains(FilterVehicle, StringComparison.OrdinalIgnoreCase)) &&
+            (string.IsNullOrWhiteSpace(FilterDetails) || w.Details.Contains(FilterDetails, StringComparison.OrdinalIgnoreCase)) &&
+            (string.IsNullOrWhiteSpace(FilterStatus) || w.Status.ToString() == FilterStatus) &&
+            (!FilterStartDate.HasValue || (w.StartDate.HasValue && w.StartDate.Value.Date == FilterStartDate.Value.Date)) &&
+            (!FilterEndDate.HasValue || (w.EndDate.HasValue && w.EndDate.Value.Date == FilterEndDate.Value.Date)) &&
+            (string.IsNullOrWhiteSpace(FilterTotalCost) || w.TotalCostCents.ToString().Contains(FilterTotalCost))
+        );
+
+    // PDF actions (kept)
+    private async Task GeneratePdfAsync(WorkOrder workOrder)
+    {
+        var pdfBytes = ReportService.GenerateReport(workOrder);
+        var base64 = Convert.ToBase64String(pdfBytes);
+        var js = @"
+          window.downloadFileFromBytes = (filename, base64) => {
+            const link = document.createElement('a');
+            link.href = 'data:application/pdf;base64,' + base64;
+            link.download = filename;
+            link.click();
+          };
+        ";
+        await JSRuntime.InvokeVoidAsync("eval", js);
+        await JSRuntime.InvokeVoidAsync("downloadFileFromBytes", $"WorkOrder_{workOrder.Id}.pdf", base64);
+    }
+
+    private async Task PreviewPdfAsync(WorkOrder workOrder)
+    {
+        var pdfBytes = ReportService.GenerateReport(workOrder);
+        var base64 = Convert.ToBase64String(pdfBytes);
+        var js = @"
+          window.openPdfPreview = (base64) => {
+            const pdfDataUri = 'data:application/pdf;base64,' + base64;
+            const win = window.open();
+            win.document.write(
+              '<iframe src=""' + pdfDataUri + '"" frameborder=""0"" style=""width:100%;height:100%;""></iframe>'
+            );
+          };
+        ";
+        await JSRuntime.InvokeVoidAsync("eval", js);
+        await JSRuntime.InvokeVoidAsync("openPdfPreview", base64);
+    }
+
+    private static string FormatDate(DateTimeOffset? date)
+        => date?.ToLocalTime().ToString("yyyy-MM-dd HH:mm") ?? "-";
+
+    private static string FormatCost(int totalCostCents)
     {
         decimal dollars = totalCostCents / 100.0m;
-        return dollars.ToString("C"); // Formats as currency (like: $85.00)
+        return dollars.ToString("C");
     }
 }

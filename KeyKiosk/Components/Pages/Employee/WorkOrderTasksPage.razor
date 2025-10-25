@@ -1,141 +1,253 @@
 ﻿@page "/employee/WorkOrder/{WorkOrderId:int}/Tasks"
 @rendermode InteractiveServer
 @layout Layout.MainLayout
-@namespace KeyKiosk.Components.Pages.Employee
-
 @using KeyKiosk.Data
 
-<h3>WorkOrderTaskPage</h3>
+<link href="app.css" rel="stylesheet" />
 
-@* Display list of existing tasks*@
-@if (TaskList != null && TaskList.Count > 0)
+<h1 style="text-align:center">Work Order Details</h1>
+
+<hr />
+
+@if (WorkOrder is null)
 {
-    <table>
-        <tr>
-            <th>Id</th>
-            <th>Title</th>
-            <th>Details</th>
-            <th>Cost Cents</th>
-            <th>Start Date</th>
-            <th>End Date</th>
-            <th>Status</th>
-        </tr>
-        @foreach (WorkOrderTask task in TaskList)
-        {
-            <tr>
-                <td>@task.Id</td>
-                <td>@task.Title</td>
-                <td>@task.Details</td>
-                <td>@task.CostCents</td>
-                <td>@task.StartDate</td>
-                <td>@task.EndDate</td>
-                <td>@task.Status</td>
-                <td>
-                    @* Deletes selected task *@
-                    <button @onclick="@(e => DeleteTask(task.Id))">
-                        Delete
-                    </button>
-                </td>
-            </tr>
-        }
-    </table>
+    <p>Loading…</p>
 }
-
-
-<br />
-<br />
-<br />
-
-<h1>Add New Task</h1>
-
-<br />
-
-@* Form to add new task *@
-<EditForm Model="@TaskToAdd" OnValidSubmit="@AddNewTask">
-    <DataAnnotationsValidator />
-    <ValidationSummary />
-
-    <label>Title</label>
-    <select @onchange="@ModifyCreateTaskFromTemplate">
-        <option disabled selected>--- Select ---</option>
-        @foreach (WorkOrderTaskTemplate template in TemplateList)
-        {
-            <option value="@template.Id">@template.TaskTitle</option>
-        }
-    </select>
-
-    <label>Cost in Cents</label>
-    <input type="number" value="@TaskToAdd.CostCents" readonly />
-
-    <label>Start Date</label>
-    <input type="date" @bind="TaskToAdd.StartDate" />
-
-    <label>End Date</label>
-    <input type="date" @bind="TaskToAdd.EndDate" />
-
-    <label>Status</label>
-    <select @bind="TaskToAdd.Status">
-        @foreach (WorkOrderTaskStatusType status in Enum.GetValues(typeof(WorkOrderTaskStatusType)))
-        {
-            <option value="@status">@status</option>
-        }
-    </select>
-
-    <button type="submit">Submit</button>
-</EditForm>
-
-<br />
-<br />
-<br />
-
-@if (TaskList != null && TaskList.Count > 0)
+else
 {
-    <h1>Update Existing Task</h1>
+    <!-- Summary header -->
+    <div class="card-like" style="padding:1rem;border:1px solid #e5e7eb;border-radius:12px;margin-bottom:1rem;">
+        <div style="display:flex;gap:1rem;flex-wrap:wrap;align-items:center;justify-content:space-between;">
+            <div style="display:flex;gap:1.25rem;flex-wrap:wrap;align-items:center;">
+                <div>
+                    <div class="muted" style="font-size:.9rem;color:#6b7280;">Work Order</div>
+                    <div class="h5" style="margin:0;font-weight:600;">#@WorkOrder.Id</div>
+                </div>
+                <div>
+                    <div class="muted" style="font-size:.9rem;color:#6b7280;">Customer</div>
+                    <div class="fw-semibold">@WorkOrder.CustomerName</div>
+                </div>
+                <div>
+                    <div class="muted" style="font-size:.9rem;color:#6b7280;">Vehicle Plate</div>
+                    <div class="fw-semibold">@WorkOrder.VehiclePlate</div>
+                </div>
+                <div>
+                    <div class="muted" style="font-size:.9rem;color:#6b7280;">Status</div>
+                    <span class="tag @(WorkOrder.Status is WorkOrderStatusType.Closed ? "tag-ok" : (WorkOrder.Status is WorkOrderStatusType.WorkStarted ? "tag-warn" : "tag-info"))">
+                        @WorkOrder.Status
+                    </span>
+                </div>
+                <div>
+                    <div class="muted" style="font-size:.9rem;color:#6b7280;">Start → End</div>
+                    <div class="fw-semibold">@FormatDate(WorkOrder.StartDate) → @FormatDate(WorkOrder.EndDate)</div>
+                </div>
+                <div>
+                    <div class="muted" style="font-size:.9rem;color:#6b7280;">Total</div>
+                    <div class="fw-semibold">@FormatCost(WorkOrder.TotalCostCents)</div>
+                </div>
+            </div>
 
-    <InputSelect @bind-Value:get="TaskToUpdateId" @bind-Value:set="LoadUpdateTask">
-        <option value="">Select a Task</option>
-        @foreach (WorkOrderTask task in TaskList)
+            <div style="display:flex;gap:.5rem;">
+                <button class="btn-primary" @onclick="GenerateWorkOrderDoc">Generate Work Order</button>
+                <button class="delete-btn" @onclick="DeleteWorkOrderAsync">Delete Work Order</button>
+            </div>
+        </div>
+        @if (!string.IsNullOrWhiteSpace(WorkOrder.Details))
         {
-            <option value="@task.Id">@task.Title</option>
+            <div class="muted" style="margin-top:.75rem;color:#4b5563;">@WorkOrder.Details</div>
         }
-    </InputSelect>
+    </div>
 
-    <br />
+    <!-- Toolbar -->
+    <div style="display:flex;justify-content:space-between;align-items:center;margin:.25rem 0 .75rem;">
+        <h2 style="margin:0">Tasks</h2>
+        <div style="display:flex;gap:.5rem;align-items:center;">
+            <input class="table-input" style="min-width:260px" placeholder="Search task title/details"
+                   @bind="TaskSearch" @bind:event="oninput" />
+            <button class="btn-primary" @onclick="ToggleAddForm">@((ShowAddForm ? "Close" : "Add Task"))</button>
+        </div>
+    </div>
 
-    @* Form to update existing template *@
-    @if (TaskToUpdateId != null)
+    <!-- Add task panel -->
+    @if (ShowAddForm)
     {
-        <EditForm Model="@TaskToUpdate" OnValidSubmit="@UpdateExistingTask">
-            <DataAnnotationsValidator />
-            <ValidationSummary />
-
-
-
-            <label>Title</label>
-            <span>@TaskToUpdateOriginal?.Title</span>
-
-            <label>Details</label>
-            <InputTextArea class="form-control" @bind-Value="TaskToUpdate.Details" />
-
-            <label>Cost in Cents</label>
-            @* <input type="number" value="@TaskToUpdate.CostCents" readonly /> *@
-            <InputNumber @bind-Value=TaskToUpdate.CostCents></InputNumber>
-
-            <label>Start Date</label>
-            <input type="date" @bind="TaskToUpdate.StartDate" />
-
-            <label>End Date</label>
-            <input type="date" @bind="TaskToUpdate.EndDate" />
-
-            <label>Status</label>
-            <select @bind="TaskToUpdate.Status">
-                @foreach (WorkOrderTaskStatusType status in Enum.GetValues(typeof(WorkOrderTaskStatusType)))
-                {
-                    <option value="@status">@status</option>
-                }
-            </select>
-
-            <button type="submit">Submit</button>
-        </EditForm>
+        <div class="card-like" style="padding:1rem;border:1px solid #e5e7eb;border-radius:12px;margin-bottom:1rem;">
+            <EditForm Model="@TaskToAdd" OnValidSubmit="@AddNewTask">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+                <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:.75rem;">
+                    <div style="grid-column: span 2;">
+                        <label class="muted">Template</label>
+                        <select class="table-select" @onchange="ModifyCreateTaskFromTemplate">
+                            <option value="">— Select —</option>
+                            @foreach (var t in TemplateList)
+                            {
+                                <option value="@t.Id">@t.TaskTitle</option>
+                            }
+                        </select>
+                    </div>
+                    <div style="grid-column: span 2;">
+                        <label class="muted">Title</label>
+                        <InputText class="table-input" @bind-Value="TaskToAdd.Title" />
+                    </div>
+                    <div>
+                        <label class="muted">Cost (¢)</label>
+                        <InputNumber class="table-input" @bind-Value="TaskToAdd.CostCents" />
+                    </div>
+                    <div>
+                        <label class="muted">Status</label>
+                        <select class="table-select" @bind="TaskToAdd.Status">
+                            @foreach (WorkOrderTaskStatusType s in Enum.GetValues(typeof(WorkOrderTaskStatusType)))
+                            {
+                                <option value="@s">@s</option>
+                            }
+                        </select>
+                    </div>
+                    <div style="grid-column: span 3;">
+                        <label class="muted">Details</label>
+                        <InputTextArea class="table-input" @bind-Value="TaskToAdd.Details" />
+                    </div>
+                    <div>
+                        <label class="muted">Start</label>
+                        <InputDate @bind-Value="TaskToAdd.StartDate" class="table-input" />
+                    </div>
+                    <div>
+                        <label class="muted">End</label>
+                        <InputDate @bind-Value="TaskToAdd.EndDate" class="table-input" />
+                    </div>
+                    <div style="grid-column: span 6;text-align:right;">
+                        <button class="btn-primary" type="submit">Add Task</button>
+                    </div>
+                </div>
+            </EditForm>
+        </div>
     }
+
+    <!-- Tasks table -->
+    <div class="workorders-table-container">
+        <table class="workorders-table">
+            <thead>
+                <tr>
+                    <th>Id</th>
+                    <th>Title</th>
+                    <th>Details</th>
+                    <th>Cost</th>
+                    <th>Start</th>
+                    <th>End</th>
+                    <th>Status</th>
+                    <th style="width:1%;">Actions</th>
+                </tr>
+                <tr>
+                    <th></th>
+                    <th><input class="table-input" placeholder="Filter title" @bind="FilterTitle" @bind:event="oninput" /></th>
+                    <th><input class="table-input" placeholder="Filter details" @bind="FilterDetails" @bind:event="oninput" /></th>
+                    <th><input class="table-input" placeholder="¢" @bind="FilterCost" @bind:event="oninput" /></th>
+                    <th><input class="table-input" type="date" @bind="FilterStart" /></th>
+                    <th><input class="table-input" type="date" @bind="FilterEnd" /></th>
+                    <th>
+                        <select class="table-select" @bind="FilterStatus">
+                            <option value="">All</option>
+                            @foreach (WorkOrderTaskStatusType s in Enum.GetValues(typeof(WorkOrderTaskStatusType)))
+                            {
+                                <option value="@s">@s</option>
+                            }
+                        </select>
+                    </th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var t in FilteredTasks)
+                {
+                    bool isEditing = EditingTaskId == t.Id;
+                    <tr>
+                        <td>@t.Id</td>
+                        <td>
+                            @if (isEditing)
+                            {
+                                <InputText class="table-input" @bind-Value="EditingModel.TaskTitle" />
+                            }
+                            else
+                            {
+
+                                @t.Title
+                            }
+                        </td>
+                        <td>
+                            @if (isEditing)
+                            {
+                                <InputTextArea class="table-input" @bind-Value="EditingModel.Details" />
+                            }
+                            else
+                            {
+
+                                @t.Details
+                            }
+                        </td>
+                        <td>
+                            @if (isEditing)
+                            {
+                                <InputNumber class="table-input" @bind-Value="EditingModel.CostCents" />
+                            }
+                            else
+                            {
+
+                                @FormatCost(t.CostCents)
+                            }
+                        </td>
+                        <td>
+                            @if (isEditing)
+                            {
+                                <InputDate class="table-input" @bind-Value="EditingModel.StartDate" />
+                            }
+                            else
+                            {
+
+                                @FormatDate(t.StartDate)
+                            }
+                        </td>
+                        <td>
+                            @if (isEditing)
+                            {
+                                <InputDate class="table-input" @bind-Value="EditingModel.EndDate" />
+                            }
+                            else
+                            {
+
+                                @FormatDate(t.EndDate)
+                            }
+                        </td>
+                        <td>
+                            @if (isEditing)
+                            {
+                                <select class="table-select" @bind="EditingModel.Status">
+                                    @foreach (WorkOrderTaskStatusType s in Enum.GetValues(typeof(WorkOrderTaskStatusType)))
+                                    {
+                                        <option value="@s">@s</option>
+                                    }
+                                </select>
+                            }
+                            else
+                            {
+
+                                @t.Status
+                            }
+                        </td>
+                        <td style="white-space:nowrap;">
+                            @if (isEditing)
+                            {
+                                <button class="save-btn small-btn" @onclick="SaveTaskAsync">Save</button>
+                                <button class="cancel-btn small-btn" @onclick="CancelEditTask">Cancel</button>
+                            }
+                            else
+                            {
+                                <button class="edit-btn small-btn" @onclick="() => BeginEditTask(t)">Edit</button>
+                                <button class="delete-btn small-btn" @onclick="() => DeleteTask(t.Id)">Delete</button>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
 }

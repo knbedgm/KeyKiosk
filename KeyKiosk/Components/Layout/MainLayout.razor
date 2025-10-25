@@ -1,29 +1,44 @@
 ﻿@inherits LayoutComponentBase
+@using Microsoft.AspNetCore.Components.Routing
+@inject NavigationManager Nav
 
-<div class="page">
-    <div class="sidebar">
-        <NavMenu />
-    </div>
+<div class="layout-shell">
+    <!-- Horizontal top navbar -->
+    <header class="top-nav">
+        <nav class="nav-container">
+            <div class="nav-left">
+                <NavLink href="employee/home" class="nav-link" Match="NavLinkMatch.All">Home</NavLink>
+            </div>
 
-    <main>
-        <div class="top-row px-4">
-            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
-        </div>
+            <div class="nav-center">
+                <img src="/images/KEYOSK_icon.png" alt="KeyOSk Logo" class="nav-logo" />
+            </div>
 
+            <div class="nav-right">
+                <button class="btn-primary" @onclick="OpenCreateFromNav">New Work Order</button>
+            </div>
+        </nav>
+    </header>
+
+    @* <!-- (optional) tiny utility row -->
+    <div class="top-row px-4 util-bar">
+        <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
+    </div> *@
+
+    <!-- Constrained content area -->
+    <main class="page-body">
         <article class="content px-4">
             @Body
 
-            <br />
-            <br />
-            <Toast/>
+            <br /><br />
+            <Toast />
         </article>
     </main>
 </div>
 
-
-<div id="blazor-error-ui" data-nosnippet>
-    An unhandled error has occurred.
-    <a href="." class="reload">Reload</a>
-    <span class="dismiss">🗙</span>
-</div>
-
+@code {
+    private void OpenCreateFromNav()
+    {
+        Nav.NavigateTo("/employee/home?new=true");
+    }
+}

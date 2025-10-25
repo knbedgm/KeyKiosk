@@ -202,3 +202,72 @@ td .delete-btn {
 	display: inline-block;
 	margin-right: 4px; /* spacing between buttons */
 }
+
+/* Modal backdrop */
+.modal-backdrop {
+	position: fixed;
+	inset: 0;
+	background: rgba(2, 6, 23, 0.55); /* dark slate w/ 55% opacity */
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	z-index: 2000;
+}
+
+/* Modal card */
+.modal-card {
+	background: #fff;
+	width: min(720px, 92vw);
+	border-radius: 16px;
+	box-shadow: 0 20px 60px rgba(0,0,0,.25);
+	padding: 1rem 1rem 1.25rem;
+	border: 1px solid #e5e7eb;
+}
+
+/* Header */
+.modal-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: .75rem;
+}
+
+.modal-close {
+	background: transparent;
+	border: none;
+	font-size: 1.25rem;
+	line-height: 1;
+	cursor: pointer;
+	color: #6b7280;
+}
+
+	.modal-close:hover {
+		color: #111827;
+	}
+
+/* Grid layout for form fields */
+.modal-grid {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: .75rem .75rem;
+	margin-top: .25rem;
+}
+
+	.modal-grid .span-2 {
+		grid-column: span 2;
+	}
+
+	.modal-grid label {
+		display: block;
+		font-size: .9rem;
+		color: #374151;
+		margin-bottom: .25rem;
+	}
+
+/* Actions */
+.modal-actions {
+	display: flex;
+	gap: .5rem;
+	justify-content: flex-end;
+	margin-top: 1rem;
+}
