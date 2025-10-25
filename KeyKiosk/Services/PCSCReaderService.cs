@@ -77,7 +77,7 @@ namespace KeyKiosk.Services
 
 			var uid = ReadUID(chan);
 				Console.WriteLine("uid scanned: " + uid);
-			if (!Regex.IsMatch(uid, "$0+^"))
+			if (!Regex.IsMatch(uid, "^0+$"))
 			{
 				this.OnCardScannedEvent?.Invoke(this, new OnCardScannedEventArgs(uid));
 
