@@ -8,12 +8,10 @@ namespace KeyKiosk.Components.Pages.Employee;
 public partial class WorkOrderTasksPage : ComponentBase
 {
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
-    [Inject]
-    private WorkOrderTaskService TaskService { get; set; }
-    [Inject]
-    private WorkOrderService WorkOrderService { get; set; }
-    [Inject]
-    private WorkOrderTaskTemplateService TemplateService { get; set; }
+    [Inject] private WorkOrderTaskService TaskService { get; set; }
+    [Inject] private WorkOrderService WorkOrderService { get; set; }
+    [Inject] private WorkOrderTaskTemplateService TemplateService { get; set; }
+
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
 
     [Parameter] public int WorkOrderId { get; set; }

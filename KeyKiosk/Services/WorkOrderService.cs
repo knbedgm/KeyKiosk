@@ -94,6 +94,7 @@ public class WorkOrderService
             await _dbContext.SaveChangesAsync();
         }
     }
+
     // Get work orders by vehicle plate
     public async Task<List<WorkOrder>> GetWorkOrdersByVehiclePlateAsync(string plate)
     {
@@ -101,6 +102,14 @@ public class WorkOrderService
                                .Where(w => w.VehiclePlate.ToLower() == plate.ToLower())
                                .Include(w => w.Tasks)
                                .OrderBy(w => w.StartDate)
+                               .ToListAsync();
+    }
+
+    public async Task<List<WorkOrder>> GetWorkOrderByDatePeriod(DateTimeOffset startDate, DateTimeOffset endDate)
+    {
+        return await _dbContext.WorkOrders
+                               .Include(w => w.Tasks)
+                               .Where(w => w.StartDate.HasValue && w.StartDate.Value >= startDate && w.StartDate.Value <= endDate)
                                .ToListAsync();
     }
 }
