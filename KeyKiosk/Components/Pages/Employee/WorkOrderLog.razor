@@ -2,12 +2,12 @@
 @using KeyKiosk.Data
 @using KeyKiosk.Services
 @using System.Text
+@using System.Text.Json
 @inject WorkOrderLogService LogService
 @inject IJSRuntime JS
 
-<h2 class="mb-4"> Work Order Logs </h2>
+<h2 class="mb-4">Work Order Logs</h2>
 
-<!-- Filter Form -->
 <div class="card mb-4">
     <div class="card-body">
         <div class="row g-2">
@@ -21,11 +21,11 @@
                 <input class="form-control" placeholder="Vehicle Plate" @bind="vehiclePlate" />
             </div>
             <div class="col-md-2">
-                <select class="form-select" @bind="eventType">
+                <select class="form-select" @bind="eventTypeString">
                     <option value="">-- Event Type --</option>
-                    @foreach (var type in Enum.GetValues<WorkOrderLogEvent.WorkOrderLogEventType>())
+                    @foreach (var t in Enum.GetValues<LogEvent.LogEventType>())
                     {
-                        <option value="@type">@type</option>
+                        <option value="@t">@t</option>
                     }
                 </select>
             </div>
@@ -37,7 +37,6 @@
     </div>
 </div>
 
-<!-- Results -->
 @if (logs == null)
 {
     <p><em>Loading...</em></p>
@@ -56,7 +55,7 @@ else
                     <th>Date</th>
                     <th>User</th>
                     <th>WorkOrder</th>
-                    <th>Customer</th>
+                    <th>Details / Customer</th>
                     <th>Plate</th>
                     <th>Event</th>
                     <th>Details</th>
@@ -69,52 +68,67 @@ else
                         <td>@log.ID</td>
                         <td>@log.DateTime.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</td>
                         <td>@log.UserName</td>
-                        <td>@log.workOrder.Id</td>
-                        <td>@log.workOrder.CustomerName</td>
-                        <td>@log.workOrder.VehiclePlate</td>
+                        <td>@log.WorkOrderId</td>
+                        <td>@log.WorkOrderDetails</td>
+                        <td>@log.WorkOrderVehiclePlate</td>
+                        <td><span class="badge bg-info text-dark">@log.EventType</span></td>
                         <td>
-                            <span class="badge bg-info text-dark">@log.EventType</span>
-                        </td>
-                        <td>
-                            @switch (log)
+                            @if (log.EventType == LogEvent.LogEventType.TaskAdded.ToString())
                             {
-                                case WorkOrderLogEvent.DetailsChangedEvent detailsEvent:
-                                    <details>
-                                        <summary>Details changed</summary>
-                                        <div>Customer: @detailsEvent.CustomerName</div>
-                                        <div>Plate: @detailsEvent.VehiclePlate</div>
-                                        <div>@detailsEvent.Details</div>
-                                    </details>
-                                    break;
-
-                                case WorkOrderLogEvent.TaskAddedEvent taskAdded:
-                                    <span>Task added: <strong>@taskAdded.Task?.Title</strong></span>
-                                    break;
-
-                                case WorkOrderLogEvent.TaskRemovedEvent taskRemoved:
-                                    <span>Task removed: <strong>@taskRemoved.Task?.Title</strong></span>
-                                    break;
-
-                                case WorkOrderLogEvent.TaskDetailsChangedEvent taskDetails:
-                                    <details>
-                                        <summary>Task details changed</summary>
-                                        <div>Task: @taskDetails.Task?.Title</div>
-                                        <div>@taskDetails.Details</div>
-                                        <div>Cost: @(taskDetails.CostCents / 100.0m).ToString("C")</div>
-                                    </details>
-                                    break;
-
-                                case WorkOrderLogEvent.CreateEvent:
-                                    <span class="text-success">Work order created</span>
-                                    break;
-
-                                case WorkOrderLogEvent.StatusChangedEvent statusEvent:
-                                    <span>Status → <strong>@statusEvent.Status</strong></span>
-                                    break;
-
-                                default:
+                                <span>Task added: <strong>@log.TaskTitle</strong></span>
+                            }
+                            else if (log.EventType == LogEvent.LogEventType.TaskRemoved.ToString())
+                            {
+                                <span>Task removed: <strong>@log.TaskTitle</strong></span>
+                            }
+                            else if (log.EventType == LogEvent.LogEventType.TaskDetailsChanged.ToString())
+                            {
+                                <details>
+                                    <summary>Task details changed</summary>
+                                    <div>Task: @log.TaskTitle (@log.TaskId)</div>
+                                    <div>Cost: @(log.CostCents.HasValue ? (log.CostCents.Value / 100.0m).ToString("C") : "-")</div>
+                                    @if (log.Payload != null)
+                                    {
+                                        <pre class="mono">@JsonSerializer.Serialize(log.Payload, new JsonSerializerOptions { WriteIndented = true })</pre>
+                                    }
+                                </details>
+                            }
+                            else if (log.EventType == LogEvent.LogEventType.StatusChanged.ToString())
+                            {
+                                <span>Status changed</span>
+                                @if (log.Payload != null)
+                                {
+                                    <div class="mt-1"><pre class="mono">@JsonSerializer.Serialize(log.Payload, new JsonSerializerOptions { WriteIndented = true })</pre></div>
+                                }
+                            }
+                            else if (log.EventType == LogEvent.LogEventType.DetailsChanged.ToString())
+                            {
+                                <details>
+                                    <summary>Work order details changed</summary>
+                                    @if (log.Payload != null)
+                                    {
+                                        <pre class="mono">@JsonSerializer.Serialize(log.Payload, new JsonSerializerOptions { WriteIndented = true })</pre>
+                                    }
+                                    else
+                                    {
+                                        <div>@log.WorkOrderDetails</div>
+                                    }
+                                </details>
+                            }
+                            else if (log.EventType == LogEvent.LogEventType.Created.ToString())
+                            {
+                                <span class="text-success">Work order created</span>
+                            }
+                            else
+                            {
+                                @if (log.Payload != null)
+                                {
+                                    <pre class="mono">@JsonSerializer.Serialize(log.Payload, new JsonSerializerOptions { WriteIndented = true })</pre>
+                                }
+                                else
+                                {
                                     <span>-</span>
-                                    break;
+                                }
                             }
                         </td>
                     </tr>
@@ -122,39 +136,68 @@ else
             </tbody>
         </table>
     </div>
+
+    <div class="d-flex justify-content-between align-items-center mt-2">
+        <div>
+            <button class="btn btn-sm btn-outline-primary me-2" @onclick="PrevPage" disabled="@(page == 1)">Previous</button>
+            <button class="btn btn-sm btn-outline-primary" @onclick="NextPage" disabled="@(logs.Count < pageSize)">Next</button>
+        </div>
+        <div>Page @page </div>
+    </div>
 }
 
-
 @code {
-    private List<WorkOrderLogEvent>? logs;
+    private List<WorkOrderEventDto>? logs;
 
     private string? username;
     private int? workOrderId;
-    private string? status;
     private string? vehiclePlate;
     private string? search;
-    private WorkOrderLogEvent.WorkOrderLogEventType? eventType;
+    private string? eventTypeString;
+
+    int page = 1;
+    int pageSize = 25;
 
     protected override async Task OnInitializedAsync()
     {
         await LoadLogs();
     }
 
-    private async Task LoadLogs()
+    async Task LoadLogs()
     {
-        logs = await LogService.GetFilteredLogsAsync(username, workOrderId, status, vehiclePlate, search, eventType);
+        var parsedType = ParseEventType(eventTypeString);
+        logs = await LogService.GetFilteredLogDtosAsync(username, workOrderId, status: null, vehiclePlate, search, parsedType, page, pageSize);
+        StateHasChanged();
     }
 
-    private async Task ExportCsv()
+    LogEvent.LogEventType? ParseEventType(string? s)
     {
-        var csv = await LogService.ExportLogsToCsvAsync(username, workOrderId, status, vehiclePlate, search, eventType);
+        if (string.IsNullOrEmpty(s)) return null;
+        if (Enum.TryParse<LogEvent.LogEventType>(s, out var t)) return t;
+        return null;
+    }
+
+    async Task ExportCsv()
+    {
+        var parsedType = ParseEventType(eventTypeString);
+        var csv = await LogService.ExportLogsToCsvAsync(username, workOrderId, status: null, vehiclePlate, search, parsedType);
         var bytes = Encoding.UTF8.GetBytes(csv);
         var fileName = $"WorkOrderLogs_{DateTime.Now:yyyyMMddHHmmss}.csv";
 
         using var stream = new MemoryStream(bytes);
-        using var streamRef = new DotNetStreamReference(stream: stream);
-
+        using var streamRef = new DotNetStreamReference(stream);
         await JS.InvokeVoidAsync("downloadFileFromStream", fileName, streamRef);
     }
 
+    async Task NextPage()
+    {
+        page++;
+        await LoadLogs();
+    }
+
+    async Task PrevPage()
+    {
+        if (page > 1) page--;
+        await LoadLogs();
+    }
 }

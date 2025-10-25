@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using KeyKiosk.Services;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using System.Collections;
@@ -12,6 +13,8 @@ namespace KeyKiosk.Data
         public DbSet<WorkOrder> WorkOrders { get; set; }
         public DbSet<WorkOrderTask> WorkOrderTasks { get; set; }
         public DbSet<WorkOrderTaskTemplate> WorkOrderTaskTemplates { get; set; }
+        public DbSet<LogEvent> LogEvents { get; set; } = null!;
+
 
         public DbSet<DrawerLogEvent> DrawerLog { get; set; }
         public DbSet<UserLogEvent> UserLog { get; set; }

@@ -30,6 +30,8 @@ namespace KeyKiosk
             }
 
             builder.Services.AddDbContext<ApplicationDbContext>(DbOptions);
+            builder.Services.AddScoped<LogEvent>();
+
 
             // prevent config issues from blocking `dotnet ef migration` commands
             if (!EF.IsDesignTime)
