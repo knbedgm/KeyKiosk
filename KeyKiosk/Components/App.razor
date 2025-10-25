@@ -7,15 +7,20 @@
     <base href="/" />
     <ImportMap />
 
+    <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" rel="stylesheet" />
+    <link href="@Assets["_content/MudBlazor/MudBlazor.min.css"]" rel="stylesheet" />
+
     <link rel="stylesheet" href="@Assets["app.min.css"]" />
     <link rel="stylesheet" href="@Assets["KeyKiosk.styles.css"]" />
     <link rel="icon" type="image/png" href="@Assets["favicon.png"]" />
+
     <HeadOutlet />
 </head>
 
 <body>
     <Routes />
     <script src="_framework/blazor.web.js"></script>
+    <script src="@Assets["_content/MudBlazor/MudBlazor.min.js"]"></script>
     <script src="js/site.js"></script>
 
 </body>

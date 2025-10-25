@@ -5,7 +5,7 @@
 
 @using KeyKiosk.Data
 @inject KeyKiosk.Services.WorkOrderService WorkOrderService
-@inject KeyKiosk.Services.ToastService ToastService
+@inject ISnackbar Snackbar
 <link href="app.css" rel="stylesheet" />
 
 @using System.Xml.Linq;
@@ -304,14 +304,14 @@
     {
         await WorkOrderService.UpdateWorkOrderAsync(workOrder);
         EditingWorkOrder = null;
-        ToastService.ShowToast($"Work order {workOrder.Id} updated successfully.", "success");
+        Snackbar.Add($"Work order {workOrder.Id} updated successfully.", Severity.Success);
     }
 
     // Deletes a work order and refreshes the list
     private async Task DeleteWorkOrderAsync(int id)
     {
         await WorkOrderService.DeleteWorkOrderAsync(id);
-        ToastService.ShowToast($"Work order {id} deleted.", "info");
+        Snackbar.Add($"Work order {id} deleted.", Severity.Normal);
         WorkOrders = await WorkOrderService.GetAllWorkOrdersAsync();
     }
 
@@ -332,12 +332,12 @@
         if (string.IsNullOrWhiteSpace(NewWorkOrder.CustomerName) ||
             string.IsNullOrWhiteSpace(NewWorkOrder.VehiclePlate))
         {
-            ToastService.ShowToast("Please fill all required fields.", "warning");
+            Snackbar.Add("Please fill all required fields.", Severity.Warning);
             return;
         }
 
         var created = await WorkOrderService.AddWorkOrderAsync(NewWorkOrder);
-        ToastService.ShowToast("New work order created successfully.", "success");
+        Snackbar.Add("New work order created successfully.", Severity.Success);
         await JS.InvokeVoidAsync("open", $"/employee/workorder/{created.Id}/tasks", "_blank");
 
         // Reset form fields

@@ -2,6 +2,7 @@ using KeyKiosk.Components;
 using KeyKiosk.Data;
 using KeyKiosk.Services;
 using Microsoft.EntityFrameworkCore;
+using MudBlazor.Services;
 using QuestPDF.Infrastructure;
 
 namespace KeyKiosk
@@ -18,7 +19,12 @@ namespace KeyKiosk
             builder.Services.AddRazorComponents()
                 .AddInteractiveServerComponents();
 
-            var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+			builder.Services.AddMudServices(config =>
+            {
+                config.SnackbarConfiguration.PositionClass = MudBlazor.Defaults.Classes.Position.BottomRight;
+            });
+
+			var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
             void DbOptions(DbContextOptionsBuilder options)
             {
