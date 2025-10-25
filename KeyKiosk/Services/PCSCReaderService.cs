@@ -1,4 +1,5 @@
-﻿using WSCT.Core.Fluent.Helpers;
+﻿using System.Text.RegularExpressions;
+using WSCT.Core.Fluent.Helpers;
 using WSCT.ISO7816;
 using WSCT.Wrapper;
 using WSCT.Wrapper.Desktop.Core;
@@ -56,7 +57,7 @@ namespace KeyKiosk.Services
 		private void ReaderBeep(CardChannel channel)
 		{
 			byte[] resp = [];
-			channel.Control(0x003136b0, [0xff, 0x00, 0x40, 0b10100000, 0x04, 1, 0, 1, 1], out resp).ThrowIfNotSuccess(); // beep
+			channel.Control(0x003136b0, [0xff, 0x00, 0x40, 0b10100000, 0x04, 1, 0, 1, 1], out resp);//.ThrowIfNotSuccess(); // beep
 		}
 
 		private string ReadUID(CardChannel channel)
@@ -75,10 +76,13 @@ namespace KeyKiosk.Services
 			chan.Connect(ShareMode.Shared, Protocol.Any).ThrowIfNotSuccess();
 
 			var uid = ReadUID(chan);
-			this.OnCardScannedEvent?.Invoke(this, new OnCardScannedEventArgs(uid));
-			Console.WriteLine("uid scanned: " + uid);
+				Console.WriteLine("uid scanned: " + uid);
+			if (!Regex.IsMatch(uid, "$0+^"))
+			{
+				this.OnCardScannedEvent?.Invoke(this, new OnCardScannedEventArgs(uid));
 
-			ReaderBeep(chan);
+				ReaderBeep(chan);
+			}
 
 			chan.Disconnect(Disposition.LeaveCard);
 		}

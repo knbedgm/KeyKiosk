@@ -12,6 +12,7 @@ namespace KeyKiosk.Services
 			builder.Services.AddSingleton<SerialTest>();
 			builder.Services.AddSingleton<HSimService>();
 			builder.Services.AddSingleton<IRFIDReader>(sp => sp.GetRequiredService<HSimService>());
+			//builder.Services.AddSingleton<IRFIDReader, PCSCReaderService>();
 			builder.Services.AddScoped<ScopedTest>();
 			builder.Services.AddScoped<KioskUserSessionService>();
 			builder.Services.AddScoped<KioskNavAuthService>();
