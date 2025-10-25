@@ -16,7 +16,7 @@ public class PDFService
             container.Page(page =>
             {
                 page.Margin(50);
-                page.Header().Text(workOrder.VehiclePlate).FontSize(30).Bold().AlignCenter();
+                page.Header().Text($"{workOrder.VehiclePlate} (#{workOrder.Id})").FontSize(30).Bold().AlignCenter();
 
                 page.Content().PaddingVertical(1, Unit.Centimetre).Column(col =>
                 {
@@ -30,14 +30,16 @@ public class PDFService
                     {
                         table.ColumnsDefinition(columns =>
                         {
-                            columns.RelativeColumn(1);
-                            columns.RelativeColumn(1);
+                            columns.RelativeColumn(5);
+                            columns.RelativeColumn(10);
+                            columns.RelativeColumn(3);
                         });
 
                         table.Header(header =>
                         {
                             header.Cell().Element(CellStyle).Text("Task");
                             header.Cell().Element(CellStyle).Text("Details");
+                            header.Cell().Element(CellStyle).Text("Status");
 
                             static IContainer CellStyle(IContainer container)
                             {
@@ -54,6 +56,7 @@ public class PDFService
                         {
                             table.Cell().Element(CellStyle).Text(task.Title);
                             table.Cell().Element(CellStyle).Text(task.Details);
+                            table.Cell().Element(CellStyle).Text(ConvertStatus(task.Status));
 
                             IContainer CellStyle(IContainer container)
                             {
@@ -81,6 +84,26 @@ public class PDFService
         });
 
         return document.GeneratePdf();
+    }
+
+    public string ConvertStatus(WorkOrderTaskStatusType enumStatus)
+    {
+        if (enumStatus == WorkOrderTaskStatusType.Created)
+        {
+            return "Todo";
+        }
+        else if (enumStatus == WorkOrderTaskStatusType.WorkStarted)
+        {
+            return "Started";
+        }
+        else if (enumStatus == WorkOrderTaskStatusType.WorkFinished)
+        {
+            return "Finished";
+        }
+        else
+        {
+            return "Error";
+        }
     }
 
     public byte[] GenerateEfficiencyReport(List<WorkOrder> workOrderList, 
@@ -175,10 +198,10 @@ public class PDFService
                             col.Item().PaddingTop(40);
                             if (item.WorkOrderDate != null)
                             {
-                                col.Item().PaddingBottom(30).Text($"Tasks for: {item.VehiclePlate}                        Date: {item.WorkOrderDate:MMMM dd, yyyy}").Bold();
+                                col.Item().PaddingBottom(15).Text($"Tasks for: {item.VehiclePlate}                        Date: {item.WorkOrderDate:MMMM dd, yyyy}").Bold();
                             }
                             else { 
-                                col.Item().PaddingBottom(30).Text($"Tasks for: {item.VehiclePlate}").Bold();
+                                col.Item().PaddingBottom(15).Text($"Tasks for: {item.VehiclePlate}").Bold();
                             }
 
                             col.Item().Table(table =>
