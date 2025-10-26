@@ -17,6 +17,7 @@ public class WorkOrderService
     {
         return await _dbContext.WorkOrders
                                .Include(w => w.Tasks)
+                               .Include(w => w.Parts)
                                .OrderBy(w => w.StartDate)
                                .ToListAsync();
     }
@@ -27,6 +28,7 @@ public class WorkOrderService
         return await _dbContext.WorkOrders
                                .Where(w => w.CustomerName.ToLower() == customerName.ToLower())
                                .Include(w => w.Tasks)
+                               .Include(w => w.Parts)
                                .OrderBy(w => w.StartDate)
                                .ToListAsync();
     }
@@ -37,6 +39,9 @@ public class WorkOrderService
         if (workOrder.Tasks == null)
             workOrder.Tasks = new List<WorkOrderTask>();
 
+        if (workOrder.Parts == null)
+            workOrder.Parts = new List<WorkOrderPart>();
+
         _dbContext.WorkOrders.Add(workOrder);
         await _dbContext.SaveChangesAsync();
         return workOrder;
@@ -45,14 +50,14 @@ public class WorkOrderService
     //fetch all work orders
     public async Task<List<WorkOrder>> GetAllAsync()
     {
-        return await _dbContext.WorkOrders.Include(w => w.Tasks).ToListAsync();
+        return await _dbContext.WorkOrders.Include(w => w.Tasks).Include(w => w.Parts).ToListAsync();
     }
 
 
     //fetch work order by id
     public async Task<WorkOrder?> GetByIdAsync(int id)
     {
-        return await _dbContext.WorkOrders.Include(w => w.Tasks)
+        return await _dbContext.WorkOrders.Include(w => w.Tasks).Include(w => w.Parts)
                                    .FirstOrDefaultAsync(w => w.Id == id);
     }
 
@@ -62,6 +67,7 @@ public class WorkOrderService
     // Get the tracked entity if it exists
     var trackedEntity = await _dbContext.WorkOrders
                                         .Include(w => w.Tasks)
+                                        .Include(w => w.Parts)
                                         .FirstOrDefaultAsync(w => w.Id == workOrder.Id);
 
     if (trackedEntity != null)
@@ -87,6 +93,7 @@ public class WorkOrderService
     {
         var workOrder = await _dbContext.WorkOrders
                                         .Include(w => w.Tasks)
+                                        .Include(w => w.Parts)
                                         .FirstOrDefaultAsync(w => w.Id == workOrderId);
         if (workOrder != null)
         {
@@ -101,6 +108,7 @@ public class WorkOrderService
         return await _dbContext.WorkOrders
                                .Where(w => w.VehiclePlate.ToLower() == plate.ToLower())
                                .Include(w => w.Tasks)
+                               .Include(w => w.Parts)
                                .OrderBy(w => w.StartDate)
                                .ToListAsync();
     }
@@ -110,6 +118,7 @@ public class WorkOrderService
     {
         return await _dbContext.WorkOrders
                                .Include(w => w.Tasks)
+                               .Include(w => w.Parts)
                                .Where(w => w.StartDate.HasValue && w.StartDate.Value >= startDate && w.StartDate.Value <= endDate)
                                .ToListAsync();
     }

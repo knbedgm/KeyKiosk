@@ -1,10 +1,10 @@
-﻿@page "/employee/admin/TaskTemplates"
+﻿@page "/employee/admin/PartTemplates"
 @rendermode InteractiveServer
 @layout Layout.MainLayout
 
 @using KeyKiosk.Data
 
-<h3>WorkOrdersTaskTemplatesPage</h3>
+<h3>Part Templates Page</h3>
 
 @* Display list of existing templates*@
 @if (TemplateList != null && TemplateList.Count > 0)
@@ -12,17 +12,17 @@
 	<table>
 		<tr>
 			<th>Id</th>
-			<th>Title</th>
+			<th>Part Name</th>
 			<th>Details</th>
 			<th>Cost</th>
 		</tr>
-		@foreach (WorkOrderTaskTemplate template in TemplateList)
+		@foreach (PartTemplate template in TemplateList)
 		{
 			<tr>
 				<td>@template.Id</td>
-				<td>@template.TaskTitle</td>
-				<td>@template.TaskDetails</td>
-				<td>@template.TaskCostCents</td>
+				<td>@template.PartName</td>
+				<td>@template.Details</td>
+				<td>@template.CostCents</td>
 				<td>
 					@* Deletes selected template *@
 					<button @onclick="@(e => DeleteTemplate(template.Id))">
@@ -47,14 +47,14 @@
 	<DataAnnotationsValidator />
 	<ValidationSummary />
 
-	<label>Title</label>
-	<input type="text" @bind="TemplateToAdd.TaskTitle" />
-	
+	<label>Part Name</label>
+	<input type="text" @bind="TemplateToAdd.PartName" />
+
 	<label>Details</label>
-	<input type="text" @bind="TemplateToAdd.TaskDetails" />
+	<input type="text" @bind="TemplateToAdd.Details" />
 
 	<label>Cost in Cents</label>
-	<input type="number" @bind="TemplateToAdd.TaskCostCents"/>
+	<input type="number" @bind="TemplateToAdd.CostCents" />
 
 	<button type="submit">Submit</button>
 </EditForm>
@@ -75,17 +75,17 @@
 		<ValidationSummary />
 
 		<select @bind="TemplateToUpdate.Id">
-			@foreach (WorkOrderTaskTemplate template in TemplateList)
+			@foreach (PartTemplate template in TemplateList)
 			{
-				<option value="@template.Id">@template.TaskTitle</option>
+				<option value="@template.Id">@template.PartName</option>
 			}
 		</select>
 
 		<label>New Details</label>
-		<input type="text" @bind="TemplateToUpdate.TaskDetails" />
+		<input type="text" @bind="TemplateToUpdate.Details" />
 
 		<label>New Cost in Cents</label>
-		<input type="number" @bind="TemplateToUpdate.TaskCostCents" />
+		<input type="number" @bind="TemplateToUpdate.CostCents" />
 
 		<button type="submit">Submit</button>
 	</EditForm>

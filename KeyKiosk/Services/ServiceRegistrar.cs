@@ -20,6 +20,8 @@ namespace KeyKiosk.Services
 			builder.Services.AddScoped<WorkOrderTaskService>();
 			builder.Services.AddScoped<WorkOrderTaskTemplateService>();
             builder.Services.AddScoped<PDFService>();
+            builder.Services.AddScoped<WorkOrderPartService>();
+            builder.Services.AddScoped<PartTemplateService>();
 
             builder.Services.AddScoped<WorkOrderLogService>();
 

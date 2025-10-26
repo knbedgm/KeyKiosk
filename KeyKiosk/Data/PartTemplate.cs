@@ -1,6 +1,6 @@
 ﻿namespace KeyKiosk.Data;
 
-public class PartsTemplate
+public class PartTemplate
 {
     public int Id { get; set; }
     public string PartName { get; set; } = "";
