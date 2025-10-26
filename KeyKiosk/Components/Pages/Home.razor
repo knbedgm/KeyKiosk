@@ -29,6 +29,8 @@
 <button @onclick="() => GenerateTopTasksReport()">Preview Popular Tasks Report</button>
 <br />
 <button @onclick="() => GeneratePartsReport()">Preview Parts Usage Expense Report</button>
+<br />
+<button @onclick="() => GenerateRevenueReport()">Preview Revenue Report</button>
 
 @code {
 
@@ -204,6 +206,36 @@
     private async Task PreviewPartsExpenseReportAsync(List<WorkOrderPart> parts, DateTimeOffset startDate, DateTimeOffset endDate)
     {
         var pdfBytes = PDFService.GeneratePartsUsageExpenseReport(parts, startDate, endDate);
+
+        var base64 = Convert.ToBase64String(pdfBytes);
+
+        // Inject JS function directly here
+        var js = @"
+            window.openPdfPreview = (base64) => {
+                const pdfDataUri = ""data:application/pdf;base64,"" + base64;
+                const win = window.open();
+                win.document.write(
+                    ""<iframe src='"" + pdfDataUri + ""' "" +
+                    ""frameborder='0' style='width:100%;height:100%;'></iframe>""
+                );
+            };
+        ";
+        await JSRuntime.InvokeVoidAsync("eval", js);
+
+        // Call JS function to open in new tab
+        await JSRuntime.InvokeVoidAsync("openPdfPreview", base64);
+    }
+
+    public async void GenerateRevenueReport()
+    {
+        List<WorkOrder> workOrders = await WorkOrderService.GetWorkOrderByDatePeriod(StartDate, EndDate);
+
+        await PreviewRevenueReportAsync(workOrders, StartDate, EndDate);
+    }
+
+    private async Task PreviewRevenueReportAsync(List<WorkOrder> workOrders, DateTimeOffset startDate, DateTimeOffset endDate)
+    {
+        var pdfBytes = PDFService.GenerateRevenueReport(workOrders, startDate, endDate);
 
         var base64 = Convert.ToBase64String(pdfBytes);
 
