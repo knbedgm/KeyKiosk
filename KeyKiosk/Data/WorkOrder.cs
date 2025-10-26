@@ -10,7 +10,8 @@ public class WorkOrder
 	public WorkOrderStatusType Status { get; set; }
 	public required string Details { get; set; }
 	public virtual required IList<WorkOrderTask> Tasks { get; set; }
-	public int TotalCostCents { get => Tasks.Sum(t => t.CostCents); }
+	public virtual required IList<WorkOrderPart> Parts { get; set; }
+	public int TotalCostCents { get => Tasks.Sum(t => t.CostCents) + Parts.Sum(p => p.CostCents); }
 }
 
 public enum WorkOrderStatusType
