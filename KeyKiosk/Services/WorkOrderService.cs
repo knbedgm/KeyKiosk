@@ -105,6 +105,7 @@ public class WorkOrderService
                                .ToListAsync();
     }
 
+    // Get work orders between two dates
     public async Task<List<WorkOrder>> GetWorkOrderByDatePeriod(DateTimeOffset startDate, DateTimeOffset endDate)
     {
         return await _dbContext.WorkOrders

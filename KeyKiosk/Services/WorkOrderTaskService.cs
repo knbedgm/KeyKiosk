@@ -1,5 +1,6 @@
 ﻿using KeyKiosk.Components.Pages;
 using KeyKiosk.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace KeyKiosk.Services;
 
@@ -139,4 +140,12 @@ public class WorkOrderTaskService
 		}
 		dbContext.SaveChanges();
 	}
+
+	// Get tasks between two dates
+    public async Task<List<WorkOrderTask>> GetTasksByDatePeriod(DateTimeOffset startDate, DateTimeOffset endDate)
+    {
+        return await dbContext.WorkOrderTasks
+                               .Where(w => w.StartDate.HasValue && w.StartDate.Value >= startDate && w.StartDate.Value <= endDate)
+                               .ToListAsync();
+    }
 }
