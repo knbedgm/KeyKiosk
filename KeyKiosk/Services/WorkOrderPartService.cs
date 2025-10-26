@@ -93,7 +93,7 @@ public class WorkOrderPartService
 
     public class UpdateWorkOrderPartModel
     {
-        public string TaskTitle { get; set; } = "";
+        public string PartName { get; set; } = "";
         public string Details { get; set; } = "";
         public int CostCents { get; set; }
     }
