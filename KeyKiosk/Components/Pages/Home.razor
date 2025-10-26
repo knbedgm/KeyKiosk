@@ -42,217 +42,56 @@
     [Inject] private WorkOrderTaskService TaskService { get; set; }
     [Inject] private WorkOrderPartService PartService { get; set; }
     [Inject] private WorkOrderTaskTemplateService TemplateService { get; set; }
-    [Inject] private PDFService PDFService { get; set; } = default!;
-    [Inject] private IJSRuntime JSRuntime { get; set; } = default!;
+    [Inject] private PreviewDownloadService PreviewDownloadService { get; set; } = default!;
 
     public async void GenerateEfficiencyReport()
     {
         List<WorkOrder> workOrders = await WorkOrderService.GetWorkOrderByDatePeriod(StartDate, EndDate);
         List<WorkOrderTaskTemplate> templates = TemplateService.GetAllTaskTemplates();
 
-        await PreviewEfficiencyReportAsync(workOrders, templates, StartDate, EndDate);
-	}
-
-	private async Task PreviewEfficiencyReportAsync(List<WorkOrder> workOrders, List<WorkOrderTaskTemplate> templates, DateTimeOffset startDate, DateTimeOffset endDate)
-    {
-        var pdfBytes = PDFService.GenerateEfficiencyReport(workOrders, templates, startDate, endDate);
-
-        var base64 = Convert.ToBase64String(pdfBytes);
-
-        // Inject JS function directly here
-        var js = @"
-            window.openPdfPreview = (base64) => {
-                const pdfDataUri = ""data:application/pdf;base64,"" + base64;
-                const win = window.open();
-                win.document.write(
-                    ""<iframe src='"" + pdfDataUri + ""' "" +
-                    ""frameborder='0' style='width:100%;height:100%;'></iframe>""
-                );
-            };
-        ";
-        await JSRuntime.InvokeVoidAsync("eval", js);
-
-        // Call JS function to open in new tab
-        await JSRuntime.InvokeVoidAsync("openPdfPreview", base64);
+        // await PreviewEfficiencyReportAsync(workOrders, templates, StartDate, EndDate);
+        await PreviewDownloadService.PreviewEfficiencyReportAsync(workOrders, templates, StartDate, EndDate);
     }
 
     public async void GenerateWorkOrdersReport()
     {
         List<WorkOrder> workOrders = await WorkOrderService.GetWorkOrderByDatePeriod(StartDate, EndDate);
 
-        await PreviewWorkOrdersReportAsync(workOrders, StartDate, EndDate);
-    }
-
-    private async Task PreviewWorkOrdersReportAsync(List<WorkOrder> workOrders, DateTimeOffset startDate, DateTimeOffset endDate)
-    {
-        var pdfBytes = PDFService.GenerateWorkOrdersReport(workOrders, startDate, endDate);
-
-        var base64 = Convert.ToBase64String(pdfBytes);
-
-        // Inject JS function directly here
-        var js = @"
-            window.openPdfPreview = (base64) => {
-                const pdfDataUri = ""data:application/pdf;base64,"" + base64;
-                const win = window.open();
-                win.document.write(
-                    ""<iframe src='"" + pdfDataUri + ""' "" +
-                    ""frameborder='0' style='width:100%;height:100%;'></iframe>""
-                );
-            };
-        ";
-        await JSRuntime.InvokeVoidAsync("eval", js);
-
-        // Call JS function to open in new tab
-        await JSRuntime.InvokeVoidAsync("openPdfPreview", base64);
+        await PreviewDownloadService.PreviewWorkOrdersReportAsync(workOrders, StartDate, EndDate);
     }
 
     public async void GenerateCustomerHistoryReport()
     {
         List<WorkOrder> workOrders = await WorkOrderService.GetWorkOrdersByCustomerNameAsync(CustomerName);
 
-        await PreviewCustomerHistoryReportAsync(workOrders, CustomerName);
-    }
-
-    private async Task PreviewCustomerHistoryReportAsync(List<WorkOrder> workOrders, string customerName)
-    {
-        var pdfBytes = PDFService.GenerateCustomerHistoryReport(workOrders, customerName);
-
-        var base64 = Convert.ToBase64String(pdfBytes);
-
-        // Inject JS function directly here
-        var js = @"
-            window.openPdfPreview = (base64) => {
-                const pdfDataUri = ""data:application/pdf;base64,"" + base64;
-                const win = window.open();
-                win.document.write(
-                    ""<iframe src='"" + pdfDataUri + ""' "" +
-                    ""frameborder='0' style='width:100%;height:100%;'></iframe>""
-                );
-            };
-        ";
-        await JSRuntime.InvokeVoidAsync("eval", js);
-
-        // Call JS function to open in new tab
-        await JSRuntime.InvokeVoidAsync("openPdfPreview", base64);
+        await PreviewDownloadService.PreviewCustomerHistoryReportAsync(workOrders, CustomerName);
     }
 
     public async void GenerateVehicleHistoryReport()
     {
         List<WorkOrder> workOrders = await WorkOrderService.GetWorkOrdersByVehiclePlateAsync(VehicleLicensePlate);
 
-        await PreviewVehicleHistoryReportAsync(workOrders, VehicleLicensePlate);
-    }
-
-    private async Task PreviewVehicleHistoryReportAsync(List<WorkOrder> workOrders, string vehicleLicensePlate)
-    {
-        var pdfBytes = PDFService.GenerateVehicleHistoryReport(workOrders, vehicleLicensePlate);
-
-        var base64 = Convert.ToBase64String(pdfBytes);
-
-        // Inject JS function directly here
-        var js = @"
-            window.openPdfPreview = (base64) => {
-                const pdfDataUri = ""data:application/pdf;base64,"" + base64;
-                const win = window.open();
-                win.document.write(
-                    ""<iframe src='"" + pdfDataUri + ""' "" +
-                    ""frameborder='0' style='width:100%;height:100%;'></iframe>""
-                );
-            };
-        ";
-        await JSRuntime.InvokeVoidAsync("eval", js);
-
-        // Call JS function to open in new tab
-        await JSRuntime.InvokeVoidAsync("openPdfPreview", base64);
+        await PreviewDownloadService.PreviewVehicleHistoryReportAsync(workOrders, VehicleLicensePlate);
     }
 
     public async void GenerateTopTasksReport()
     {
         List<WorkOrderTask> tasks = await TaskService.GetTasksByDatePeriod(StartDate, EndDate);
 
-        await PreviewTopTasksReportAsync(tasks, StartDate, EndDate);
-    }
-
-    private async Task PreviewTopTasksReportAsync(List<WorkOrderTask> tasks, DateTimeOffset startDate, DateTimeOffset endDate)
-    {
-        var pdfBytes = PDFService.GenerateTopTasksReport(tasks, startDate, endDate);
-
-        var base64 = Convert.ToBase64String(pdfBytes);
-
-        // Inject JS function directly here
-        var js = @"
-            window.openPdfPreview = (base64) => {
-                const pdfDataUri = ""data:application/pdf;base64,"" + base64;
-                const win = window.open();
-                win.document.write(
-                    ""<iframe src='"" + pdfDataUri + ""' "" +
-                    ""frameborder='0' style='width:100%;height:100%;'></iframe>""
-                );
-            };
-        ";
-        await JSRuntime.InvokeVoidAsync("eval", js);
-
-        // Call JS function to open in new tab
-        await JSRuntime.InvokeVoidAsync("openPdfPreview", base64);
+        await PreviewDownloadService.PreviewTopTasksReportAsync(tasks, StartDate, EndDate);
     }
 
     public async void GeneratePartsReport()
     {
         List<WorkOrderPart> parts = await PartService.GetPartsByDatePeriod(StartDate, EndDate);
 
-        await PreviewPartsExpenseReportAsync(parts, StartDate, EndDate);
-    }
-
-    private async Task PreviewPartsExpenseReportAsync(List<WorkOrderPart> parts, DateTimeOffset startDate, DateTimeOffset endDate)
-    {
-        var pdfBytes = PDFService.GeneratePartsUsageExpenseReport(parts, startDate, endDate);
-
-        var base64 = Convert.ToBase64String(pdfBytes);
-
-        // Inject JS function directly here
-        var js = @"
-            window.openPdfPreview = (base64) => {
-                const pdfDataUri = ""data:application/pdf;base64,"" + base64;
-                const win = window.open();
-                win.document.write(
-                    ""<iframe src='"" + pdfDataUri + ""' "" +
-                    ""frameborder='0' style='width:100%;height:100%;'></iframe>""
-                );
-            };
-        ";
-        await JSRuntime.InvokeVoidAsync("eval", js);
-
-        // Call JS function to open in new tab
-        await JSRuntime.InvokeVoidAsync("openPdfPreview", base64);
+        await PreviewDownloadService.PreviewPartsExpenseReportAsync(parts, StartDate, EndDate);
     }
 
     public async void GenerateRevenueReport()
     {
         List<WorkOrder> workOrders = await WorkOrderService.GetWorkOrderByDatePeriod(StartDate, EndDate);
 
-        await PreviewRevenueReportAsync(workOrders, StartDate, EndDate);
-    }
-
-    private async Task PreviewRevenueReportAsync(List<WorkOrder> workOrders, DateTimeOffset startDate, DateTimeOffset endDate)
-    {
-        var pdfBytes = PDFService.GenerateRevenueReport(workOrders, startDate, endDate);
-
-        var base64 = Convert.ToBase64String(pdfBytes);
-
-        // Inject JS function directly here
-        var js = @"
-            window.openPdfPreview = (base64) => {
-                const pdfDataUri = ""data:application/pdf;base64,"" + base64;
-                const win = window.open();
-                win.document.write(
-                    ""<iframe src='"" + pdfDataUri + ""' "" +
-                    ""frameborder='0' style='width:100%;height:100%;'></iframe>""
-                );
-            };
-        ";
-        await JSRuntime.InvokeVoidAsync("eval", js);
-
-        // Call JS function to open in new tab
-        await JSRuntime.InvokeVoidAsync("openPdfPreview", base64);
+        await PreviewDownloadService.PreviewRevenueReportAsync(workOrders, StartDate, EndDate);
     }
 }
