@@ -11,16 +11,31 @@
 <label>End Date: </label>
 <input type="date" @bind="EndDate"/>
 
+<label>Customer Name: </label>
+<input type="text" @bind="CustomerName" />
+
+<label>Vehicle Plate: </label>
+<input type="text" @bind="VehicleLicensePlate" />
+
 <br />
 <button @onclick="() => GenerateEfficiencyReport()">Preview Efficiency Report</button>
 <br />
 <button @onclick="() => GenerateWorkOrdersReport()">Preview Work Orders Report</button>
+<br />
+<button @onclick="() => GenerateCustomerHistoryReport()">Preview Customer History Report</button>
+<br />
+<button @onclick="() => GenerateVehicleHistoryReport()">Preview Vehicle History Report</button>
+<br />
+<button @onclick="() => GenerateTopTasksReport()">Preview Popular Tasks Report</button>
 
 @code {
 
     public DateTimeOffset StartDate { get; set; } = new DateTimeOffset(DateTime.Now);
     public DateTimeOffset EndDate { get; set; } = new DateTimeOffset(DateTime.Now);
+    public string CustomerName { get; set; } = "";
+    public string VehicleLicensePlate { get; set; } = "";
     [Inject] private WorkOrderService WorkOrderService { get; set; }
+    [Inject] private WorkOrderTaskService TaskService { get; set; }
     [Inject] private WorkOrderTaskTemplateService TemplateService { get; set; }
     [Inject] private PDFService PDFService { get; set; } = default!;
     [Inject] private IJSRuntime JSRuntime { get; set; } = default!;
@@ -59,7 +74,6 @@
     public async void GenerateWorkOrdersReport()
     {
         List<WorkOrder> workOrders = await WorkOrderService.GetWorkOrderByDatePeriod(StartDate, EndDate);
-        List<WorkOrderTaskTemplate> templates = TemplateService.GetAllTaskTemplates();
 
         await PreviewWorkOrdersReportAsync(workOrders, StartDate, EndDate);
     }
@@ -67,6 +81,96 @@
     private async Task PreviewWorkOrdersReportAsync(List<WorkOrder> workOrders, DateTimeOffset startDate, DateTimeOffset endDate)
     {
         var pdfBytes = PDFService.GenerateWorkOrdersReport(workOrders, startDate, endDate);
+
+        var base64 = Convert.ToBase64String(pdfBytes);
+
+        // Inject JS function directly here
+        var js = @"
+            window.openPdfPreview = (base64) => {
+                const pdfDataUri = ""data:application/pdf;base64,"" + base64;
+                const win = window.open();
+                win.document.write(
+                    ""<iframe src='"" + pdfDataUri + ""' "" +
+                    ""frameborder='0' style='width:100%;height:100%;'></iframe>""
+                );
+            };
+        ";
+        await JSRuntime.InvokeVoidAsync("eval", js);
+
+        // Call JS function to open in new tab
+        await JSRuntime.InvokeVoidAsync("openPdfPreview", base64);
+    }
+
+    public async void GenerateCustomerHistoryReport()
+    {
+        List<WorkOrder> workOrders = await WorkOrderService.GetWorkOrdersByCustomerNameAsync(CustomerName);
+
+        await PreviewCustomerHistoryReportAsync(workOrders, CustomerName);
+    }
+
+    private async Task PreviewCustomerHistoryReportAsync(List<WorkOrder> workOrders, string customerName)
+    {
+        var pdfBytes = PDFService.GenerateCustomerHistoryReport(workOrders, customerName);
+
+        var base64 = Convert.ToBase64String(pdfBytes);
+
+        // Inject JS function directly here
+        var js = @"
+            window.openPdfPreview = (base64) => {
+                const pdfDataUri = ""data:application/pdf;base64,"" + base64;
+                const win = window.open();
+                win.document.write(
+                    ""<iframe src='"" + pdfDataUri + ""' "" +
+                    ""frameborder='0' style='width:100%;height:100%;'></iframe>""
+                );
+            };
+        ";
+        await JSRuntime.InvokeVoidAsync("eval", js);
+
+        // Call JS function to open in new tab
+        await JSRuntime.InvokeVoidAsync("openPdfPreview", base64);
+    }
+
+    public async void GenerateVehicleHistoryReport()
+    {
+        List<WorkOrder> workOrders = await WorkOrderService.GetWorkOrdersByVehiclePlateAsync(VehicleLicensePlate);
+
+        await PreviewVehicleHistoryReportAsync(workOrders, VehicleLicensePlate);
+    }
+
+    private async Task PreviewVehicleHistoryReportAsync(List<WorkOrder> workOrders, string vehicleLicensePlate)
+    {
+        var pdfBytes = PDFService.GenerateVehicleHistoryReport(workOrders, vehicleLicensePlate);
+
+        var base64 = Convert.ToBase64String(pdfBytes);
+
+        // Inject JS function directly here
+        var js = @"
+            window.openPdfPreview = (base64) => {
+                const pdfDataUri = ""data:application/pdf;base64,"" + base64;
+                const win = window.open();
+                win.document.write(
+                    ""<iframe src='"" + pdfDataUri + ""' "" +
+                    ""frameborder='0' style='width:100%;height:100%;'></iframe>""
+                );
+            };
+        ";
+        await JSRuntime.InvokeVoidAsync("eval", js);
+
+        // Call JS function to open in new tab
+        await JSRuntime.InvokeVoidAsync("openPdfPreview", base64);
+    }
+
+    public async void GenerateTopTasksReport()
+    {
+        List<WorkOrderTask> tasks = await TaskService.GetTasksByDatePeriod(StartDate, EndDate);
+
+        await PreviewTopTasksReportAsync(tasks, StartDate, EndDate);
+    }
+
+    private async Task PreviewTopTasksReportAsync(List<WorkOrderTask> tasks, DateTimeOffset startDate, DateTimeOffset endDate)
+    {
+        var pdfBytes = PDFService.GenerateTopTasksReport(tasks, startDate, endDate);
 
         var base64 = Convert.ToBase64String(pdfBytes);
 
