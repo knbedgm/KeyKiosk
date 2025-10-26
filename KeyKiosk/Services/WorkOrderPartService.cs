@@ -50,7 +50,7 @@ public class WorkOrderPartService
     /// <summary>
     /// Get a single work order part by id
     /// </summary>
-    /// <param name="taskId"></param>
+    /// <param name="partId"></param>
     /// <returns></returns>
     public WorkOrderPart GetWorkOrderPartById(int partId)
     {
@@ -129,7 +129,7 @@ public class WorkOrderPartService
     }
 
     // Get parts between two dates
-    public async Task<List<WorkOrderPart>> GetTasksByDatePeriod(DateTimeOffset startDate, DateTimeOffset endDate)
+    public async Task<List<WorkOrderPart>> GetPartsByDatePeriod(DateTimeOffset startDate, DateTimeOffset endDate)
     {
         List<WorkOrder> workOrders = await dbContext.WorkOrders
                                .Where(w => w.StartDate.HasValue && w.StartDate.Value >= startDate && w.StartDate.Value <= endDate)
