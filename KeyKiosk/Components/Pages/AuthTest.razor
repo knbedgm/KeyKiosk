@@ -1,0 +1,48 @@
+﻿@page "/authtest"
+@using System.Security.Claims
+@using KeyKiosk.Services.Auth
+@using Microsoft.AspNetCore.Components.Authorization
+@inject AppAuthenticationStateProvider authState
+
+<AuthorizeView>
+    <Authorized>
+        @if (authState.CurrentSession is not null)
+        {
+            <div>Authenticated</div>
+            <div>User: @authState.CurrentSession.User.Name</div>
+            <div>Login Type: @authState.CurrentSession.LoginType</div>
+            <div>Role: @string.Join(", ", authState.CurrentSession.User.UserType)</div>
+        }
+        <button @onclick="@(() => { authState.Logout(); })">Logout</button>
+    </Authorized>
+    <Authorizing><div>Loading...</div></Authorizing>
+    <NotAuthorized><div>Not authenticated</div>
+        <button @onclick="@(() => {authState.LoginKioskAsync("555555");})">Login</button>    
+    </NotAuthorized>
+</AuthorizeView>
+
+@* @if (authState.CurrentSession is not null)
+{
+    <p>Not null</p>
+} else {
+    <p>is null</p>
+}
+
+<p>Session Id: @pricipal?.FindFirstValue(ClaimTypes.Hash)</p>
+<p>pricipal hash: @pricipal?.GetHashCode()</p> *@
+
+@* <button @onclick="refresh">refresh</button> *@
+@code {
+    ClaimsPrincipal? pricipal;
+
+    protected override async Task OnInitializedAsync()
+    {
+        base.OnInitialized();
+        pricipal = (await authState.GetAuthenticationStateAsync()).User;
+    }
+
+    public async Task refresh()
+    {
+        pricipal = (await authState.GetAuthenticationStateAsync()).User;
+    }
+}

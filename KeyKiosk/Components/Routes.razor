@@ -1,11 +1,19 @@
 ﻿@rendermode InteractiveServer
-@inject KioskUserSessionService session
+@* @inject AppAuthenticationStateProvider session *@
 @inject NavigationManager navManager
 @inject KioskNavAuthService navAuth
 
 <Router AppAssembly="typeof(Program).Assembly" OnNavigateAsync="authHandler">
     <Found Context="routeData">
-        <RouteView RouteData="routeData" DefaultLayout="typeof(Layout.MainLayout)" />
+        <AuthorizeRouteView RouteData="routeData" DefaultLayout="@typeof(Layout.MainLayout)">
+            <NotAuthorized>
+                <div>You are not authorized.</div>
+                <div><NavLink href="login">Login</NavLink></div>
+            </NotAuthorized>
+            <Authorizing>
+                <div>Authorizing...</div>
+            </Authorizing>
+        </AuthorizeRouteView>
         <FocusOnNavigate RouteData="routeData" Selector="h1" />
     </Found>
 </Router>

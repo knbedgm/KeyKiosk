@@ -1,4 +1,5 @@
 ﻿using KeyKiosk.Data;
+using KeyKiosk.Services.Auth;
 using System.Collections;
 
 namespace KeyKiosk.Services
@@ -8,9 +9,9 @@ namespace KeyKiosk.Services
         IList<DrawerConfig> DrawerIOConfig;
         IPhysicalDrawerController DrawerController;
         ApplicationDbContext dbContext;
-        KioskUserSessionService userSessionService;
+		AppAuthenticationStateProvider userSessionService;
         List<Drawer> drawers;
-        public DrawerService(IList<DrawerConfig> DrawerIOConfig, IPhysicalDrawerController DrawerController, ApplicationDbContext dbContext, KioskUserSessionService userSessionService)
+        public DrawerService(IList<DrawerConfig> DrawerIOConfig, IPhysicalDrawerController DrawerController, ApplicationDbContext dbContext, AppAuthenticationStateProvider userSessionService)
         {
             this.DrawerIOConfig = DrawerIOConfig;
             this.DrawerController = DrawerController;
@@ -32,7 +33,7 @@ namespace KeyKiosk.Services
         public async Task Open(int id)
         {
             //TODO: make service scoped to access use / database for audit
-            dbContext.DrawerLog.Add(new() { DateTime = DateTime.Now, EventType = DrawerLogEventType.Open, DrawerId = id, User = userSessionService.User!});
+            dbContext.DrawerLog.Add(new() { DateTime = DateTime.Now, EventType = DrawerLogEventType.Open, DrawerId = id, User = userSessionService.CurrentSession!.User});
             var drawer = drawers.First(d => d.Id == id);
             if (drawer == null) throw new ArgumentException($"Unable to find drawer with id ${id}", "id");
 

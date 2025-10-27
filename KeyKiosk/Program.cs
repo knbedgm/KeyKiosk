@@ -1,9 +1,15 @@
 using KeyKiosk.Components;
 using KeyKiosk.Data;
 using KeyKiosk.Services;
+using KeyKiosk.Services.Auth;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Internal;
 using MudBlazor.Services;
 using QuestPDF.Infrastructure;
+using System.DirectoryServices;
+using System.Security.Claims;
 
 namespace KeyKiosk
 {
@@ -15,16 +21,18 @@ namespace KeyKiosk
 
             QuestPDF.Settings.License = LicenseType.Community;
 
+            AddAppAuth(builder);
+
             // Add services to the container.
             builder.Services.AddRazorComponents()
                 .AddInteractiveServerComponents();
 
-			builder.Services.AddMudServices(config =>
+            builder.Services.AddMudServices(config =>
             {
                 config.SnackbarConfiguration.PositionClass = MudBlazor.Defaults.Classes.Position.BottomRight;
             });
 
-			var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+            var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
             void DbOptions(DbContextOptionsBuilder options)
             {
@@ -55,7 +63,7 @@ namespace KeyKiosk
                 // create first user if none exist
                 if (ctx.Users.Count() == 0)
                 {
-                    ctx.Users.Add(new() { Id = 1, Name = "DefaultAdmin", Pin = "555555", UserType = UserType.Admin });
+                    //ctx.Users.Add(new() { Id = 1, Name = "DefaultAdmin", Pin = "555555", UserType = UserType.Admin, DesktopLogin = new UserDesktopLogin {Username = "admin", HashedPassword =  } });
                     ctx.SaveChanges();
                 }
             }
@@ -79,6 +87,70 @@ namespace KeyKiosk
                 .AddInteractiveServerRenderMode();
 
             app.Run();
+        }
+
+        private static void AddAppAuth(WebApplicationBuilder builder)
+        {
+            //builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+            //	.AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, options =>
+            //	{
+            //		options.Cookie.HttpOnly = true;
+            //		options.Cookie.SameSite = SameSiteMode.Strict;
+            //		options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest; // Change maybe?
+            //		//options.LoginPath = "/auth/login";
+            //		//options.LogoutPath = "/auth/logout";
+            //		options.SlidingExpiration = true; // = false; // we'll handle expiry server-side
+
+            //		options.Events = new CookieAuthenticationEvents
+            //		{
+            //			/// OnValidatePrincipal = Possibly add session invalidation stuff here
+
+            //			OnRedirectToLogin = context =>
+            //			{
+            //				var path = context.Request.Path.ToString().ToLower();
+
+            //				// If user was on kiosk pages or a kiosk session, send to kiosk login
+            //				if (path.StartsWith("/kiosk"))
+            //					context.Response.Redirect("/kiosk/");
+            //				else
+            //					context.Response.Redirect("/admin/login");
+
+            //				return Task.CompletedTask;
+            //			},
+
+            //			OnRedirectToLogout = context =>
+            //			{
+            //				var path = context.Request.Path.ToString().ToLower();
+
+            //				// If user was on kiosk pages or a kiosk session, send to kiosk login
+            //				if (path.StartsWith("/kiosk"))
+            //					context.Response.Redirect("/kiosk/");
+            //				else
+            //					context.Response.Redirect("/");
+
+            //				return Task.CompletedTask;
+            //			},
+            //		};
+
+            //	});
+
+
+            builder.Services.AddCascadingAuthenticationState();
+            builder.Services.AddSingleton<AppAuthenticationSessionStorage>();
+            builder.Services.AddScoped<UserService>();
+            builder.Services.AddScoped<AppAuthenticationSessionAccessor>();
+            builder.Services.AddScoped<AppAuthenticationStateProvider>();
+            builder.Services.AddScoped<AuthenticationStateProvider>(s => s.GetRequiredService<AppAuthenticationStateProvider>());
+
+            builder.Services.AddAuthorizationBuilder()
+                .AddPolicy("Desktop", policy =>
+                    policy.RequireClaim("LoginType", "Desktop"))
+                .AddPolicy("Kiosk", policy =>
+                    policy.RequireClaim("LoginType", "Kiosk"))
+                .AddPolicy("RoleAdmin", policy =>
+                    policy.RequireClaim(ClaimTypes.Role, "Admin"))
+                .AddPolicy("RoleManager", policy =>
+                    policy.RequireClaim(ClaimTypes.Role, ["Admin", "Manager"]));
         }
     }
 }

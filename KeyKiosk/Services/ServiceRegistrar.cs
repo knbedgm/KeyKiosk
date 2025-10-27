@@ -1,4 +1,5 @@
 ﻿using KeyKiosk.Data;
+using KeyKiosk.Services.Auth;
 
 namespace KeyKiosk.Services
 {
@@ -14,7 +15,6 @@ namespace KeyKiosk.Services
 			builder.Services.AddSingleton<IRFIDReader>(sp => sp.GetRequiredService<HSimService>());
 			//builder.Services.AddSingleton<IRFIDReader, PCSCReaderService>();
 			builder.Services.AddScoped<ScopedTest>();
-			builder.Services.AddScoped<KioskUserSessionService>();
 			builder.Services.AddScoped<KioskNavAuthService>();
 			builder.Services.AddScoped<WorkOrderService>();
 			builder.Services.AddScoped<WorkOrderTaskService>();
@@ -36,7 +36,7 @@ namespace KeyKiosk.Services
 			{
 				var db = svc.GetRequiredService<ApplicationDbContext>();
 				var controller = svc.GetRequiredService<IPhysicalDrawerController>();
-				var users = svc.GetRequiredService<KioskUserSessionService>();
+				var users = svc.GetRequiredService<AppAuthenticationStateProvider>();
 				return new(drawerConfigs, controller, db, users);
 			});
 		}
