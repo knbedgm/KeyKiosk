@@ -201,52 +201,16 @@
     private List<WorkOrder> WorkOrders { get; set; } = new();
     private WorkOrder? EditingWorkOrder { get; set; }
 
-    [Inject] private PDFService PDFService { get; set; } = default!;
-    [Inject] private IJSRuntime JSRuntime { get; set; } = default!;
+    [Inject] private PreviewDownloadService PreviewDownloadService { get; set; } = default!;
 
     private async Task DownloadPdfAsync(WorkOrder workOrder)
     {
-        var pdfBytes = PDFService.GenerateWorkOrderWithTasksPDF(workOrder);
-
-        // Download the PDF in the browser
-        var base64 = Convert.ToBase64String(pdfBytes);
-
-        // Inject JS function directly here
-        var js = @"
-            window.downloadFileFromBytes = (filename, base64) => {
-                const link = document.createElement('a');
-                link.href = 'data:application/pdf;base64,' + base64;
-                link.download = filename;
-                link.click();
-            };
-        ";
-        await JSRuntime.InvokeVoidAsync("eval", js);
-
-        await JSRuntime.InvokeVoidAsync("downloadFileFromBytes", "report.pdf", base64);
+        await PreviewDownloadService.DownloadMechanicTodoAsync(workOrder);
     }
 
     private async Task PreviewPdfAsync(WorkOrder workOrder)
     {
-        var pdfBytes = PDFService.GenerateWorkOrderWithTasksPDF(workOrder);
-
-        // Convert PDF bytes to base64 string
-        var base64 = Convert.ToBase64String(pdfBytes);
-
-        // Inject JS function directly here
-        var js = @"
-            window.openPdfPreview = (base64) => {
-                const pdfDataUri = ""data:application/pdf;base64,"" + base64;
-                const win = window.open();
-                win.document.write(
-                    ""<iframe src='"" + pdfDataUri + ""' "" +
-                    ""frameborder='0' style='width:100%;height:100%;'></iframe>""
-                );
-            };
-        ";
-        await JSRuntime.InvokeVoidAsync("eval", js);
-
-        // Call JS function to open in new tab
-        await JSRuntime.InvokeVoidAsync("openPdfPreview", base64);
+        await PreviewDownloadService.PreviewMechanicTodoAsync(workOrder);
     }
 
     private WorkOrder NewWorkOrder { get; set; } = new()
@@ -255,6 +219,7 @@
         VehiclePlate = "",
         Details = "",
         Tasks = new List<WorkOrderTask>(),
+        Parts = new List<WorkOrderPart>(),
         StartDate = DateTime.Now,
         EndDate = DateTime.Now.AddDays(1),
         Status = WorkOrderStatusType.Created
@@ -347,6 +312,7 @@
             VehiclePlate = "",
             Details = "",
             Tasks = new List<WorkOrderTask>(),
+            Parts = new List<WorkOrderPart>(),
             StartDate = DateTime.Now,
             EndDate = DateTime.Now.AddDays(1),
             Status = WorkOrderStatusType.Created

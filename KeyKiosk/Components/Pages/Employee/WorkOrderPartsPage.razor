@@ -1,0 +1,104 @@
+﻿@page "/employee/WorkOrder/{WorkOrderId:int}/Parts"
+@rendermode InteractiveServer
+@layout Layout.MainLayout
+@namespace KeyKiosk.Components.Pages.Employee
+
+@using KeyKiosk.Data
+
+<h3>Work Order Parts Page</h3>
+
+@* Display list of existing Parts*@
+@if (PartList != null && PartList.Count > 0)
+{
+    <table>
+        <tr>
+            <th>Id</th>
+            <th>Title</th>
+            <th>Details</th>
+            <th>Cost Cents</th>
+        </tr>
+        @foreach (WorkOrderPart Part in PartList)
+        {
+            <tr>
+                <td>@Part.Id</td>
+                <td>@Part.PartName</td>
+                <td>@Part.Details</td>
+                <td>@Part.CostCents</td>
+                <td>
+                    @* Deletes selected Part *@
+                    <button @onclick="@(e => DeletePart(Part.Id))">
+                        Delete
+                    </button>
+                </td>
+            </tr>
+        }
+    </table>
+}
+
+<br />
+<br />
+<br />
+
+<h1>Add New Part</h1>
+
+<br />
+
+@* Form to add new Part *@
+<EditForm Model="@PartToAdd" OnValidSubmit="@AddNewPart">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <label>Title</label>
+    <select @onchange="@ModifyCreatePartFromTemplate">
+        <option disabled selected>--- Select ---</option>
+        @foreach (PartTemplate template in TemplateList)
+        {
+            <option value="@template.Id">@template.PartName</option>
+        }
+    </select>
+
+    <label>Cost in Cents</label>
+    <input type="number" value="@PartToAdd.CostCents" readonly />
+
+    <button type="submit">Submit</button>
+</EditForm>
+
+<br />
+<br />
+<br />
+
+@if (PartList != null && PartList.Count > 0)
+{
+    <h1>Update Existing Part</h1>
+
+    <InputSelect @bind-Value:get="PartToUpdateId" @bind-Value:set="LoadUpdatePart">
+        <option value="">Select a Part</option>
+        @foreach (WorkOrderPart Part in PartList)
+        {
+            <option value="@Part.Id">@Part.PartName</option>
+        }
+    </InputSelect>
+
+    <br />
+
+    @* Form to update existing template *@
+    @if (PartToUpdateId != null)
+    {
+        <EditForm Model="@PartToUpdate" OnValidSubmit="@UpdateExistingPart">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            <label>Title</label>
+            <span>@PartToUpdateOriginal?.PartName</span>
+
+            <label>Details</label>
+            <InputTextArea class="form-control" @bind-Value="PartToUpdate.Details" />
+
+            <label>Cost in Cents</label>
+            @* <input type="number" value="@PartToUpdate.CostCents" readonly /> *@
+            <InputNumber @bind-Value=PartToUpdate.CostCents></InputNumber>
+
+            <button type="submit">Submit</button>
+        </EditForm>
+    }
+}

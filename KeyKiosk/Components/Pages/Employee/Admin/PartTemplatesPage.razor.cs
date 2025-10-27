@@ -4,24 +4,24 @@ using Microsoft.AspNetCore.Components;
 
 namespace KeyKiosk.Components.Pages.Employee.Admin;
 
-public partial class WorkOrderTaskTemplatesPage
+public partial class PartTemplatesPage
 {
-    [Inject] private WorkOrderTaskTemplateService TaskTemplateService { get; set; }
+    [Inject] private PartTemplateService PartTemplateService { get; set; }
 
     /// <summary>
     /// Displays list of existing templates
     /// </summary>
-    private List<WorkOrderTaskTemplate> TemplateList { get; set; } = new List<WorkOrderTaskTemplate>();
+    private List<PartTemplate> TemplateList { get; set; } = new List<PartTemplate>();
 
     /// <summary>
     /// Model for adding template form
     /// </summary>
-    private WorkOrderTaskTemplate TemplateToAdd { get; set; } = new WorkOrderTaskTemplate();
+    private PartTemplate TemplateToAdd { get; set; } = new PartTemplate();
 
     /// <summary>
     /// Model for updating template form
     /// </summary>
-    private WorkOrderTaskTemplate TemplateToUpdate { get; set; } = new WorkOrderTaskTemplate();
+    private PartTemplate TemplateToUpdate { get; set; } = new PartTemplate();
 
     /// <summary>
     /// Loads existing templates to display on page
@@ -29,16 +29,16 @@ public partial class WorkOrderTaskTemplatesPage
     /// <returns></returns>
     protected override Task OnInitializedAsync()
     {
-        RefreshTaskTemplatesList();
+        RefreshPartTemplatesList();
         return Task.CompletedTask;
     }
 
     /// <summary>
     /// Refreshes displayed templates after changes are made
     /// </summary>
-    private void RefreshTaskTemplatesList()
+    private void RefreshPartTemplatesList()
     {
-        var templates = TaskTemplateService.GetAllTaskTemplates();
+        var templates = PartTemplateService.GetAllPartTemplates();
         PopulateTemplateList(templates);
     }
 
@@ -46,11 +46,11 @@ public partial class WorkOrderTaskTemplatesPage
     /// Populates TemplateList with data from database
     /// </summary>
     /// <param name="templates"></param>
-    private void PopulateTemplateList(List<WorkOrderTaskTemplate> templates)
+    private void PopulateTemplateList(List<PartTemplate> templates)
     {
         TemplateList.Clear();
 
-        foreach (WorkOrderTaskTemplate t in templates)
+        foreach (PartTemplate t in templates)
         {
             TemplateList.Add(t);
         }
@@ -61,9 +61,9 @@ public partial class WorkOrderTaskTemplatesPage
     /// </summary>
     public void AddNewTemplate()
     {
-        TaskTemplateService.AddWorkOrderTaskTemplate(TemplateToAdd);
-        RefreshTaskTemplatesList();
-        TemplateToAdd = new WorkOrderTaskTemplate();
+        PartTemplateService.AddPartTemplate(TemplateToAdd);
+        RefreshPartTemplatesList();
+        TemplateToAdd = new PartTemplate();
     }
 
     /// <summary>
@@ -72,8 +72,8 @@ public partial class WorkOrderTaskTemplatesPage
     /// <param name="id"></param>
     public void DeleteTemplate(int id)
     {
-        TaskTemplateService.DeleteWorkOrderTaskTemplate(id);
-        RefreshTaskTemplatesList();
+        PartTemplateService.DeletePartTemplate(id);
+        RefreshPartTemplatesList();
     }
 
     /// <summary>
@@ -81,8 +81,8 @@ public partial class WorkOrderTaskTemplatesPage
     /// </summary>
     private void UpdateExistingTemplate()
     {
-        TaskTemplateService.UpdateWorkOrderTaskTemplate(TemplateToUpdate);
-        RefreshTaskTemplatesList();
-        TemplateToUpdate = new WorkOrderTaskTemplate();
+        PartTemplateService.UpdatePartTemplate(TemplateToUpdate);
+        RefreshPartTemplatesList();
+        TemplateToUpdate = new PartTemplate();
     }
 }

@@ -3,6 +3,7 @@ using System;
 using KeyKiosk.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace KeyKiosk.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251026190351_Parts")]
+    partial class Parts
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -72,30 +75,6 @@ namespace KeyKiosk.Migrations
                     b.HasKey("ID");
 
                     b.ToTable("DrawerLog");
-                });
-
-            modelBuilder.Entity("KeyKiosk.Data.PartTemplate", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("CostCents")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Details")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("PartName")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("PartTemplates");
                 });
 
             modelBuilder.Entity("KeyKiosk.Data.User", b =>
@@ -253,7 +232,7 @@ namespace KeyKiosk.Migrations
 
                     b.HasIndex("WorkOrderId");
 
-                    b.ToTable("WorkOrderParts");
+                    b.ToTable("WorkOrderPart");
                 });
 
             modelBuilder.Entity("KeyKiosk.Data.WorkOrderTask", b =>
