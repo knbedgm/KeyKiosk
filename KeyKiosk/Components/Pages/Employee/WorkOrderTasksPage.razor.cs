@@ -134,7 +134,6 @@ public partial class WorkOrderTasksPage : ComponentBase
     {
         if (WorkOrder is null) return;
 
-        // Uses your existing ReportService to generate a PDF; downloads it to the browser.
         var pdfBytes = ReportService.GenerateReport(WorkOrder);
         var base64 = Convert.ToBase64String(pdfBytes);
 
@@ -183,8 +182,6 @@ public partial class WorkOrderTasksPage : ComponentBase
 
     private void RecalcWorkOrderTotal()
     {
-        // If your WorkOrderService recalculates and persists totals, reload it.
-        // Otherwise you can compute client-side as needed.
         _ = ReloadWorkOrderAndTasks();
     }
 }

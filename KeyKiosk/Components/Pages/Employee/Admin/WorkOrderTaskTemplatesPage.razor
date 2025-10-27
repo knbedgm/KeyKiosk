@@ -3,90 +3,228 @@
 @layout Layout.MainLayout
 
 @using KeyKiosk.Data
+@using Microsoft.AspNetCore.Components.Forms
+@inject KeyKiosk.Services.WorkOrderTaskTemplateService TemplateService
+@inject KeyKiosk.Services.ToastService ToastService
 
-<h3>WorkOrdersTaskTemplatesPage</h3>
+<link href="app.css" rel="stylesheet" />
+<link href="WorkOrderTaskTemplate.css" rel="stylesheet" />
 
-@* Display list of existing templates*@
-@if (TemplateList != null && TemplateList.Count > 0)
+<h1>Work Orders Task Templates</h1>
+
+@if (Templates is null)
 {
-	<table>
-		<tr>
-			<th>Id</th>
-			<th>Title</th>
-			<th>Details</th>
-			<th>Cost</th>
-		</tr>
-		@foreach (WorkOrderTaskTemplate template in TemplateList)
-		{
-			<tr>
-				<td>@template.Id</td>
-				<td>@template.TaskTitle</td>
-				<td>@template.TaskDetails</td>
-				<td>@template.TaskCostCents</td>
-				<td>
-					@* Deletes selected template *@
-					<button @onclick="@(e => DeleteTemplate(template.Id))">
-						Delete
-					</button>
-				</td>
-			</tr>
-		}
-	</table>
+    <p>Loading…</p>
+}
+else if (Templates.Count > 0)
+{
+    <table class="workorders-table">
+        <thead>
+            <tr>
+                <th style="width:80px;">Id</th>
+                <th>Title</th>
+                <th>Details</th>
+                <th style="width:140px;">Cost</th>
+                <th style="width:1%;">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var t in Templates)
+            {
+                <tr>
+                    <td>@t.Id</td>
+                    <td>@t.TaskTitle</td>
+                    <td>@t.TaskDetails</td>
+                    <td>@FormatCost(t.TaskCostCents)</td>
+                    <td>
+                        <button class="delete-btn" @onclick="() => OnDelete(t.Id)">Delete</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <div class="card-like" style="padding:1rem;border:1px solid #e5e7eb;border-radius:12px;max-width:760px;margin:1rem auto;">
+        <p style="margin:0;text-align:center;color:#6b7280">
+            No templates yet. Add your first template below.
+        </p>
+    </div>
 }
 
 <br />
-<br />
-<br />
-
 <h1>Add New Template</h1>
 
-<br />
+<EditForm class="new-workorder-form" Model="@AddModel" OnValidSubmit="@OnAdd">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
 
-@* Form to add new template *@
-<EditForm Model="@TemplateToAdd" OnValidSubmit="@AddNewTemplate">
-	<DataAnnotationsValidator />
-	<ValidationSummary />
+    <label>Title</label>
+    <InputText @bind-Value="AddModel.TaskTitle" />
 
-	<label>Title</label>
-	<input type="text" @bind="TemplateToAdd.TaskTitle" />
-	
-	<label>Details</label>
-	<input type="text" @bind="TemplateToAdd.TaskDetails" />
+    <label>Details</label>
+    <InputText @bind-Value="AddModel.TaskDetails" />
 
-	<label>Cost in Cents</label>
-	<input type="number" @bind="TemplateToAdd.TaskCostCents"/>
+    <label>Cost in Cents</label>
+    <InputNumber @bind-Value="AddModel.TaskCostCents" />
 
-	<button type="submit">Submit</button>
+    <button class="btn-primary" type="submit">Submit</button>
 </EditForm>
 
-<br />
-<br />
-<br />
-
-@if (TemplateList != null && TemplateList.Count > 0)
+@if (Templates is not null && Templates.Count > 0)
 {
-	<h1>Update Existing Template</h1>
+    <br />
+    <h1>Update Existing Template</h1>
 
-	<br />
+    <EditForm class="new-workorder-form" Model="@UpdateModel" OnValidSubmit="@OnUpdate">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
 
-	@* Form to update existing template *@
-	<EditForm Model="@TemplateToUpdate" OnValidSubmit="@UpdateExistingTemplate">
-		<DataAnnotationsValidator />
-		<ValidationSummary />
+        <label>Select Template</label>
+        <InputSelect @bind-Value="UpdateModel.Id">
+            <option value="">-- choose --</option>
+            @foreach (var t in Templates)
+            {
+                <option value="@t.Id.ToString()">@t.TaskTitle (@FormatCost(t.TaskCostCents))</option>
+            }
+        </InputSelect>
 
-		<select @bind="TemplateToUpdate.Id">
-			@foreach (WorkOrderTaskTemplate template in TemplateList)
-			{
-				<option value="@template.Id">@template.TaskTitle</option>
-			}
-		</select>
+        <label>New Title (optional)</label>
+        <InputText @bind-Value="UpdateModel.TaskTitle" />
 
-		<label>New Details</label>
-		<input type="text" @bind="TemplateToUpdate.TaskDetails" />
+        <label>New Details</label>
+        <InputText @bind-Value="UpdateModel.TaskDetails" />
 
-		<label>New Cost in Cents</label>
-		<input type="number" @bind="TemplateToUpdate.TaskCostCents" />
+        <label>New Cost in Cents</label>
+        <InputNumber @bind-Value="UpdateModel.TaskCostCents" />
 
-		<button type="submit">Submit</button>
-	</EditForm>
+        <button class="btn-primary" type="submit">Submit</button>
+    </EditForm>
+}
+
+@code
+{
+    // Data
+    private List<WorkOrderTaskTemplate>? Templates;
+
+    // Add form model
+    private AddTemplateModel AddModel = new();
+
+    // Update form model
+    private UpdateTemplateModel UpdateModel = new();
+
+    protected override void OnInitialized()
+    {
+        LoadTemplates();
+    }
+
+    private void LoadTemplates()
+    {
+        Templates = TemplateService.GetAllTaskTemplates();
+        StateHasChanged();
+    }
+
+    // Actions with Toasts
+
+    private void OnAdd()
+    {
+        try
+        {
+            var template = new WorkOrderTaskTemplate
+            {
+                TaskTitle = AddModel.TaskTitle?.Trim() ?? string.Empty,
+                TaskDetails = AddModel.TaskDetails?.Trim() ?? string.Empty,
+                TaskCostCents = AddModel.TaskCostCents
+            };
+
+            TemplateService.AddWorkOrderTaskTemplate(template);
+            LoadTemplates();
+
+            AddModel = new(); // reset
+            ToastService.ShowToast("Template created successfully.", "success");
+        }
+        catch (Exception ex)
+        {
+            ToastService.ShowToast($"Create failed: {ex.Message}", "error");
+        }
+    }
+
+    private void OnUpdate()
+    {
+        if (string.IsNullOrWhiteSpace(UpdateModel.Id))
+        {
+            ToastService.ShowToast("Please select a template to update.", "warning");
+            return;
+        }
+
+        try
+        {
+            var id = int.Parse(UpdateModel.Id);
+            var existing = Templates!.FirstOrDefault(t => t.Id == id);
+            if (existing is null)
+            {
+                ToastService.ShowToast("Template not found.", "warning");
+                return;
+            }
+
+            // Build an updated object (your service expects a full entity)
+            var updated = new WorkOrderTaskTemplate
+            {
+                Id = id,
+                TaskTitle = string.IsNullOrWhiteSpace(UpdateModel.TaskTitle)
+                            ? existing.TaskTitle
+                            : UpdateModel.TaskTitle!.Trim(),
+                TaskDetails = UpdateModel.TaskDetails?.Trim() ?? "",
+                TaskCostCents = UpdateModel.TaskCostCents
+            };
+
+            TemplateService.UpdateWorkOrderTaskTemplate(updated);
+            LoadTemplates();
+
+            // reset (keep selection optional)
+            UpdateModel.TaskTitle = "";
+            UpdateModel.TaskDetails = "";
+            UpdateModel.TaskCostCents = 0;
+
+            ToastService.ShowToast("Template updated.", "success");
+        }
+        catch (Exception ex)
+        {
+            ToastService.ShowToast($"Update failed: {ex.Message}", "error");
+        }
+    }
+
+    private void OnDelete(int id)
+    {
+        try
+        {
+            TemplateService.DeleteWorkOrderTaskTemplate(id);
+            LoadTemplates();
+            ToastService.ShowToast($"Template #{id} deleted.", "info");
+        }
+        catch (Exception ex)
+        {
+            ToastService.ShowToast($"Delete failed: {ex.Message}", "error");
+        }
+    }
+
+    // Helpers
+    private static string FormatCost(int cents) => (cents / 100m).ToString("C");
+
+    // Simple form models (add data annotations if you want validation)
+    private sealed class AddTemplateModel
+    {
+        public string? TaskTitle { get; set; }
+        public string? TaskDetails { get; set; }
+        public int TaskCostCents { get; set; }
+    }
+
+    private sealed class UpdateTemplateModel
+    {
+        public string? Id { get; set; }
+        public string? TaskTitle { get; set; }
+        public string? TaskDetails { get; set; }
+        public int TaskCostCents { get; set; }
+    }
 }

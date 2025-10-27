@@ -271,3 +271,80 @@ td .delete-btn {
 	justify-content: flex-end;
 	margin-top: 1rem;
 }
+
+.pagination-bar {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	max-width: 1200px;
+	margin: .75rem auto 1.25rem;
+	gap: .75rem;
+}
+
+.pagination-left {
+	display: flex;
+	align-items: center;
+	gap: .5rem;
+}
+
+.pagination-right {
+	display: flex;
+	align-items: center;
+	gap: .5rem;
+}
+
+.pagination-summary, .pagination-page {
+	color: #374151;
+	font-size: .95rem;
+}
+
+.pagination-right .btn-primary:disabled {
+	opacity: .45;
+	cursor: not-allowed;
+}
+
+.pager-bar {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: .5rem;
+	padding: .5rem 0;
+	max-width: 1200px;
+	margin: 0 auto .5rem;
+}
+
+.pager-left, .pager-right {
+	display: flex;
+	gap: .5rem
+}
+
+.pager-middle {
+	display: flex;
+	align-items: center;
+	gap: .5rem;
+	flex-wrap: wrap
+}
+
+.pager-btn {
+	padding: 4px 8px;
+	border: 1px solid #cbd5e1;
+	border-radius: 6px;
+	background: #fff;
+	cursor: pointer
+}
+
+	.pager-btn:disabled {
+		opacity: .5;
+		cursor: not-allowed
+	}
+
+.pager-select {
+	padding: 2px 6px;
+	border: 1px solid #cbd5e1;
+	border-radius: 6px;
+	background: #fff
+}
+
+.pager-sep {
+	opacity: .6
+}

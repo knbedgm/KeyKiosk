@@ -1,0 +1,51 @@
+﻿.admin-grid {
+    display: grid;
+    /* 3 columns, 2 rows automatically created */
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1.5rem;
+    justify-items: center;
+    align-items: center;
+    max-width: 960px; /* wider to fit 3 buttons per row */
+    margin: 2rem auto;
+}
+
+.admin-card {
+    width: 100%;
+    max-width: 320px;
+    aspect-ratio: 1 / 1;
+    background: #fff;
+    border: 2px solid #e5e7eb;
+    border-radius: 16px;
+    box-shadow: 0 4px 10px rgba(0,0,0,.08);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: .75rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #1e293b;
+    transition: all .2s ease;
+    cursor: pointer;
+}
+
+    .admin-card:hover:not(:disabled) {
+        background: #3b82f6;
+        color: #fff;
+        transform: translateY(-4px);
+        box-shadow: 0 6px 16px rgba(59,130,246,.25);
+    }
+
+    .admin-card:disabled {
+        opacity: .55;
+        cursor: not-allowed;
+        background: #f3f4f6;
+    }
+
+/* Optional: smaller spacing on mobile */
+@media (max-width: 768px) {
+    .admin-grid {
+        grid-template-columns: repeat(2, 1fr);
+        max-width: 700px;
+    }
+}

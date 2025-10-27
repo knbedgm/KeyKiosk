@@ -58,28 +58,28 @@ public class WorkOrderService
 
     // Update an existing work order
     public async Task UpdateWorkOrderAsync(WorkOrder workOrder)
-{
-    // Get the tracked entity if it exists
-    var trackedEntity = await _dbContext.WorkOrders
-                                        .Include(w => w.Tasks)
-                                        .FirstOrDefaultAsync(w => w.Id == workOrder.Id);
-
-    if (trackedEntity != null)
     {
-        // Update only the properties you want to change
-        trackedEntity.CustomerName = workOrder.CustomerName;
-        trackedEntity.VehiclePlate = workOrder.VehiclePlate;
-        trackedEntity.StartDate = workOrder.StartDate;
-        trackedEntity.EndDate = workOrder.EndDate;
-        trackedEntity.Status = workOrder.Status;
-        trackedEntity.Details = workOrder.Details;
+        // Get the tracked entity if it exists
+        var trackedEntity = await _dbContext.WorkOrders
+                                            .Include(w => w.Tasks)
+                                            .FirstOrDefaultAsync(w => w.Id == workOrder.Id);
 
-        // Optional: update tasks manually if needed
-        // trackedEntity.Tasks = workOrder.Tasks;
+        if (trackedEntity != null)
+        {
+            // Update only the properties you want to change
+            trackedEntity.CustomerName = workOrder.CustomerName;
+            trackedEntity.VehiclePlate = workOrder.VehiclePlate;
+            trackedEntity.StartDate = workOrder.StartDate;
+            trackedEntity.EndDate = workOrder.EndDate;
+            trackedEntity.Status = workOrder.Status;
+            trackedEntity.Details = workOrder.Details;
 
-        await _dbContext.SaveChangesAsync();
+            // Optional: update tasks manually if needed
+            // trackedEntity.Tasks = workOrder.Tasks;
+
+            await _dbContext.SaveChangesAsync();
+        }
     }
-}
 
 
     // Delete a work order

@@ -3,39 +3,29 @@
 
 <!-- Top navigation bar -->
 <header class="top-nav">
-    <!-- Left: links -->
     <div class="nav-left">
         <NavLink href="employee/home" class="nav-link" Match="NavLinkMatch.All">
             Home
         </NavLink>
     </div>
-
-    <!-- Center: logo -->
     <div class="nav-center">
         <img src="images/KEYOSK_icon.png" alt="KeyOSk Logo" class="nav-logo" />
     </div>
-
-    <!-- Right: placeholder for future buttons or profile -->
-    <div class="nav-right">
-        <!-- empty for now -->
-    </div>
+    <div class="nav-right"></div>
 </header>
 
 @code {
     private string? currentUrl;
-
     protected override void OnInitialized()
     {
         currentUrl = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
         NavigationManager.LocationChanged += OnLocationChanged;
     }
-
     private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
     {
         currentUrl = NavigationManager.ToBaseRelativePath(e.Location);
         StateHasChanged();
     }
-
     public void Dispose()
     {
         NavigationManager.LocationChanged -= OnLocationChanged;

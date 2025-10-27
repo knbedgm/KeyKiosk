@@ -4,9 +4,9 @@
 @using KeyKiosk.Data
 
 <link href="app.css" rel="stylesheet" />
+<link href="EmployeeHomeWorkOrders.css" rel="stylesheet" />
 
 <h1 style="text-align:center">Work Order Details</h1>
-
 <hr />
 
 @if (WorkOrder is null)
@@ -52,6 +52,7 @@ else
                 <button class="delete-btn" @onclick="DeleteWorkOrderAsync">Delete Work Order</button>
             </div>
         </div>
+
         @if (!string.IsNullOrWhiteSpace(WorkOrder.Details))
         {
             <div class="muted" style="margin-top:.75rem;color:#4b5563;">@WorkOrder.Details</div>
@@ -169,7 +170,6 @@ else
                             }
                             else
                             {
-
                                 @t.Title
                             }
                         </td>
@@ -180,7 +180,6 @@ else
                             }
                             else
                             {
-
                                 @t.Details
                             }
                         </td>
@@ -191,7 +190,6 @@ else
                             }
                             else
                             {
-
                                 @FormatCost(t.CostCents)
                             }
                         </td>
@@ -202,7 +200,6 @@ else
                             }
                             else
                             {
-
                                 @FormatDate(t.StartDate)
                             }
                         </td>
@@ -213,7 +210,6 @@ else
                             }
                             else
                             {
-
                                 @FormatDate(t.EndDate)
                             }
                         </td>
@@ -229,7 +225,6 @@ else
                             }
                             else
                             {
-
                                 @t.Status
                             }
                         </td>

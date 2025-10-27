@@ -1,0 +1,192 @@
+﻿/* ===== Headings ===== */
+h1 {
+    text-align: center;
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin: 1rem 0 1.25rem;
+    color: #111827;
+}
+
+h2, h3 {
+    text-align: center;
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin: 1rem 0;
+    color: #222;
+}
+
+/* ===== Table (templates list) ===== */
+table {
+    width: auto;
+    min-width: 720px;
+    border-collapse: collapse;
+    font-family: Arial, sans-serif;
+    margin: 0 auto; /* center table */
+    box-sizing: border-box;
+}
+
+th, td {
+    border: 1px solid #ddd;
+    padding: 8px 10px;
+    text-align: left;
+    vertical-align: top;
+}
+
+th {
+    background-color: #4caf50;
+    color: #fff;
+    font-weight: bold;
+}
+
+tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+tr:hover {
+    background-color: #e6f2ff;
+}
+
+/* Keep long details readable */
+td:nth-child(3) {
+    max-width: 520px;
+    white-space: normal;
+    overflow-wrap: anywhere;
+}
+
+/* ===== Buttons (consistent with app) ===== */
+button {
+    padding: 6px 12px;
+    margin: 2px;
+    cursor: pointer;
+    border: none;
+    border-radius: 6px;
+    transition: background-color .2s ease, opacity .2s ease, transform .08s ease;
+    background-color: #007bff;
+    color: #fff;
+    font-weight: 600;
+}
+
+    button:hover {
+        opacity: 0.95;
+        transform: translateY(-1px);
+    }
+
+    button:disabled {
+        opacity: .6;
+        cursor: not-allowed;
+    }
+
+/* Special styles you can reuse where desired */
+.btn-primary {
+    background-color: #007bff;
+    color: #fff;
+}
+
+.delete-btn {
+    background-color: #dc3545;
+    color: #fff;
+}
+
+.save-btn {
+    background-color: #28a745;
+    color: #fff;
+}
+
+.cancel-btn {
+    background-color: #6c757d;
+    color: #fff;
+}
+
+/* Make the Delete button in the table red automatically if you used plain <button> */
+td > button {
+    background-color: #dc3545;
+}
+
+/* ===== Forms (Add + Update) ===== */
+/* Both EditForms render as <form>, so styling the element is fine here */
+form {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: .75rem .75rem;
+    max-width: 720px;
+    margin: 1rem auto 2rem;
+    padding: 1rem 1rem 1.25rem;
+    background: #f9f9f9;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,.05);
+}
+
+    /* Labels stacked */
+    form label {
+        display: block;
+        font-size: .95rem;
+        color: #374151;
+        margin: .25rem 0 .2rem;
+        font-weight: 600;
+    }
+
+    /* Inputs */
+    form input[type="text"],
+    form input[type="number"],
+    form select {
+        width: 100%;
+        padding: 8px 10px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        background: #fff;
+        color: #111827;
+        box-sizing: border-box;
+    }
+
+    /* Put the Title and Details full-width nicely */
+    form label + input[type="text"] {
+        grid-column: span 2;
+    }
+
+    /* Action button row */
+    form button[type="submit"] {
+        grid-column: 2; /* right column */
+        justify-self: end;
+        background: #007bff;
+    }
+
+    form .cancel-btn {
+        grid-column: 1; /* left column, if you add one later */
+        justify-self: start;
+    }
+
+    /* Smaller/centered “section” headings for the forms if you add any */
+    form .form-section-title {
+        grid-column: span 2;
+        text-align: center;
+        margin: .25rem 0 .5rem;
+        font-weight: 700;
+    }
+
+/* ===== Utility/container alignment (optional) ===== */
+.page-wrap {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* Responsive: stack to single column on smaller screens */
+@media (max-width: 768px) {
+    table {
+        min-width: 100%;
+    }
+
+    form {
+        grid-template-columns: 1fr;
+    }
+
+        form label + input[type="text"],
+        form button[type="submit"] {
+            grid-column: span 1;
+        }
+}
+
+/* Optional: match the modal/button hover vibe from app.css */
+form button[type="submit"]:hover {
+    background-color: #0056b3;
+}

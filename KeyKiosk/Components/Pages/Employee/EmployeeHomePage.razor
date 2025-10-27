@@ -6,6 +6,7 @@
 @using Microsoft.AspNetCore.Components
 @using Microsoft.AspNetCore.Components.Forms
 @using Microsoft.JSInterop
+
 @inject KeyKiosk.Services.WorkOrderService WorkOrderService
 @inject KeyKiosk.Services.ToastService ToastService
 @inject IJSRuntime JSRuntime
@@ -13,6 +14,7 @@
 @inject ReportService ReportService
 
 <link href="app.css" rel="stylesheet" />
+<link href="EmployeeHomeWorkOrders.css" rel="stylesheet" />
 
 <h1 style="text-align:center">Employee Home</h1>
 <hr />
@@ -41,6 +43,32 @@
 }
 else if (WorkOrders.Count > 0)
 {
+    <!-- Pagination controls (top) -->
+    <div class="pager-bar">
+        <div class="pager-left">
+            <button class="pager-btn" disabled="@(CurrentPage == 1)" @onclick="GoFirst">« First</button>
+            <button class="pager-btn" disabled="@(CurrentPage == 1)" @onclick="GoPrev">‹ Prev</button>
+        </div>
+        <div class="pager-middle">
+            Page @CurrentPage of @TotalPages
+            <span class="pager-sep">|</span>
+            <label>Per page</label>
+            <select class="pager-select" @bind="PageSize">
+                <option value="5">5</option>
+                <option value="10">10</option>
+                <option value="15">15</option>
+                <option value="25">25</option>
+                <option value="50">50</option>
+            </select>
+            <span class="pager-sep">|</span>
+            <span>@FilteredCount item(s)</span>
+        </div>
+        <div class="pager-right">
+            <button class="pager-btn" disabled="@(CurrentPage == TotalPages)" @onclick="GoNext">Next ›</button>
+            <button class="pager-btn" disabled="@(CurrentPage == TotalPages)" @onclick="GoLast">Last »</button>
+        </div>
+    </div>
+
     <div class="workorders-table-container">
         <table class="workorders-table">
             <thead>
@@ -57,12 +85,12 @@ else if (WorkOrders.Count > 0)
                     <th>Actions</th>
                 </tr>
 
-                <!-- Filter Row (trimmed to match columns) -->
+                <!-- Filter Row -->
                 <tr>
                     <th></th>
-                    <th><input class="table-input" type="text" placeholder="Filter" @bind="FilterCustomer" @bind:event="oninput" /></th>
-                    <th><input class="table-input" type="text" placeholder="Filter" @bind="FilterVehicle" @bind:event="oninput" /></th>
-                    <th><input class="table-input" type="text" placeholder="Filter" @bind="FilterDetails" @bind:event="oninput" /></th>
+                    <th><input class="table-input" type="text" placeholder="Filter" @bind="FilterCustomer" /></th>
+                    <th><input class="table-input" type="text" placeholder="Filter" @bind="FilterVehicle" /></th>
+                    <th><input class="table-input" type="text" placeholder="Filter" @bind="FilterDetails" /></th>
                     <th>
                         <select class="table-select" @bind="FilterStatus">
                             <option value="">All</option>
@@ -75,18 +103,17 @@ else if (WorkOrders.Count > 0)
                     <th><input class="table-input" type="date" @bind="FilterStartDate" /></th>
                     <th><input class="table-input" type="date" @bind="FilterEndDate" /></th>
                     <th></th>
-                    <th><input class="table-input" type="text" placeholder="Cost" @bind="FilterTotalCost" @bind:event="oninput" /></th>
+                    <th><input class="table-input" type="text" placeholder="Cost" @bind="FilterTotalCost" /></th>
                     <th></th>
                 </tr>
             </thead>
 
             <tbody>
-                @foreach (var workOrder in FilteredWorkOrders)
+                @foreach (var workOrder in PagedWorkOrders)
                 {
                     <tr>
                         <td>@workOrder.Id</td>
 
-                        <!-- Customer -->
                         <td>
                             @if (EditingWorkOrder == workOrder)
                             {
@@ -94,12 +121,10 @@ else if (WorkOrders.Count > 0)
                             }
                             else
                             {
-
                                 @workOrder.CustomerName
                             }
                         </td>
 
-                        <!-- Vehicle -->
                         <td>
                             @if (EditingWorkOrder == workOrder)
                             {
@@ -107,12 +132,10 @@ else if (WorkOrders.Count > 0)
                             }
                             else
                             {
-
                                 @workOrder.VehiclePlate
                             }
                         </td>
 
-                        <!-- Details -->
                         <td>
                             @if (EditingWorkOrder == workOrder)
                             {
@@ -120,12 +143,10 @@ else if (WorkOrders.Count > 0)
                             }
                             else
                             {
-
                                 @workOrder.Details
                             }
                         </td>
 
-                        <!-- Status -->
                         <td>
                             @if (EditingWorkOrder == workOrder)
                             {
@@ -138,12 +159,10 @@ else if (WorkOrders.Count > 0)
                             }
                             else
                             {
-
                                 @workOrder.Status
                             }
                         </td>
 
-                        <!-- Dates -->
                         <td>
                             @if (EditingWorkOrder == workOrder)
                             {
@@ -151,7 +170,6 @@ else if (WorkOrders.Count > 0)
                             }
                             else
                             {
-
                                 @FormatDate(workOrder.StartDate)
                             }
                         </td>
@@ -162,18 +180,14 @@ else if (WorkOrders.Count > 0)
                             }
                             else
                             {
-
                                 @FormatDate(workOrder.EndDate)
                             }
                         </td>
 
-                        <!-- Tasks: show only the count -->
                         <td>@(workOrder.Tasks?.Count ?? 0)</td>
 
-                        <!-- Total -->
                         <td>@FormatCost(workOrder.TotalCostCents)</td>
 
-                        <!-- Actions -->
                         <td style="white-space:nowrap;">
                             @if (EditingWorkOrder == workOrder)
                             {
@@ -197,6 +211,32 @@ else if (WorkOrders.Count > 0)
                 }
             </tbody>
         </table>
+    </div>
+
+    <!-- Pagination controls (bottom) -->
+    <div class="pager-bar">
+        <div class="pager-left">
+            <button class="pager-btn" disabled="@(CurrentPage == 1)" @onclick="GoFirst">« First</button>
+            <button class="pager-btn" disabled="@(CurrentPage == 1)" @onclick="GoPrev">‹ Prev</button>
+        </div>
+        <div class="pager-middle">
+            Page @CurrentPage of @TotalPages
+            <span class="pager-sep">|</span>
+            <label>Per page</label>
+            <select class="pager-select" @bind="PageSize">
+                <option value="5">5</option>
+                <option value="10">10</option>
+                <option value="15">15</option>
+                <option value="25">25</option>
+                <option value="50">50</option>
+            </select>
+            <span class="pager-sep">|</span>
+            <span>@FilteredCount item(s)</span>
+        </div>
+        <div class="pager-right">
+            <button class="pager-btn" disabled="@(CurrentPage == TotalPages)" @onclick="GoNext">Next ›</button>
+            <button class="pager-btn" disabled="@(CurrentPage == TotalPages)" @onclick="GoLast">Last »</button>
+        </div>
     </div>
 }
 else
@@ -274,28 +314,70 @@ else
     </div>
 }
 
-
 @code {
-
     [SupplyParameterFromQuery(Name = "new")]
     public bool OpenNew { get; set; }
 
     private List<WorkOrder> WorkOrders { get; set; } = new();
     private WorkOrder? EditingWorkOrder { get; set; }
 
-    // ----- Search (EditForm requires a model) -----
+    // Search (EditForm requires a model)
     private class WorkOrderSearch { public string Plate { get; set; } = string.Empty; }
     private WorkOrderSearch SearchModel { get; set; } = new();
     private string? SearchError { get; set; }
 
-    // Filters (trimmed; no Task Title filter)
-    private string FilterCustomer { get; set; } = "";
-    private string FilterVehicle { get; set; } = "";
-    private string FilterDetails { get; set; } = "";
-    private string FilterStatus { get; set; } = "";
-    private DateTime? FilterStartDate { get; set; }
-    private DateTime? FilterEndDate { get; set; }
-    private string FilterTotalCost { get; set; } = "";
+    // Pagination state
+    private int _pageSize = 10;
+    private int PageSize
+    {
+        get => _pageSize;
+        set
+        {
+            if (value <= 0) value = 10;
+            if (_pageSize != value)
+            {
+                _pageSize = value;
+                CurrentPage = 1;
+            }
+        }
+    }
+    private int CurrentPage { get; set; } = 1;
+
+    private int FilteredCount => FilteredWorkOrders.Count();
+    private int TotalPages => Math.Max(1, (int)Math.Ceiling(FilteredCount / (double)PageSize));
+
+    private IEnumerable<WorkOrder> PagedWorkOrders =>
+        FilteredWorkOrders
+            .Skip((CurrentPage - 1) * PageSize)
+            .Take(PageSize);
+
+    private void ResetToFirstPage()
+    {
+        CurrentPage = 1;
+        StateHasChanged();
+    }
+
+    private void GoFirst() { CurrentPage = 1; }
+    private void GoPrev() { if (CurrentPage > 1) CurrentPage--; }
+    private void GoNext() { if (CurrentPage < TotalPages) CurrentPage++; }
+    private void GoLast() { CurrentPage = TotalPages; }
+
+    // Filters with side-effect setters (no duplicate @on* attrs needed )
+    private string _filterCustomer = "";
+    private string _filterVehicle = "";
+    private string _filterDetails = "";
+    private string _filterStatus = "";
+    private DateTime? _filterStartDate;
+    private DateTime? _filterEndDate;
+    private string _filterTotalCost = "";
+
+    private string FilterCustomer { get => _filterCustomer; set { if (_filterCustomer != value) { _filterCustomer = value; ResetToFirstPage(); } } }
+    private string FilterVehicle { get => _filterVehicle; set { if (_filterVehicle != value) { _filterVehicle = value; ResetToFirstPage(); } } }
+    private string FilterDetails { get => _filterDetails; set { if (_filterDetails != value) { _filterDetails = value; ResetToFirstPage(); } } }
+    private string FilterStatus { get => _filterStatus; set { if (_filterStatus != value) { _filterStatus = value; ResetToFirstPage(); } } }
+    private DateTime? FilterStartDate { get => _filterStartDate; set { if (_filterStartDate != value) { _filterStartDate = value; ResetToFirstPage(); } } }
+    private DateTime? FilterEndDate { get => _filterEndDate; set { if (_filterEndDate != value) { _filterEndDate = value; ResetToFirstPage(); } } }
+    private string FilterTotalCost { get => _filterTotalCost; set { if (_filterTotalCost != value) { _filterTotalCost = value; ResetToFirstPage(); } } }
 
     // Modal state
     private bool ShowCreateModal { get; set; } = false;
@@ -316,7 +398,7 @@ else
         WorkOrders = await WorkOrderService.GetAllWorkOrdersAsync();
     }
 
-    protected override async Task OnParametersSetAsync()
+    protected override Task OnParametersSetAsync()
     {
         // If the nav bar sent ?new=1, open the modal then clear the query
         if (OpenNew && !ShowCreateModal)
@@ -326,18 +408,18 @@ else
             Nav.NavigateTo("/employee/home", replace: true);
         }
 
-        await base.OnParametersSetAsync();
+        return base.OnParametersSetAsync();
     }
 
-    // ----- Search submit -> open details page -----
-    private async Task OnSearchSubmit()
+    // Search submit -> open details page
+    private Task OnSearchSubmit()
     {
         SearchError = null;
         var plate = (SearchModel.Plate ?? "").Trim();
         if (string.IsNullOrWhiteSpace(plate))
         {
             SearchError = "Enter a license plate.";
-            return;
+            return Task.CompletedTask;
         }
 
         var match = WorkOrders.FirstOrDefault(w =>
@@ -348,10 +430,11 @@ else
         if (match is null)
         {
             SearchError = "No work order found for that plate.";
-            return;
+            return Task.CompletedTask;
         }
 
         GoToDetails(match.Id);
+        return Task.CompletedTask;
     }
 
     private void GoToDetails(int workOrderId)
@@ -359,7 +442,7 @@ else
         Nav.NavigateTo($"/employee/workorder/{workOrderId}/tasks");
     }
 
-    // ----- Inline edit (optional) -----
+    // Inline edit (optional)
     private void EditWorkOrder(WorkOrder workOrder) => EditingWorkOrder = workOrder;
     private void CancelEdit() => EditingWorkOrder = null;
 
@@ -370,10 +453,9 @@ else
         ToastService.ShowToast($"Work order {workOrder.Id} updated successfully.", "success");
     }
 
-    // ----- Modal open/close -----
+    // Modal open/close
     private void OpenCreateModal()
     {
-        // (Re)initialize defaults each time
         NewWorkOrder = new WorkOrder
         {
             CustomerName = "",
@@ -394,7 +476,7 @@ else
         StateHasChanged();
     }
 
-    // ----- Create Work Order from modal -----
+    // Create Work Order from modal
     private async Task CreateWorkOrderAsync()
     {
         if (string.IsNullOrWhiteSpace(NewWorkOrder.CustomerName) ||
@@ -425,7 +507,7 @@ else
             (string.IsNullOrWhiteSpace(FilterTotalCost) || w.TotalCostCents.ToString().Contains(FilterTotalCost))
         );
 
-    // PDF actions (kept)
+    // = PDF actions =
     private async Task GeneratePdfAsync(WorkOrder workOrder)
     {
         var pdfBytes = ReportService.GenerateReport(workOrder);
@@ -459,6 +541,7 @@ else
         await JSRuntime.InvokeVoidAsync("openPdfPreview", base64);
     }
 
+    // Formatting helpers
     private static string FormatDate(DateTimeOffset? date)
         => date?.ToLocalTime().ToString("yyyy-MM-dd HH:mm") ?? "-";
 

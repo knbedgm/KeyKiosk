@@ -1,0 +1,53 @@
+﻿@page "/employee/admin/home"
+@rendermode InteractiveServer
+@layout Layout.MainLayout
+
+<link href="app.css" rel="stylesheet" />
+<link href="AdminHomePage.css" rel="stylesheet" />
+
+<h1>Admin Dashboard</h1>
+<hr />
+
+<div class="admin-grid">
+    <button type="button" class="admin-card" @onclick="GoEmployees">
+        <span class="admin-icon" aria-hidden="true">👥</span>
+        <span class="admin-label">Employees</span>
+    </button>
+
+    <button type="button" class="admin-card" @onclick="GoWorkOrders">
+        <span class="admin-icon" aria-hidden="true">📋</span>
+        <span class="admin-label">Work Orders</span>
+    </button> 
+
+    <button type="button" class="admin-card" @onclick="GoTaskTemplates">
+        <span class="admin-icon" aria-hidden="true">🧩</span>
+        <span class="admin-label">Task Templates</span>
+    </button>
+
+    <button type="button" class="admin-card" @onclick="GoWorkLogs">
+        <span class="admin-icon" aria-hidden="true">🧾</span>
+        <span class="admin-label">Work Order Logs</span>
+    </button>
+
+    <button type="button" class="admin-card" @onclick="GoParts">
+        <span class="admin-icon" aria-hidden="true">⚙️</span>
+        <span class="admin-label">Parts</span>
+    </button>
+
+    <button type="button" class="admin-card" @onclick="GoGenerateReports">
+        <span class="admin-icon" aria-hidden="true">📊</span>
+        <span class="admin-label">Generate Reports</span>
+    </button>
+
+</div>
+
+@code {
+    [Inject] private NavigationManager Nav { get; set; } = default!;
+
+    private void GoEmployees() => Nav.NavigateTo("/employee/admin/users");
+    private void GoWorkOrders() => Nav.NavigateTo("/employee/home");
+    private void GoTaskTemplates() => Nav.NavigateTo("/employee/admin/WorkOrderTaskTemplates");
+    private void GoParts() => Nav.NavigateTo("/employee/admin/parts");
+    private void GoWorkLogs() => Nav.NavigateTo("/employee/admin/workorderlogs");
+    private void GoGenerateReports() => Nav.NavigateTo("employee/admin/generatereports");
+}
