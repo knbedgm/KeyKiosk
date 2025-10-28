@@ -1,12 +1,19 @@
 ﻿@rendermode InteractiveServer
 @* @inject AppAuthenticationStateProvider session *@
 @inject NavigationManager navManager
-@inject KioskNavAuthService navAuth
+@* @inject KioskNavAuthService navAuth *@
 
-<Router AppAssembly="typeof(Program).Assembly" OnNavigateAsync="authHandler">
+@* <Router AppAssembly="typeof(Program).Assembly" OnNavigateAsync="authHandler"> *@
+  
+<Router AppAssembly="typeof(Program).Assembly">
     <Found Context="routeData">
+
         <AuthorizeRouteView RouteData="routeData" DefaultLayout="@typeof(Layout.MainLayout)">
             <NotAuthorized>
+                @(NotAuthorisedRendered(routeData))
+                <div>Is Kiosk: @isKiosk(routeData)</div>
+                <div>Route Data is null: @(routeData is null)</div>
+                <div>Template: @(routeData?.Template ?? "null")</div>
                 <div>You are not authorized.</div>
                 <div><NavLink href="login">Login</NavLink></div>
             </NotAuthorized>
@@ -19,14 +26,30 @@
 </Router>
 
 @code {
-    void authHandler(Microsoft.AspNetCore.Components.Routing.NavigationContext ctx)
-    {
-        var newpath = navAuth.UserCanAccessPath(ctx.Path);
-        if (!(newpath is null))
-        {
-            navManager.NavigateTo(newpath);
-        }
+
+    protected bool isKiosk(RouteData routeData) {
+        // return routeData?.Template?.StartsWith("kiosk") ?? false;
+        return routeData.PageType?.Namespace?.StartsWith("KeyKiosk.Components.Pages.Kiosk") ?? false;
     }
+
+    // hacky hack hack
+    // has to return string so we can call it from within the NotAuthorized template to hook template render
+    protected string? NotAuthorisedRendered(RouteData routeData) {
+        if (isKiosk(routeData))
+        {
+            navManager.NavigateTo("/kiosk");
+        }
+        return null; 
+    }
+
+    // void authHandler(Microsoft.AspNetCore.Components.Routing.NavigationContext ctx)
+    // {
+    //     var newpath = navAuth.UserCanAccessPath(ctx.Path);
+    //     if (!(newpath is null))
+    //     {
+    //         navManager.NavigateTo(newpath);
+    //     }
+    // }
 
 
 

@@ -134,6 +134,7 @@ namespace KeyKiosk
 
             //	});
 
+            builder.Services.AddAuthentication().AddScheme<SessionTokenAuthenticationSchemeOptions, SessionTokenAuthenticationSchemeHandler>("CookieSessionId", options => { });
 
             builder.Services.AddCascadingAuthenticationState();
             builder.Services.AddSingleton<AppAuthenticationSessionStorage>();

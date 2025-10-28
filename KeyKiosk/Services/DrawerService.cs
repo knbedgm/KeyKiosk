@@ -1,6 +1,5 @@
 ﻿using KeyKiosk.Data;
 using KeyKiosk.Services.Auth;
-using System.Collections;
 
 namespace KeyKiosk.Services
 {
@@ -9,7 +8,7 @@ namespace KeyKiosk.Services
         IList<DrawerConfig> DrawerIOConfig;
         IPhysicalDrawerController DrawerController;
         ApplicationDbContext dbContext;
-		AppAuthenticationStateProvider userSessionService;
+        AppAuthenticationStateProvider userSessionService;
         List<Drawer> drawers;
         public DrawerService(IList<DrawerConfig> DrawerIOConfig, IPhysicalDrawerController DrawerController, ApplicationDbContext dbContext, AppAuthenticationStateProvider userSessionService)
         {
@@ -54,25 +53,25 @@ namespace KeyKiosk.Services
 
         private void initDb(IList<DrawerConfig> drawerConfigs)
         {
-			var dbCount = dbContext.Drawers.Count();
+            var dbCount = dbContext.Drawers.Count();
 
-			if (drawerConfigs.Count() == 0)
-			{
-				throw new InvalidOperationException("Configuration section 'Drawers' has no entries.");
-			}
-			else if (dbCount == 0)
-			{
-				for (int i = 1; i <= drawerConfigs.Count; i++)
-				{
-					dbContext.Drawers.Add(new() { Id = i, Occupied = false });
-				}
-				dbContext.SaveChanges();
-			}
-			else if (dbCount != drawerConfigs.Count)
-			{
-				throw new InvalidOperationException("Configuration section 'Drawers' entry count doesn't match database. Please delete/flush database entries.");
-			}
-		}
+            if (drawerConfigs.Count() == 0)
+            {
+                throw new InvalidOperationException("Configuration section 'Drawers' has no entries.");
+            }
+            else if (dbCount == 0)
+            {
+                for (int i = 1; i <= drawerConfigs.Count; i++)
+                {
+                    dbContext.Drawers.Add(new() { Id = i, Occupied = false });
+                }
+                dbContext.SaveChanges();
+            }
+            else if (dbCount != drawerConfigs.Count)
+            {
+                throw new InvalidOperationException("Configuration section 'Drawers' entry count doesn't match database. Please delete/flush database entries.");
+            }
+        }
 
         public class Drawer
         {

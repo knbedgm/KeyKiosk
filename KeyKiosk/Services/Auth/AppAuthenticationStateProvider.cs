@@ -10,11 +10,11 @@ namespace KeyKiosk.Services.Auth
 
 		public Session? CurrentSession { get; set; } = null;
 
-		public AppAuthenticationStateProvider(UserService userService, AppAuthenticationSessionAccessor sessionStorage)
+		public AppAuthenticationStateProvider(UserService userService, AppAuthenticationSessionAccessor sessionAccessor)
 		{
 			AuthenticationStateChanged += OnAuthenticationStateChangedAsync;
 			this.userService = userService;
-			this.sessionAccessor = sessionStorage;
+			this.sessionAccessor = sessionAccessor;
 		}
 
 		public override async Task<AuthenticationState> GetAuthenticationStateAsync()
@@ -31,11 +31,11 @@ namespace KeyKiosk.Services.Auth
 				if (CurrentSession.Valid)
 				{
 					principal = sessionAccessor.ToClaimsPrincipal(CurrentSession);
-					await StartSession(CurrentSession);
+					await StartSession(CurrentSession, false);
 				}
 				else 
 				{
-					await StartSession(null);
+					await StartSession(null, false);
 				}
 			}
 
@@ -89,16 +89,24 @@ namespace KeyKiosk.Services.Auth
 
 		public async Task Logout()
 		{
+			if (CurrentSession is not null)
+			{
+				CurrentSession.Valid = false;
+				
+			}
 			await StartSession(null);
 		}
 
-		protected async Task StartSession(Session? session)
+		internal async Task StartSession(Session? session, bool persist = true)
 		{
 			CurrentSession = session;
 			if (CurrentSession is not null)
 			{
 				var principal = sessionAccessor.ToClaimsPrincipal(CurrentSession);
-				await sessionAccessor.persistSession(CurrentSession);
+				if(persist)
+				{
+					await sessionAccessor.PersistSession(CurrentSession);
+				}
 				NotifyAuthenticationStateChanged(Task.FromResult(new AuthenticationState(principal)));
 			} else
 			{
