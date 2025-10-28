@@ -2,4 +2,103 @@
 @rendermode InteractiveServer
 @layout Layout.MainLayout
 
+@using KeyKiosk.Data
+
 <h3>Users</h3>
+
+@if (UserList != null && UserList.Count > 0)
+{
+	<table>
+		<tr>
+			<th>Id</th>
+			<th>Name</th>
+			<th>Pin</th>
+			<th>Role</th>
+		</tr>
+		@foreach (User user in UserList)
+		{
+			<tr>
+				<td>@user.Id</td>
+				<td>@user.Name</td>
+				<td>@user.Pin</td>
+				<td>@user.UserType</td>
+				<td>
+					@* Deletes selected user *@
+					<button @onclick="@(e => DeleteUser(user.Id))">
+						Delete
+					</button>
+				</td>
+			</tr>
+		}
+	</table>
+}
+
+<br />
+<br />
+<br />
+
+<h1>Add New User</h1>
+
+<br />
+
+@* Form to add new user *@
+<EditForm Model="@UserToAdd" OnValidSubmit="@AddNewUser">
+	<DataAnnotationsValidator />
+	<ValidationSummary />
+
+	<label>Name</label>
+	<input type="text" @bind="UserToAdd.Name" />
+
+	<label>Pin</label>
+	<input type="text" @bind="UserToAdd.Pin" />
+
+	<label>Role</label>
+	<select @bind="UserToAdd.UserType">
+		@foreach (UserType type in Enum.GetValues(typeof(UserType)))
+		{
+			<option value="@type">@type</option>
+		}
+	</select>
+
+	<button type="submit">Submit</button>
+</EditForm>
+
+<br />
+<br />
+<br />
+
+@if (UserList != null && UserList.Count > 0)
+{
+	<h1>Update Existing User</h1>
+
+	<br />
+
+	@* Form to update existing user *@
+	<EditForm Model="@UserToUpdate" OnValidSubmit="@UpdateExistingUser">
+		<DataAnnotationsValidator />
+		<ValidationSummary />
+
+		<select @bind="UserToUpdate.Id">
+			@foreach (User user in UserList)
+			{
+				<option value="@user.Id">@user.Name</option>
+			}
+		</select>
+
+		<label>New Name</label>
+		<input type="text" @bind="UserToUpdate.Name" />
+
+		<label>New Pin</label>
+		<input type="number" @bind="UserToUpdate.Pin" />
+
+		<label>New Role</label>
+		<select @bind="UserToUpdate.UserType">
+			@foreach (UserType type in Enum.GetValues(typeof(UserType)))
+			{
+				<option value="@type">@type</option>
+			}
+		</select>
+
+		<button type="submit">Submit</button>
+	</EditForm>
+}
