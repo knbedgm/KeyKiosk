@@ -10,7 +10,7 @@
 <link href="app.css" rel="stylesheet" />
 <link href="WorkOrderTaskTemplate.css" rel="stylesheet" />
 
-<h1>Work Orders Task Templates</h1>
+<h1>Work Order Task Templates</h1>
 
 @if (Templates is null)
 {
@@ -31,13 +31,50 @@ else if (Templates.Count > 0)
         <tbody>
             @foreach (var t in Templates)
             {
+                var isEditing = EditingId == t.Id;
                 <tr>
                     <td>@t.Id</td>
-                    <td>@t.TaskTitle</td>
-                    <td>@t.TaskDetails</td>
-                    <td>@FormatCost(t.TaskCostCents)</td>
                     <td>
-                        <button class="delete-btn" @onclick="() => OnDelete(t.Id)">Delete</button>
+                        @if (isEditing)
+                        {
+                            <InputText class="table-input" @bind-Value="EditingRow.TaskTitle" />
+                        }
+                        else
+                        {
+                            @t.TaskTitle
+                        }
+                    </td>
+                    <td>
+                        @if (isEditing)
+                        {
+                            <InputText class="table-input" @bind-Value="EditingRow.TaskDetails" />
+                        }
+                        else
+                        {
+                            @t.TaskDetails
+                        }
+                    </td>
+                    <td style="text-align:right;">
+                        @if (isEditing)
+                        {
+                            <InputNumber class="table-input" @bind-Value="EditingRow.TaskCostCents" />
+                        }
+                        else
+                        {
+                            @FormatCost(t.TaskCostCents)
+                        }
+                    </td>
+                    <td style="white-space:nowrap;">
+                        @if (isEditing)
+                        {
+                            <button class="save-btn" @onclick="SaveRowAsync">Save</button>
+                            <button class="cancel-btn" @onclick="CancelEdit">Cancel</button>
+                        }
+                        else
+                        {
+                            <button class="btn-primary" @onclick="() => BeginEdit(t)">Edit</button>
+                            <button class="delete-btn" @onclick="() => OnDelete(t.Id)">Delete</button>
+                        }
                     </td>
                 </tr>
             }
@@ -72,47 +109,16 @@ else
     <button class="btn-primary" type="submit">Submit</button>
 </EditForm>
 
-@if (Templates is not null && Templates.Count > 0)
-{
-    <br />
-    <h1>Update Existing Template</h1>
-
-    <EditForm class="new-workorder-form" Model="@UpdateModel" OnValidSubmit="@OnUpdate">
-        <DataAnnotationsValidator />
-        <ValidationSummary />
-
-        <label>Select Template</label>
-        <InputSelect @bind-Value="UpdateModel.Id">
-            <option value="">-- choose --</option>
-            @foreach (var t in Templates)
-            {
-                <option value="@t.Id.ToString()">@t.TaskTitle (@FormatCost(t.TaskCostCents))</option>
-            }
-        </InputSelect>
-
-        <label>New Title (optional)</label>
-        <InputText @bind-Value="UpdateModel.TaskTitle" />
-
-        <label>New Details</label>
-        <InputText @bind-Value="UpdateModel.TaskDetails" />
-
-        <label>New Cost in Cents</label>
-        <InputNumber @bind-Value="UpdateModel.TaskCostCents" />
-
-        <button class="btn-primary" type="submit">Submit</button>
-    </EditForm>
-}
-
-@code
-{
+@code {
     // Data
     private List<WorkOrderTaskTemplate>? Templates;
 
     // Add form model
     private AddTemplateModel AddModel = new();
 
-    // Update form model
-    private UpdateTemplateModel UpdateModel = new();
+    // Inline edit model
+    private int? EditingId;
+    private WorkOrderTaskTemplate EditingRow = new();
 
     protected override void OnInitialized()
     {
@@ -125,8 +131,7 @@ else
         StateHasChanged();
     }
 
-    // Actions with Toasts
-
+    // Actions
     private void OnAdd()
     {
         try
@@ -150,44 +155,35 @@ else
         }
     }
 
-    private void OnUpdate()
+    // Inline edit
+    private void BeginEdit(WorkOrderTaskTemplate t)
     {
-        if (string.IsNullOrWhiteSpace(UpdateModel.Id))
+        EditingId = t.Id;
+        EditingRow = new WorkOrderTaskTemplate
         {
-            ToastService.ShowToast("Please select a template to update.", "warning");
-            return;
-        }
+            Id = t.Id,
+            TaskTitle = t.TaskTitle,
+            TaskDetails = t.TaskDetails,
+            TaskCostCents = t.TaskCostCents
+        };
+    }
+
+    private void CancelEdit()
+    {
+        EditingId = null;
+        EditingRow = new WorkOrderTaskTemplate();
+    }
+
+    private void SaveRowAsync()
+    {
+        if (EditingId is null) return;
 
         try
         {
-            var id = int.Parse(UpdateModel.Id);
-            var existing = Templates!.FirstOrDefault(t => t.Id == id);
-            if (existing is null)
-            {
-                ToastService.ShowToast("Template not found.", "warning");
-                return;
-            }
-
-            // Build an updated object (your service expects a full entity)
-            var updated = new WorkOrderTaskTemplate
-            {
-                Id = id,
-                TaskTitle = string.IsNullOrWhiteSpace(UpdateModel.TaskTitle)
-                            ? existing.TaskTitle
-                            : UpdateModel.TaskTitle!.Trim(),
-                TaskDetails = UpdateModel.TaskDetails?.Trim() ?? "",
-                TaskCostCents = UpdateModel.TaskCostCents
-            };
-
-            TemplateService.UpdateWorkOrderTaskTemplate(updated);
+            TemplateService.UpdateWorkOrderTaskTemplate(EditingRow);
             LoadTemplates();
-
-            // reset (keep selection optional)
-            UpdateModel.TaskTitle = "";
-            UpdateModel.TaskDetails = "";
-            UpdateModel.TaskCostCents = 0;
-
-            ToastService.ShowToast("Template updated.", "success");
+            EditingId = null;
+            ToastService.ShowToast("Template updated successfully.", "success");
         }
         catch (Exception ex)
         {
@@ -212,17 +208,8 @@ else
     // Helpers
     private static string FormatCost(int cents) => (cents / 100m).ToString("C");
 
-    // Simple form models (add data annotations if you want validation)
     private sealed class AddTemplateModel
     {
-        public string? TaskTitle { get; set; }
-        public string? TaskDetails { get; set; }
-        public int TaskCostCents { get; set; }
-    }
-
-    private sealed class UpdateTemplateModel
-    {
-        public string? Id { get; set; }
         public string? TaskTitle { get; set; }
         public string? TaskDetails { get; set; }
         public int TaskCostCents { get; set; }

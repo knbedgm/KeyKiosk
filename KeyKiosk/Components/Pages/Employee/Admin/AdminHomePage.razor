@@ -17,7 +17,7 @@
     <button type="button" class="admin-card" @onclick="GoWorkOrders">
         <span class="admin-icon" aria-hidden="true">📋</span>
         <span class="admin-label">Work Orders</span>
-    </button> 
+    </button>
 
     <button type="button" class="admin-card" @onclick="GoTaskTemplates">
         <span class="admin-icon" aria-hidden="true">🧩</span>
@@ -29,9 +29,9 @@
         <span class="admin-label">Work Order Logs</span>
     </button>
 
-    <button type="button" class="admin-card" @onclick="GoParts">
+    <button type="button" class="admin-card" @onclick="GoPartTemplates">
         <span class="admin-icon" aria-hidden="true">⚙️</span>
-        <span class="admin-label">Parts</span>
+        <span class="admin-label">Part Templates</span>
     </button>
 
     <button type="button" class="admin-card" @onclick="GoGenerateReports">
@@ -47,7 +47,7 @@
     private void GoEmployees() => Nav.NavigateTo("/employee/admin/users");
     private void GoWorkOrders() => Nav.NavigateTo("/employee/home");
     private void GoTaskTemplates() => Nav.NavigateTo("/employee/admin/WorkOrderTaskTemplates");
-    private void GoParts() => Nav.NavigateTo("/employee/admin/parts");
+    private void GoPartTemplates() => Nav.NavigateTo("/employee/admin/PartTemplates");
     private void GoWorkLogs() => Nav.NavigateTo("/employee/admin/workorderlogs");
     private void GoGenerateReports() => Nav.NavigateTo("/employee/admin/generatereports");
 }

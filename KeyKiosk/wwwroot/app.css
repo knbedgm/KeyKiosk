@@ -57,68 +57,83 @@ a, .btn-link {
     color: #006bb7;
 }
 
-/* Horizontal top navbar */
+/* ========== NAVBAR FIX ========== */
 .top-nav {
     width: 100%;
-    background-color: #1e293b;
-    color: #fff;
-    border-bottom: 3px solid #3b82f6;
-    position: sticky;
-    top: 0;
-    z-index: 1000;
-}
-
-.nav-container {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    /* set your horizontal margins via max-width container */
-    max-width: 1200px; /* <-- controls page width */
-    margin: 0 auto; /* center */
-    padding: 0.75rem 1.25rem; /* breathing room */
-}
-
-.nav-left, .nav-right {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    min-width: 140px; /* keeps logo visually centered */
-}
-
-.nav-center {
+    background-color: #fff;
+    border-bottom: 1px solid #e5e7eb;
+    position: relative;
     display: flex;
     justify-content: center;
     align-items: center;
-    flex: 1;
+    height: 80px;
 }
 
+.nav-container {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between; /* for left + right */
+    padding: 0 1.5rem;
+    position: relative;
+}
+
+/* Keep left and right aligned normally */
+.nav-left,
+.nav-right {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+/* --- Center logo perfectly --- */
+.nav-center {
+    position: absolute; /* take it out of flex flow */
+    left: 50%;
+    transform: translateX(-50%); /* perfectly center it */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Logo sizing */
+.nav-logo {
+    height: 108px;
+    width: auto;
+}
+
+/* Nav links styling */
 .nav-link {
-    color: #e2e8f0;
-    font-weight: 600;
     text-decoration: none;
-    padding: 0.4rem 0.8rem;
-    border-radius: 8px;
-    transition: background-color .2s;
+    color: #333;
+    font-weight: 600;
+    transition: color 0.2s ease;
 }
 
-    .nav-link.active, .nav-link:hover {
-        background: #3b82f6;
-        color: #fff;
+    .nav-link.active {
+        color: #007bff;
     }
 
-/* Logo */
-.nav-logo {
-    height: 100px;
-    width: auto;
-    display: block;
+    .nav-link:hover {
+        color: #0056b3;
+    }
+
+/* Buttons */
+.btn-primary {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 6px 12px;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.1s ease;
 }
 
-/* Optional slim utility bar under the navbar */
-.util-bar {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: .5rem 1.25rem;
-}
+    .btn-primary:hover {
+        background-color: #0056b3;
+        transform: translateY(-1px);
+    }
+
 
 /* Page content wrapper (controls horizontal margins site-wide) */
 .page-body {

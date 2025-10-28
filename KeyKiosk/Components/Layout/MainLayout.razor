@@ -15,7 +15,8 @@
                         <NavLink href="/employee/admin/home" class="nav-link" Match="NavLinkMatch.All">Admin Home</NavLink>
                         <NavLink href="/employee/admin/users" class="nav-link">Employees</NavLink>
                         <NavLink href="/employee/home" class="nav-link">Work Orders</NavLink>
-                        <NavLink href="/employee/admin/WorkOrderTaskTemplates" class="nav-link">Templates</NavLink>
+                        <NavLink href="/employee/admin/WorkOrderTaskTemplates" class="nav-link">Task Templates</NavLink>
+                        <NavLink href="/employee/admin/PartTemplates" class="nav-link">Part Templates</NavLink>
                     </div>
 
                     <div class="nav-center">
@@ -36,10 +37,6 @@
                     <div class="nav-center">
                         <img src="/images/KEYOSK_icon.png" alt="KeyOSk Logo" class="nav-logo" />
                     </div>
-
-                    <div class="nav-right">
-                        <button class="btn-primary" @onclick="OpenCreateFromNav">New Work Order</button>
-                    </div>
                 }
             </nav>
         </header>
@@ -58,12 +55,5 @@
 
 @code {
     private bool IsLoginPage => Nav.Uri.Contains("/employee/login", StringComparison.OrdinalIgnoreCase);
-
-    // Treat any page under /employee/admin/ as "admin mode"
     private bool IsAdminPage => Nav.Uri.Contains("/employee/admin/", StringComparison.OrdinalIgnoreCase);
-
-    private void OpenCreateFromNav()
-    {
-        Nav.NavigateTo("/employee/home");
-    }
 }

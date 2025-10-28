@@ -1,0 +1,101 @@
+﻿@page "/employee/admin/PartTemplates"
+@rendermode InteractiveServer
+@layout Layout.MainLayout
+
+<link href="app.css" rel="stylesheet" />
+<link href="PartTemplatesPage.css" rel="stylesheet" />
+
+@using KeyKiosk.Data
+@inject KeyKiosk.Services.PartTemplateService PartTemplateService
+
+<h1>Part Templates Page</h1>
+
+@* Display list of existing templates *@
+@if (TemplateList?.Count > 0)
+{
+    <table>
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Part Name</th>
+                <th>Details</th>
+                <th>Cost (¢)</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var t in TemplateList)
+            {
+                var isEditing = EditingId == t.Id;
+                <tr>
+                    <td>@t.Id</td>
+
+                    <!-- Name is read-only -->
+                    <td>@t.PartName</td>
+
+                    <td>
+                        @if (isEditing)
+                        {
+                            <InputText class="table-input" @bind-Value="EditingRow.Details" />
+                        }
+                        else
+                        {
+                            @t.Details
+                        }
+                    </td>
+
+                    <td style="text-align:right;">
+                        @if (isEditing)
+                        {
+                            <InputNumber class="table-input" @bind-Value="EditingRow.CostCents" />
+                        }
+                        else
+                        {
+                            @t.CostCents
+                        }
+                    </td>
+
+                    <td style="white-space:nowrap;">
+                        @if (isEditing)
+                        {
+                            <button class="save-btn" @onclick="SaveRowAsync">Save</button>
+                            <button class="cancel-btn" @onclick="CancelEdit">Cancel</button>
+                        }
+                        else
+                        {
+                            <button class="btn-primary" @onclick="() => BeginEdit(t)">Edit</button>
+                            <button class="delete-btn" @onclick="() => DeleteTemplate(t.Id)">Delete</button>
+                        }
+
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <p style="text-align:center;color:#6b7280;">No part templates yet.</p>
+}
+
+<br />
+
+<h1>Add New Template</h1>
+
+
+@* Form to add new template *@
+<EditForm Model="@TemplateToAdd" OnValidSubmit="@AddNewTemplate">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <label>Part Name</label>
+    <input type="text" @bind="TemplateToAdd.PartName" />
+
+    <label>Details</label>
+    <input type="text" @bind="TemplateToAdd.Details" />
+
+    <label>Cost in Cents</label>
+    <input type="number" @bind="TemplateToAdd.CostCents" />
+
+    <button type="submit">Submit</button>
+</EditForm>

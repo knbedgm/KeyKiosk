@@ -51,6 +51,12 @@ public partial class WorkOrderTasksPage : ComponentBase
     protected bool IsEditingWoDetails { get; set; } = false;
     protected string WoDetailsDraft { get; set; } = string.Empty;
 
+    // === Header inline edit state ===
+    protected bool IsEditingHeader { get; set; } = false;
+    protected string HeaderCustomerDraft { get; set; } = string.Empty;
+    protected string HeaderVehicleDraft { get; set; } = string.Empty;
+    protected WorkOrderStatusType HeaderStatusDraft { get; set; }
+
     // lifecycle
     protected override async Task OnInitializedAsync()
     {
@@ -314,5 +320,76 @@ public partial class WorkOrderTasksPage : ComponentBase
     {
         decimal dollars = cents / 100.0m;
         return dollars.ToString("C");
+    }
+
+    // Begin/Cancel header edit
+    protected void BeginEditHeader()
+    {
+        if (WorkOrder is null) return;
+        HeaderCustomerDraft = WorkOrder.CustomerName ?? string.Empty;
+        HeaderVehicleDraft = WorkOrder.VehiclePlate ?? string.Empty;
+        HeaderStatusDraft = WorkOrder.Status;
+        IsEditingHeader = true;
+    }
+
+    protected void CancelEditHeader()
+    {
+        IsEditingHeader = false;
+        HeaderCustomerDraft = string.Empty;
+        HeaderVehicleDraft = string.Empty;
+    }
+
+    // Save header (apply status->dates rule, then persist)
+    protected async Task SaveHeaderAsync()
+    {
+        if (WorkOrder is null) return;
+
+        // Update editable fields from drafts
+        WorkOrder.CustomerName = (HeaderCustomerDraft ?? string.Empty).Trim();
+        WorkOrder.VehiclePlate = (HeaderVehicleDraft ?? string.Empty).Trim();
+
+        // Apply status transitions to dates
+        ApplyWorkOrderStatusDates(WorkOrder, HeaderStatusDraft);
+
+        // Persist
+        await WorkOrderService.UpdateWorkOrderAsync(WorkOrder);
+
+        IsEditingHeader = false;
+        await ReloadAndRefreshAsync("Work order header updated.", "success");
+    }
+
+    // Central rule for WorkOrder status -> Start/End dates
+    private static void ApplyWorkOrderStatusDates(WorkOrder wo, WorkOrderStatusType newStatus)
+    {
+        var now = DateTimeOffset.Now;
+
+        switch (newStatus)
+        {
+            case WorkOrderStatusType.Created:
+                wo.Status = newStatus;
+                wo.StartDate = null;
+                wo.EndDate = null;
+                break;
+
+            case WorkOrderStatusType.WorkStarted:
+                wo.Status = newStatus;
+                // set start if not already set; end stays null
+                wo.StartDate ??= now;
+                wo.EndDate = null;
+                break;
+
+            // If your enum has WorkFinished use that; if not, treat Closed as the "finished" state
+            case WorkOrderStatusType.Closed:
+                // If the order was never started, set StartDate now so both have values
+                wo.StartDate ??= now;
+                wo.EndDate = now;
+                wo.Status = newStatus;
+                break;
+
+            default:
+                // Fallback: just set the status
+                wo.Status = newStatus;
+                break;
+        }
     }
 }

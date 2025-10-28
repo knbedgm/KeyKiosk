@@ -15,14 +15,18 @@
 }
 else
 {
-    <!-- Summary header -->
-    <div class="card-like" style="padding:1rem;border:1px solid #e5e7eb;border-radius:12px;margin-bottom:1rem;">
-        <div style="display:flex;gap:1rem;flex-wrap:wrap;align-items:center;justify-content:space-between;">
-            <div style="display:flex;gap:1.25rem;flex-wrap:wrap;align-items:center;">
-                <div>
-                    <div class="muted" style="font-size:.9rem;color:#6b7280;">Work Order</div>
-                    <div class="h5" style="margin:0;font-weight:600;">#@WorkOrder.Id</div>
-                </div>
+<!-- Summary header -->
+<div class="card-like" style="padding:1rem;border:1px solid #e5e7eb;border-radius:12px;margin-bottom:1rem;">
+    <div style="display:flex;gap:1rem;flex-wrap:wrap;align-items:center;justify-content:space-between;">
+
+        <div style="display:flex;gap:1.25rem;flex-wrap:wrap;align-items:center;">
+            <div>
+                <div class="muted" style="font-size:.9rem;color:#6b7280;">Work Order</div>
+                <div class="h5" style="margin:0;font-weight:600;">#@WorkOrder.Id</div>
+            </div>
+
+            @if (!IsEditingHeader)
+            {
                 <div>
                     <div class="muted" style="font-size:.9rem;color:#6b7280;">Customer</div>
                     <div class="fw-semibold">@WorkOrder.CustomerName</div>
@@ -37,48 +41,81 @@ else
                         @WorkOrder.Status
                     </span>
                 </div>
-                <div>
-                    <div class="muted" style="font-size:.9rem;color:#6b7280;">Start → End</div>
-                    <div class="fw-semibold">@FormatDateTime(WorkOrder.StartDate) → @FormatDateTime(WorkOrder.EndDate)</div>
-                </div>
-                <div>
-                    <div class="muted" style="font-size:.9rem;color:#6b7280;">Total</div>
-                    <div class="fw-semibold">@FormatCost(WorkOrder.TotalCostCents)</div>
-                </div>
-            </div>
-
-            <div style="display:flex;gap:.5rem;">
-                <button class="btn-primary" @onclick="GenerateWorkOrderDoc">Generate Work Order</button>
-                <button class="delete-btn" @onclick="DeleteWorkOrderAsync">Delete Work Order</button>
-            </div>
-        </div>
-
-        <!-- Details (single copy) -->
-        <div style="margin-top:.75rem;">
-            @if (!IsEditingWoDetails)
-            {
-                <div class="muted" style="color:#4b5563;white-space:pre-wrap;">
-                    @(string.IsNullOrWhiteSpace(WorkOrder.Details) ? "(No details yet)" : WorkOrder.Details)
-                </div>
-                <div style="margin-top:.5rem;">
-                    <button class="edit-btn small-btn" type="button" @onclick="BeginEditWoDetails">Edit Details</button>
-                </div>
             }
             else
             {
-                <!-- Use a plain form so we don't need EditForm Model/EditContext -->
-                <form @onsubmit="SaveWoDetailsAsync" @onsubmit:preventDefault>
-                    <div style="display:grid;gap:.5rem;">
-                        <textarea class="table-input" style="min-height:120px;" @bind="WoDetailsDraft"></textarea>
-                        <div style="display:flex;gap:.5rem;justify-content:flex-end;">
-                            <button class="save-btn small-btn" type="submit">Save</button>
-                            <button class="cancel-btn small-btn" type="button" @onclick="CancelEditWoDetails">Cancel</button>
-                        </div>
-                    </div>
-                </form>
+                <!-- Inline edit controls -->
+                <div>
+                    <div class="muted" style="font-size:.9rem;color:#6b7280;">Customer</div>
+                    <InputText class="table-input" @bind-Value="HeaderCustomerDraft" />
+                </div>
+                <div>
+                    <div class="muted" style="font-size:.9rem;color:#6b7280;">Vehicle Plate</div>
+                    <InputText class="table-input" @bind-Value="HeaderVehicleDraft" />
+                </div>
+                <div>
+                    <div class="muted" style="font-size:.9rem;color:#6b7280;">Status</div>
+                    <InputSelect class="table-select" @bind-Value="HeaderStatusDraft">
+                        @foreach (WorkOrderStatusType s in Enum.GetValues(typeof(WorkOrderStatusType)))
+                        {
+                            <option value="@s">@s</option>
+                        }
+                    </InputSelect>
+                </div>
             }
+
+            <div>
+                <div class="muted" style="font-size:.9rem;color:#6b7280;">Start → End</div>
+                <div class="fw-semibold">@FormatDateTime(WorkOrder.StartDate) → @FormatDateTime(WorkOrder.EndDate)</div>
+            </div>
+            <div>
+                <div class="muted" style="font-size:.9rem;color:#6b7280;">Total</div>
+                <div class="fw-semibold">@FormatCost(WorkOrder.TotalCostCents)</div>
+            </div>
+        </div>
+
+        <div style="display:flex;gap:.5rem;align-items:center;">
+            @if (!IsEditingHeader)
+            {
+                <button class="edit-btn" @onclick="BeginEditHeader">Edit Header</button>
+            }
+            else
+            {
+                <button class="save-btn" @onclick="SaveHeaderAsync">Save</button>
+                <button class="cancel-btn" @onclick="CancelEditHeader">Cancel</button>
+            }
+
+            <button class="btn-primary" @onclick="GenerateWorkOrderDoc">Generate Work Order</button>
+            <button class="delete-btn" @onclick="DeleteWorkOrderAsync">Delete Work Order</button>
         </div>
     </div>
+
+    <!-- Details (single copy) -->
+    <div style="margin-top:.75rem;">
+        @if (!IsEditingWoDetails)
+        {
+            <div class="muted" style="color:#4b5563;white-space:pre-wrap;">
+                @(string.IsNullOrWhiteSpace(WorkOrder.Details) ? "(No details yet)" : WorkOrder.Details)
+            </div>
+            <div style="margin-top:.5rem;">
+                <button class="edit-btn small-btn" type="button" @onclick="BeginEditWoDetails">Edit Details</button>
+            </div>
+        }
+        else
+        {
+            <form @onsubmit="SaveWoDetailsAsync" @onsubmit:preventDefault>
+                <div style="display:grid;gap:.5rem;">
+                    <textarea class="table-input" style="min-height:120px;" @bind="WoDetailsDraft"></textarea>
+                    <div style="display:flex;gap:.5rem;justify-content:flex-end;">
+                        <button class="save-btn small-btn" type="submit">Save</button>
+                        <button class="cancel-btn small-btn" type="button" @onclick="CancelEditWoDetails">Cancel</button>
+                    </div>
+                </div>
+            </form>
+        }
+    </div>
+</div>
+
 
     <!-- Toolbar -->
     <div style="display:flex;justify-content:space-between;align-items:center;margin:.25rem 0 .75rem;">
