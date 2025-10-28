@@ -3,7 +3,10 @@ using System.ComponentModel.DataAnnotations;
 
 namespace KeyKiosk.Data
 {
-    // Maps exactly to the existing WorkOrderLog table
+    /// <summary>
+    /// CLR entity that mirrors the existing WorkOrderLog database table for EF Core reads and writes.
+    /// Usage: queried by WorkOrderLogService (filters, ordering, paging) and populated by CreateLogAsync/Add*LogAsync writers.
+    /// </summary>
     public class WorkOrderLogsRaw
     {
         [Key] public int ID { get; set; }

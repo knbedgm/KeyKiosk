@@ -1,5 +1,10 @@
 ﻿namespace KeyKiosk.Data
 {
+    /// <summary>
+    /// model representing a work order log event for internal use or UI binding.
+    /// Usage: useful for application code or tests that require a normalized event shape; 
+    /// convert from WorkOrderEventDto or WorkOrderLogsRaw as needed.
+    /// </summary>
     public class LogEvent
     {
         public int ID { get; set; }

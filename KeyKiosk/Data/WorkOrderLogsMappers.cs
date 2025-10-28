@@ -1,5 +1,10 @@
 ﻿namespace KeyKiosk.Data
 {
+    /// <summary>
+    /// Helper methods that convert database raw rows into application DTOs used by UI and API layers.
+    /// WorkOrderLogsRaw database record into a WorkOrderEventDto ready for presentation or API return.
+    /// Usage: called by WorkOrderLogService after retrieving WorkOrderLogsRaw rows to produce DTO lists for controllers or Blazor pages.
+    /// </summary>
     public static class WorkOrderLogsMappers
     {
         public static WorkOrderEventDto ToWorkOrderEventDto(this WorkOrderLogsRaw r)

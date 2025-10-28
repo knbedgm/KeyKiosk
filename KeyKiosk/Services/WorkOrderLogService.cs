@@ -5,6 +5,11 @@ using System.Text.Json;
 
 namespace KeyKiosk.Services
 {
+    /// <summary>
+    /// Service that encapsulates reading, exporting, and writing work order log events.
+    /// Responsibilities: - Reads raw rows from the existing Postgres table mapped by ApplicationDbContext (WorkOrderLogsRaw / WorkOrderLogRaw) 
+    /// and projects them to WorkOrderEventDto for UI/API consumers via the WorkOrderLogsMappers.ToWorkOrderEventDto mapper.
+    /// </summary>
     public class WorkOrderLogService
     {
         private readonly ApplicationDbContext _context;
@@ -30,10 +35,12 @@ namespace KeyKiosk.Services
             return new User { Name = userName ?? "system" };
         }
 
-        // ------------------------------
-        // READ / EXPORT using WorkOrderLogRaw -> maps to existing DB table WorkOrderLog
-        // ------------------------------
-
+        /// <summary>
+        /// Return a paged, filtered list of WorkOrderEventDto mapped from WorkOrderLogsRaw rows. 
+        /// Purpose: read WorkOrderLogsRaw rows, apply filters 
+        /// (username, workOrderId, status, vehiclePlate, free-text search, optional enum eventType),
+        /// paginate, and map to DTOs for UI or API.
+        /// </summary>
         public async Task<List<WorkOrderEventDto>> GetFilteredLogDtosAsync(
             string? username = null,
             int? workOrderId = null,
@@ -84,6 +91,10 @@ namespace KeyKiosk.Services
             return rows.Select(r => r.ToWorkOrderEventDto()).ToList();
         }
 
+        /// <summary>
+        /// Export filtered events to a CSV string for download.
+        /// Mirrors GetFilteredLogDtosAsync filters, materializes matching rows, then builds a CSV with safe quoting for string fields.
+        /// </summary>
         public async Task<string> ExportLogsToCsvAsync(
             string? username = null,
             int? workOrderId = null,
@@ -147,11 +158,10 @@ namespace KeyKiosk.Services
             return sb.ToString();
         }
 
-        // ------------------------------
-        // WRITE helpers that insert into WorkOrderLog table (WorkOrderLogRaw)
-        // ------------------------------
-
-        // Generic insert helper for WorkOrderLog
+        /// <summary>
+        /// Insert a WorkOrderLogsRaw row and convenience wrappers for common event types (TaskAdded, TaskRemoved, TaskDetailsChanged, StatusChanged).
+        /// inserts the provided WorkOrderLogsRaw and SaveChangesAsync.
+        /// </summary>
         public async Task CreateLogAsync(WorkOrderLogsRaw row)
         {
             if (row.ID == 0) row.ID = 0; // ID is DB-managed if identity; keep as-is
@@ -161,7 +171,7 @@ namespace KeyKiosk.Services
             await _context.SaveChangesAsync();
         }
 
-        // Convenience: TaskAdded event writer into WorkOrderLog
+        // TaskAdded event writer into WorkOrderLog
         public async Task AddTaskAddedLogAsync(
             WorkOrder workOrder,
             WorkOrderTask task,
@@ -185,7 +195,7 @@ namespace KeyKiosk.Services
             await CreateLogAsync(row);
         }
 
-        // Convenience: TaskRemoved event writer into WorkOrderLog
+        // TaskRemoved event writer into WorkOrderLog
         public async Task AddTaskRemovedLogAsync(
             WorkOrder workOrder,
             WorkOrderTask task,
@@ -206,7 +216,7 @@ namespace KeyKiosk.Services
             await CreateLogAsync(row);
         }
 
-        // Convenience: TaskDetailsChanged writer into WorkOrderLog
+        // TaskDetailsChanged writer into WorkOrderLog
         public async Task AddTaskDetailsChangedLogAsync(
             WorkOrder workOrder,
             WorkOrderTask task,
@@ -231,7 +241,7 @@ namespace KeyKiosk.Services
             await CreateLogAsync(row);
         }
 
-        // Convenience: StatusChanged writer into WorkOrderLog
+        // StatusChanged writer into WorkOrderLog
         public async Task AddStatusChangedLogAsync(
             WorkOrder workOrder,
             WorkOrderStatusType newStatus,
@@ -251,10 +261,11 @@ namespace KeyKiosk.Services
             await CreateLogAsync(row);
         }
 
-        // ------------------------------
-        // LEGACY: existing TPH-style creation helpers (keep if other code relies on TPH inserts)
-        // These will continue to write into the WorkOrderLogEvent TPH mapping (unchanged)
-        // ------------------------------
+        /// <summary>
+        /// TPH Add*EventAsync helpers retained for compatibility with code that writes WorkOrderLogEvent subclasses.
+        /// methods still create WorkOrderLogEvent subclass instances and
+        /// SaveChanges via EF TPH mapping; keep them until callers are migrated to the new raw-table writers.
+        /// </summary>
 
         public async Task AddCreateEventAsync(WorkOrder workOrder, int? userId = null, string? userName = null)
         {

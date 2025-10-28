@@ -1,8 +1,10 @@
-﻿using KeyKiosk.Data;
+﻿using KeyKiosk.Components;
+using KeyKiosk.Data;
 using KeyKiosk.Services;
 using Microsoft.AspNetCore.Mvc;
 
 /// <summary>
+///API controller that exposes endpoints for retrieving work order events for a single work order.
 /// GET api/workorders/{workOrderId}/events.
 /// attempts to parse the incoming eventType string into the enum WorkOrderLogEvent.
 /// Which alllows WorkOrderLogEventType to pass the parsed enum or null to the service.
