@@ -17,6 +17,7 @@ public class WorkOrderService
     {
         return await _dbContext.WorkOrders
                                .Include(w => w.Tasks)
+                               .Include(w => w.Parts)
                                .OrderBy(w => w.StartDate)
                                .ToListAsync();
     }
@@ -27,6 +28,7 @@ public class WorkOrderService
         return await _dbContext.WorkOrders
                                .Where(w => w.CustomerName.ToLower() == customerName.ToLower())
                                .Include(w => w.Tasks)
+                               .Include(w => w.Parts)
                                .OrderBy(w => w.StartDate)
                                .ToListAsync();
     }
@@ -45,14 +47,14 @@ public class WorkOrderService
     //fetch all work orders
     public async Task<List<WorkOrder>> GetAllAsync()
     {
-        return await _dbContext.WorkOrders.Include(w => w.Tasks).ToListAsync();
+        return await _dbContext.WorkOrders.Include(w => w.Tasks).Include(w => w.Parts).ToListAsync();
     }
 
 
     //fetch work order by id
     public async Task<WorkOrder?> GetByIdAsync(int id)
     {
-        return await _dbContext.WorkOrders.Include(w => w.Tasks)
+        return await _dbContext.WorkOrders.Include(w => w.Tasks).Include(w => w.Parts)
                                    .FirstOrDefaultAsync(w => w.Id == id);
     }
 
@@ -101,6 +103,16 @@ public class WorkOrderService
                                .Where(w => w.VehiclePlate.ToLower() == plate.ToLower())
                                .Include(w => w.Tasks)
                                .OrderBy(w => w.StartDate)
+                               .ToListAsync();
+    }
+
+    // Get work orders between two dates
+    public async Task<List<WorkOrder>> GetWorkOrderByDatePeriod(DateTimeOffset startDate, DateTimeOffset endDate)
+    {
+        return await _dbContext.WorkOrders
+                               .Include(w => w.Tasks)
+                               .Include(w => w.Parts)
+                               .Where(w => w.StartDate.HasValue && w.StartDate.Value >= startDate && w.StartDate.Value <= endDate)
                                .ToListAsync();
     }
 }

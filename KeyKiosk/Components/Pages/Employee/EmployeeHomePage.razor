@@ -388,10 +388,12 @@ else
         VehiclePlate = "",
         Details = "",
         Tasks = new List<WorkOrderTask>(),
+        Parts = new List<WorkOrderPart>(),
         StartDate = DateTime.Now,
         EndDate = DateTime.Now.AddDays(1),
         Status = WorkOrderStatusType.Created
     };
+
 
     protected override async Task OnInitializedAsync()
     {
@@ -462,6 +464,7 @@ else
             VehiclePlate = "",
             Details = "",
             Tasks = new List<WorkOrderTask>(),
+            Parts = new List<WorkOrderPart>(),
             StartDate = DateTime.Now,
             EndDate = DateTime.Now.AddDays(1),
             Status = WorkOrderStatusType.Created
@@ -469,6 +472,7 @@ else
         ShowCreateModal = true;
         StateHasChanged();
     }
+
 
     private void CloseCreateModal()
     {

@@ -11,16 +11,17 @@ namespace KeyKiosk.Data
         public DbSet<Drawer> Drawers { get; set; }
         public DbSet<WorkOrder> WorkOrders { get; set; }
         public DbSet<WorkOrderTask> WorkOrderTasks { get; set; }
+        public DbSet<WorkOrderPart> WorkOrderParts { get; set; }
         public DbSet<WorkOrderTaskTemplate> WorkOrderTaskTemplates { get; set; }
-
+        public DbSet<PartTemplate> PartTemplates { get; set; }
         public DbSet<DrawerLogEvent> DrawerLog { get; set; }
         public DbSet<UserLogEvent> UserLog { get; set; }
-		public DbSet<WorkOrderLogEvent> WorkOrderLog { get; set; }
+        public DbSet<WorkOrderLogEvent> WorkOrderLog { get; set; }
 
-		protected override void OnModelCreating(ModelBuilder modelBuilder)
-		{
-			new WorkOrderLogEventEntityTypeConfiguration().Configure(modelBuilder.Entity<WorkOrderLogEvent>());
-		}
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            new WorkOrderLogEventEntityTypeConfiguration().Configure(modelBuilder.Entity<WorkOrderLogEvent>());
+        }
 
         protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
         {

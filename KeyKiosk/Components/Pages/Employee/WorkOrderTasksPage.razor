@@ -39,7 +39,7 @@ else
                 </div>
                 <div>
                     <div class="muted" style="font-size:.9rem;color:#6b7280;">Start → End</div>
-                    <div class="fw-semibold">@FormatDate(WorkOrder.StartDate) → @FormatDate(WorkOrder.EndDate)</div>
+                    <div class="fw-semibold">@FormatDateTime(WorkOrder.StartDate) → @FormatDateTime(WorkOrder.EndDate)</div>
                 </div>
                 <div>
                     <div class="muted" style="font-size:.9rem;color:#6b7280;">Total</div>
@@ -53,10 +53,31 @@ else
             </div>
         </div>
 
-        @if (!string.IsNullOrWhiteSpace(WorkOrder.Details))
-        {
-            <div class="muted" style="margin-top:.75rem;color:#4b5563;">@WorkOrder.Details</div>
-        }
+        <!-- Details (single copy) -->
+        <div style="margin-top:.75rem;">
+            @if (!IsEditingWoDetails)
+            {
+                <div class="muted" style="color:#4b5563;white-space:pre-wrap;">
+                    @(string.IsNullOrWhiteSpace(WorkOrder.Details) ? "(No details yet)" : WorkOrder.Details)
+                </div>
+                <div style="margin-top:.5rem;">
+                    <button class="edit-btn small-btn" type="button" @onclick="BeginEditWoDetails">Edit Details</button>
+                </div>
+            }
+            else
+            {
+                <!-- Use a plain form so we don't need EditForm Model/EditContext -->
+                <form @onsubmit="SaveWoDetailsAsync" @onsubmit:preventDefault>
+                    <div style="display:grid;gap:.5rem;">
+                        <textarea class="table-input" style="min-height:120px;" @bind="WoDetailsDraft"></textarea>
+                        <div style="display:flex;gap:.5rem;justify-content:flex-end;">
+                            <button class="save-btn small-btn" type="submit">Save</button>
+                            <button class="cancel-btn small-btn" type="button" @onclick="CancelEditWoDetails">Cancel</button>
+                        </div>
+                    </div>
+                </form>
+            }
+        </div>
     </div>
 
     <!-- Toolbar -->
@@ -77,6 +98,7 @@ else
                 <DataAnnotationsValidator />
                 <ValidationSummary />
                 <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:.75rem;">
+
                     <div style="grid-column: span 2;">
                         <label class="muted">Template</label>
                         <select class="table-select" @onchange="ModifyCreateTaskFromTemplate">
@@ -87,35 +109,37 @@ else
                             }
                         </select>
                     </div>
+
                     <div style="grid-column: span 2;">
                         <label class="muted">Title</label>
-                        <InputText class="table-input" @bind-Value="TaskToAdd.Title" />
+                        <InputText class="table-input" @bind-Value="TaskToAdd.Title" disabled />
                     </div>
+
                     <div>
                         <label class="muted">Cost (¢)</label>
-                        <InputNumber class="table-input" @bind-Value="TaskToAdd.CostCents" />
+                        <InputNumber class="table-input" @bind-Value="TaskToAdd.CostCents" disabled />
                     </div>
+
                     <div>
                         <label class="muted">Status</label>
-                        <select class="table-select" @bind="TaskToAdd.Status">
-                            @foreach (WorkOrderTaskStatusType s in Enum.GetValues(typeof(WorkOrderTaskStatusType)))
-                            {
-                                <option value="@s">@s</option>
-                            }
-                        </select>
+                        <input class="table-input" value="Created" disabled />
                     </div>
+
                     <div style="grid-column: span 3;">
                         <label class="muted">Details</label>
                         <InputTextArea class="table-input" @bind-Value="TaskToAdd.Details" />
                     </div>
+
                     <div>
                         <label class="muted">Start</label>
-                        <InputDate @bind-Value="TaskToAdd.StartDate" class="table-input" />
+                        <input class="table-input" value="N/A" disabled />
                     </div>
+
                     <div>
                         <label class="muted">End</label>
-                        <InputDate @bind-Value="TaskToAdd.EndDate" class="table-input" />
+                        <input class="table-input" value="N/A" disabled />
                     </div>
+
                     <div style="grid-column: span 6;text-align:right;">
                         <button class="btn-primary" type="submit">Add Task</button>
                     </div>
@@ -163,16 +187,11 @@ else
                     bool isEditing = EditingTaskId == t.Id;
                     <tr>
                         <td>@t.Id</td>
-                        <td>
-                            @if (isEditing)
-                            {
-                                <InputText class="table-input" @bind-Value="EditingModel.TaskTitle" />
-                            }
-                            else
-                            {
-                                @t.Title
-                            }
-                        </td>
+
+                        <!-- Title: never editable inline -->
+                        <td>@t.Title</td>
+
+                        <!-- Details: editable when editing -->
                         <td>
                             @if (isEditing)
                             {
@@ -183,36 +202,16 @@ else
                                 @t.Details
                             }
                         </td>
-                        <td>
-                            @if (isEditing)
-                            {
-                                <InputNumber class="table-input" @bind-Value="EditingModel.CostCents" />
-                            }
-                            else
-                            {
-                                @FormatCost(t.CostCents)
-                            }
-                        </td>
-                        <td>
-                            @if (isEditing)
-                            {
-                                <InputDate class="table-input" @bind-Value="EditingModel.StartDate" />
-                            }
-                            else
-                            {
-                                @FormatDate(t.StartDate)
-                            }
-                        </td>
-                        <td>
-                            @if (isEditing)
-                            {
-                                <InputDate class="table-input" @bind-Value="EditingModel.EndDate" />
-                            }
-                            else
-                            {
-                                @FormatDate(t.EndDate)
-                            }
-                        </td>
+
+                        <!-- Cost: never editable inline -->
+                        <td>@FormatCost(t.CostCents)</td>
+
+                        <!-- Dates: never editable inline -->
+                        <td>@FormatDateTime(t.StartDate)</td>
+                        <td>@FormatDateTime(t.EndDate)</td>
+
+
+                        <!-- Status: editable when editing -->
                         <td>
                             @if (isEditing)
                             {
@@ -228,6 +227,7 @@ else
                                 @t.Status
                             }
                         </td>
+
                         <td style="white-space:nowrap;">
                             @if (isEditing)
                             {
@@ -244,5 +244,62 @@ else
                 }
             </tbody>
         </table>
+
+        <!-- Parts toolbar -->
+        <div style="display:flex;justify-content:space-between;align-items:center;margin:1rem 0 .5rem;">
+            <h2 style="margin:0">Parts</h2>
+            <input class="table-input" style="min-width:260px" placeholder="Search parts"
+                   @bind="PartFilter" @bind:event="oninput" />
+        </div>
+
+        <!-- Add Part (from template only) -->
+        <div class="card-like" style="padding:1rem;border:1px solid #e5e7eb;border-radius:12px;margin-bottom:1rem;">
+            <form @onsubmit="AddPartFromTemplate" @onsubmit:preventDefault>
+                <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:.75rem;">
+                    <div style="grid-column: span 4;">
+                        <label class="muted">Part Template</label>
+                        <select class="table-select" @bind="SelectedPartTemplateId">
+                            <option value="">— Select a part template —</option>
+                            @foreach (var pt in PartTemplateList)
+                            {
+                                <option value="@pt.Id">@pt.PartName (@FormatCost(pt.CostCents))</option>
+                            }
+                        </select>
+                    </div>
+                    <div style="grid-column: span 2; align-self:end; text-align:right;">
+                        <button class="btn-primary" type="submit" disabled="@(!SelectedPartTemplateId.HasValue)">Add Part</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Parts table -->
+        <div class="workorders-table-container">
+            <table class="workorders-table">
+                <thead>
+                    <tr>
+                        <th>Id</th>
+                        <th>Part Name</th>
+                        <th>Details</th>
+                        <th>Cost</th>
+                        <th style="width:1%;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var p in FilteredParts)
+                    {
+                        <tr>
+                            <td>@p.Id</td>
+                            <td>@p.PartName</td>
+                            <td>@p.Details</td>
+                            <td>@FormatCost(p.CostCents)</td>
+                            <td style="white-space:nowrap;">
+                                <button class="delete-btn small-btn" @onclick="() => DeletePart(p.Id)">Delete</button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
     </div>
 }

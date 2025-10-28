@@ -1,2 +1,275 @@
-﻿body {
+﻿/* ===== Headings ===== */
+h1 {
+    text-align: center;
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin: 1rem 0 1.25rem;
+    color: #111827;
+}
+
+h2, h3 {
+    text-align: center;
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin: 1rem 0;
+    color: #222;
+}
+
+/* ===== Page wrapper (optional) ===== */
+.page-wrap {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* ===== Toolbar (search + filters + add) ===== */
+.toolbar {
+    display: flex;
+    gap: .5rem;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin: 0 0 1rem 0;
+}
+
+    .toolbar .table-input,
+    .toolbar .table-select {
+        min-width: 220px;
+    }
+
+.table-input,
+.table-select {
+    padding: 8px 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    background: #fff;
+    color: #111827;
+}
+
+/* ===== Table ===== */
+table {
+    width: auto;
+    min-width: 720px;
+    border-collapse: collapse;
+    font-family: Arial, sans-serif;
+    margin: 0 auto;
+    box-sizing: border-box;
+}
+
+th, td {
+    border: 1px solid #ddd;
+    padding: 8px 10px;
+    text-align: left;
+    vertical-align: top;
+}
+
+th {
+    background-color: #4caf50;
+    color: #fff;
+    font-weight: bold;
+}
+
+tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+tr:hover {
+    background-color: #e6f2ff;
+}
+
+/* keep long names/pins readable without breaking layout */
+td:nth-child(2),
+td:nth-child(3) {
+    max-width: 420px;
+    white-space: normal;
+    overflow-wrap: anywhere;
+}
+
+/* ===== Buttons ===== */
+button {
+    padding: 6px 12px;
+    margin: 2px;
+    cursor: pointer;
+    border: none;
+    border-radius: 6px;
+    transition: background-color .2s ease, opacity .2s ease, transform .08s ease;
+    background-color: #007bff;
+    color: #fff;
+    font-weight: 600;
+}
+
+    button:hover {
+        opacity: .95;
+        transform: translateY(-1px);
+    }
+
+    button:disabled {
+        opacity: .6;
+        cursor: not-allowed;
+    }
+
+.btn-primary {
+    background-color: #007bff;
+    color: #fff;
+}
+
+.delete-btn {
+    background-color: #dc3545;
+    color: #fff;
+}
+
+.save-btn {
+    background-color: #28a745;
+    color: #fff;
+}
+
+.cancel-btn {
+    background-color: #6c757d;
+    color: #fff;
+}
+
+/* default table action button as red delete if you use plain <button> */
+td > button {
+    background-color: #dc3545;
+}
+
+/* ===== Inline edit inputs in table ===== */
+td .inline-input,
+td .inline-select {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 6px 8px;
+    border: 1px solid #cfd4dc;
+    border-radius: 6px;
+    background: #fff;
+}
+
+td .inline-controls {
+    display: inline-flex;
+    gap: .25rem;
+}
+
+/* ===== Role badges ===== */
+.role-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: .85rem;
+    font-weight: 700;
+    color: #fff;
+}
+
+.role-user {
+    background-color: #6b7280;
+}
+/* gray */
+.role-manager {
+    background-color: #0ea5e9;
+}
+/* blue */
+.role-admin {
+    background-color: #f59e0b;
+}
+/* amber */
+
+/* ===== Forms (add / update block) ===== */
+form.users-form {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: .75rem .75rem;
+    max-width: 720px;
+    margin: 1rem auto 2rem;
+    padding: 1rem 1.25rem 1.25rem;
+    background: #f9f9f9;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,.05);
+}
+
+    form.users-form label {
+        display: block;
+        font-size: .95rem;
+        color: #374151;
+        margin: .25rem 0 .2rem;
+        font-weight: 600;
+    }
+
+    form.users-form input[type="text"],
+    form.users-form input[type="number"],
+    form.users-form input[type="password"],
+    form.users-form select {
+        width: 100%;
+        padding: 8px 10px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        background: #fff;
+        color: #111827;
+        box-sizing: border-box;
+    }
+
+    form.users-form .full {
+        grid-column: span 2;
+    }
+
+    form.users-form .actions {
+        grid-column: 2;
+        justify-self: end;
+    }
+
+/* ===== Pagination ===== */
+.pager-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: .75rem;
+    margin: 1rem auto;
+    flex-wrap: wrap;
+}
+
+.pager-btn {
+    padding: 6px 10px;
+    border-radius: 6px;
+    border: 1px solid #cfd4dc;
+    background: #fff;
+    color: #111827;
+}
+
+    .pager-btn:hover {
+        background: #eef2ff;
+    }
+
+.pager-select {
+    padding: 6px 10px;
+    border-radius: 6px;
+    border: 1px solid #cfd4dc;
+    background: #fff;
+}
+
+.pager-sep {
+    color: #9ca3af;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 768px) {
+    table {
+        min-width: 100%;
+    }
+
+    .toolbar {
+        justify-content: stretch;
+    }
+
+    form.users-form {
+        grid-template-columns: 1fr;
+    }
+
+        form.users-form .full,
+        form.users-form .actions {
+            grid-column: span 1;
+            justify-self: stretch;
+        }
+}
+
+/* subtle hover tweak for primary submit */
+form.users-form button[type="submit"]:hover {
+    background-color: #0056b3;
 }

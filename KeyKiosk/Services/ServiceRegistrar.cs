@@ -18,9 +18,12 @@ namespace KeyKiosk.Services
 			builder.Services.AddScoped<WorkOrderTaskService>();
 			builder.Services.AddScoped<WorkOrderTaskTemplateService>();
             builder.Services.AddScoped<ReportService>();
-
+            builder.Services.AddScoped<WorkOrderPartService>();
             builder.Services.AddScoped<WorkOrderLogService>();
-
+            builder.Services.AddScoped<PartTemplateService>();
+            builder.Services.AddScoped<PreviewDownloadService>();
+            builder.Services.AddScoped<PDFService>();
+            builder.Services.AddScoped<UserService>();
 
             // Drawer Serial Interface Service
             //string port = builder.Configuration.GetRequiredSection("DrawerSerialPort").Value ?? throw new InvalidOperationException("Configuration string 'DrawerSerialPort' not found.");

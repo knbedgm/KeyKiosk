@@ -1,10 +1,10 @@
-﻿namespace KeyKiosk.Data
+﻿namespace KeyKiosk.Data;
+
+public class WorkOrderTaskTemplate
 {
-    public class WorkOrderTaskTemplate
-    {
-        public int Id { get; set; }
-        public string TaskTitle { get; set; } = "";
-        public string TaskDetails { get; set; } = "";
-        public int TaskCostCents { get; set; }
-    }
+    public int Id { get; set; }
+    public string TaskTitle { get; set; } = "";
+    public string TaskDetails { get; set; } = "";
+    public int TaskCostCents { get; set; }
+    public int ExpectedDaysForCompletion { get; set; }
 }
