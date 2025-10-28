@@ -1,4 +1,4 @@
-﻿@page "/workorderlogs"
+﻿@page "/employee/workorderlogs"
 @using KeyKiosk.Data
 @using KeyKiosk.Services
 @using System.Text
@@ -23,7 +23,7 @@
             <div class="col-md-2">
                 <select class="form-select" @bind="eventTypeString">
                     <option value="">-- Event Type --</option>
-                    @foreach (var t in Enum.GetValues<LogEvent.LogEventType>())
+                    @foreach (var t in Enum.GetValues<WorkOrderLogEvent.WorkOrderLogEventType>())
                     {
                         <option value="@t">@t</option>
                     }
@@ -73,15 +73,15 @@ else
                         <td>@log.WorkOrderVehiclePlate</td>
                         <td><span class="badge bg-info text-dark">@log.EventType</span></td>
                         <td>
-                            @if (log.EventType == LogEvent.LogEventType.TaskAdded.ToString())
+                            @if (log.EventType == WorkOrderLogEvent.WorkOrderLogEventType.TaskAdded.ToString())
                             {
                                 <span>Task added: <strong>@log.TaskTitle</strong></span>
                             }
-                            else if (log.EventType == LogEvent.LogEventType.TaskRemoved.ToString())
+                            else if (log.EventType == WorkOrderLogEvent.WorkOrderLogEventType.TaskRemoved.ToString())
                             {
                                 <span>Task removed: <strong>@log.TaskTitle</strong></span>
                             }
-                            else if (log.EventType == LogEvent.LogEventType.TaskDetailsChanged.ToString())
+                            else if (log.EventType == WorkOrderLogEvent.WorkOrderLogEventType.TaskDetailsChanged.ToString())
                             {
                                 <details>
                                     <summary>Task details changed</summary>
@@ -93,7 +93,7 @@ else
                                     }
                                 </details>
                             }
-                            else if (log.EventType == LogEvent.LogEventType.StatusChanged.ToString())
+                            else if (log.EventType == WorkOrderLogEvent.WorkOrderLogEventType.StatusChanged.ToString())
                             {
                                 <span>Status changed</span>
                                 @if (log.Payload != null)
@@ -101,7 +101,7 @@ else
                                     <div class="mt-1"><pre class="mono">@JsonSerializer.Serialize(log.Payload, new JsonSerializerOptions { WriteIndented = true })</pre></div>
                                 }
                             }
-                            else if (log.EventType == LogEvent.LogEventType.DetailsChanged.ToString())
+                            else if (log.EventType == WorkOrderLogEvent.WorkOrderLogEventType.DetailsChanged.ToString())
                             {
                                 <details>
                                     <summary>Work order details changed</summary>
@@ -115,7 +115,7 @@ else
                                     }
                                 </details>
                             }
-                            else if (log.EventType == LogEvent.LogEventType.Created.ToString())
+                            else if (log.EventType == WorkOrderLogEvent.WorkOrderLogEventType.Created.ToString())
                             {
                                 <span class="text-success">Work order created</span>
                             }
@@ -138,11 +138,6 @@ else
     </div>
 
     <div class="d-flex justify-content-between align-items-center mt-2">
-        <div>
-            <button class="btn btn-sm btn-outline-primary me-2" @onclick="PrevPage" disabled="@(page == 1)">Previous</button>
-            <button class="btn btn-sm btn-outline-primary" @onclick="NextPage" disabled="@(logs.Count < pageSize)">Next</button>
-        </div>
-        <div>Page @page </div>
     </div>
 }
 
@@ -163,18 +158,18 @@ else
         await LoadLogs();
     }
 
+    WorkOrderLogEvent.WorkOrderLogEventType? ParseEventType(string? s)
+    {
+        if (string.IsNullOrEmpty(s)) return null;
+        if (Enum.TryParse<WorkOrderLogEvent.WorkOrderLogEventType>(s, ignoreCase: true, out var t)) return t;
+        return null;
+    }
+
     async Task LoadLogs()
     {
         var parsedType = ParseEventType(eventTypeString);
         logs = await LogService.GetFilteredLogDtosAsync(username, workOrderId, status: null, vehiclePlate, search, parsedType, page, pageSize);
         StateHasChanged();
-    }
-
-    LogEvent.LogEventType? ParseEventType(string? s)
-    {
-        if (string.IsNullOrEmpty(s)) return null;
-        if (Enum.TryParse<LogEvent.LogEventType>(s, out var t)) return t;
-        return null;
     }
 
     async Task ExportCsv()
