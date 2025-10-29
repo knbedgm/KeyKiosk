@@ -28,15 +28,35 @@
     </div>
 </div>
 
-<div class="report-buttons">
-    <button class="btn-primary" @onclick="GenerateEfficiencyReport" disabled="@IsBusy">Preview Efficiency Report</button>
-    <button class="btn-primary" @onclick="GenerateWorkOrdersReport" disabled="@IsBusy">Preview Work Orders Report</button>
-    <button class="btn-primary" @onclick="GenerateCustomerHistoryReport" disabled="@IsBusy">Preview Customer History Report</button>
-    <button class="btn-primary" @onclick="GenerateVehicleHistoryReport" disabled="@IsBusy">Preview Vehicle History Report</button>
-    <button class="btn-primary" @onclick="GenerateTopTasksReport" disabled="@IsBusy">Preview Popular Tasks Report</button>
-    <button class="btn-primary" @onclick="GeneratePartsReport" disabled="@IsBusy">Preview Parts Usage Expense Report</button>
-    <button class="btn-primary" @onclick="GenerateRevenueReport" disabled="@IsBusy">Preview Revenue Report</button>
+<!-- Action panels -->
+<div class="report-panels">
+    <section class="report-card" aria-labelledby="preview-title">
+        <h2 id="preview-title">Preview Reports</h2>
+        <div class="btn-grid">
+            <button class="btn-primary" @onclick="GenerateEfficiencyReport" disabled="@IsBusy">Efficiency</button>
+            <button class="btn-primary" @onclick="GenerateWorkOrdersReport" disabled="@IsBusy">Work Orders</button>
+            <button class="btn-primary" @onclick="GenerateCustomerHistoryReport" disabled="@IsBusy">Customer History</button>
+            <button class="btn-primary" @onclick="GenerateVehicleHistoryReport" disabled="@IsBusy">Vehicle History</button>
+            <button class="btn-primary" @onclick="GenerateTopTasksReport" disabled="@IsBusy">Popular Tasks</button>
+            <button class="btn-primary" @onclick="GeneratePartsReport" disabled="@IsBusy">Parts Expense</button>
+            <button class="btn-primary" @onclick="GenerateRevenueReport" disabled="@IsBusy">Revenue</button>
+        </div>
+    </section>
+
+    <section class="report-card" aria-labelledby="download-title">
+        <h2 id="download-title">Download Reports</h2>
+        <div class="btn-grid">
+            <button class="btn-primary" @onclick="DownloadEfficiencyReport" disabled="@IsBusy">Efficiency</button>
+            <button class="btn-primary" @onclick="DownloadWorkOrdersReport" disabled="@IsBusy">Work Orders</button>
+            <button class="btn-primary" @onclick="DownloadCustomerHistoryReport" disabled="@IsBusy">Customer History</button>
+            <button class="btn-primary" @onclick="DownloadVehicleHistoryReport" disabled="@IsBusy">Vehicle History</button>
+            <button class="btn-primary" @onclick="DownloadTopTasksReport" disabled="@IsBusy">Popular Tasks</button>
+            <button class="btn-primary" @onclick="DownloadPartsReport" disabled="@IsBusy">Parts Expense</button>
+            <button class="btn-primary" @onclick="DownloadRevenueReport" disabled="@IsBusy">Revenue</button>
+        </div>
+    </section>
 </div>
+
 
 @if (!string.IsNullOrEmpty(ErrorMessage))
 {
@@ -137,5 +157,55 @@
         if (!TryGetRange(out var s, out var e)) return;
         var workOrders = await WorkOrderService.GetWorkOrderByDatePeriod(s, e);
         await PreviewDownloadService.PreviewRevenueReportAsync(workOrders, s, e);
+    });
+
+    private Task DownloadEfficiencyReport() => Run(async () =>
+    {
+        if (!TryGetRange(out var s, out var e)) return;
+        var workOrders = await WorkOrderService.GetWorkOrderByDatePeriod(s, e);
+        var templates = TemplateService.GetAllTaskTemplates();
+        await PreviewDownloadService.DownloadEfficiencyReportAsync(workOrders, templates, s, e);
+    });
+
+    private Task DownloadWorkOrdersReport() => Run(async () =>
+    {
+        if (!TryGetRange(out var s, out var e)) return;
+        var workOrders = await WorkOrderService.GetWorkOrderByDatePeriod(s, e);
+        await PreviewDownloadService.DownloadWorkOrdersReportAsync(workOrders, s, e);
+    });
+
+    private Task DownloadCustomerHistoryReport() => Run(async () =>
+    {
+        var name = (CustomerName ?? string.Empty).Trim();
+        var workOrders = await WorkOrderService.GetWorkOrdersByCustomerNameAsync(name);
+        await PreviewDownloadService.DownloadCustomerHistoryReportAsync(workOrders, name);
+    });
+
+    private Task DownloadVehicleHistoryReport() => Run(async () =>
+    {
+        var plate = (VehicleLicensePlate ?? string.Empty).Trim();
+        var workOrders = await WorkOrderService.GetWorkOrdersByVehiclePlateAsync(plate);
+        await PreviewDownloadService.DownloadVehicleHistoryReportAsync(workOrders, plate);
+    });
+
+    private Task DownloadTopTasksReport() => Run(async () =>
+    {
+        if (!TryGetRange(out var s, out var e)) return;
+        var tasks = await TaskService.GetTasksByDatePeriod(s, e);
+        await PreviewDownloadService.DownloadTopTasksReportAsync(tasks, s, e);
+    });
+
+    private Task DownloadPartsReport() => Run(async () =>
+    {
+        if (!TryGetRange(out var s, out var e)) return;
+        var parts = await PartService.GetPartsByDatePeriod(s, e);
+        await PreviewDownloadService.DownloadPartsExpenseReportAsync(parts, s, e);
+    });
+
+    private Task DownloadRevenueReport() => Run(async () =>
+    {
+        if (!TryGetRange(out var s, out var e)) return;
+        var workOrders = await WorkOrderService.GetWorkOrderByDatePeriod(s, e);
+        await PreviewDownloadService.DownloadRevenueReportAsync(workOrders, s, e);
     });
 }
