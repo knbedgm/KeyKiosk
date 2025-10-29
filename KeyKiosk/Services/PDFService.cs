@@ -992,9 +992,9 @@ public class PDFService
         }
     }
 
-    public byte[] GenerateMechanicEfficiencyReport(List<WorkOrder> workOrderList, DateTimeOffset startDate, DateTimeOffset endDate, string mechName)
+    public byte[] GenerateMechanicProductivityReport(List<WorkOrderLogEvent> workOrderLogList, DateTimeOffset startDate, DateTimeOffset endDate, string mechName)
     {
-        if (workOrderList == null || workOrderList.Count() == 0)
+        if (workOrderLogList == null || workOrderLogList.Count() == 0)
         {
             var document = Document.Create(container =>
             {
@@ -1010,7 +1010,7 @@ public class PDFService
                         text.EmptyLine();
                         text.Span(mechName).FontSize(25).Bold();
                         text.EmptyLine();
-                        text.Span("between");
+                        text.Span("between").FontSize(25).Bold();
                         text.EmptyLine();
                         text.Span($"{startDate.Date:MMMM dd, yyyy}").FontSize(25).Bold();
                         text.EmptyLine();
@@ -1041,7 +1041,7 @@ public class PDFService
 
                     page.Content().PaddingVertical(1, Unit.Centimetre).Column(col =>
                     {
-                        col.Item().Text($"Work orders completed: ${workOrderList.Count}");
+                        col.Item().Text($"Work orders completed: {workOrderLogList.Count}");
 
                         col.Item().PaddingTop(40).Table(table =>
                         {
@@ -1054,9 +1054,9 @@ public class PDFService
 
                             table.Header(header =>
                             {
-                                header.Cell().Element(CellStyle).Text("Work Order ID");
-                                header.Cell().Element(CellStyle).Text("License Plate");
+                                header.Cell().Element(CellStyle).Text("WorkOrder ID");
                                 header.Cell().Element(CellStyle).Text("Date");
+                                header.Cell().Element(CellStyle).Text("Work Type");
 
                                 static IContainer CellStyle(IContainer container)
                                 {
@@ -1069,23 +1069,23 @@ public class PDFService
                             });
 
                             int tableCellColourIndex = 0;
-                            foreach (WorkOrder item in workOrderList)
+                            foreach (WorkOrderLogEvent item in workOrderLogList)
                             {
-                                table.Cell().Element(CellStyle).Text(item.Id.ToString());
-                                table.Cell().Element(CellStyle).Text(item.VehiclePlate);
-                                table.Cell().Element(CellStyle).Text($"{item.StartDate:MMMM dd, yyyy}");
+                                table.Cell().Element(CellStyle).Text(item.workOrder.Id.ToString());
+                                table.Cell().Element(CellStyle).Text($"{item.DateTime:MMMM dd, yyyy}");
+                                table.Cell().Element(CellStyle).Text(item.EventType.ToString());
 
                                 IContainer CellStyle(IContainer container)
-                                {
-                                    var backgroundColor = tableCellColourIndex % 2 == 0
-                                        ? Colors.Blue.Lighten5
-                                        : Colors.Blue.Lighten4;
+                                    {
+                                        var backgroundColor = tableCellColourIndex % 2 == 0
+                                            ? Colors.Blue.Lighten5
+                                            : Colors.Blue.Lighten4;
 
-                                    return container
-                                        .Background(backgroundColor)
-                                        .PaddingVertical(8)
-                                        .PaddingHorizontal(16);
-                                }
+                                        return container
+                                            .Background(backgroundColor)
+                                            .PaddingVertical(8)
+                                            .PaddingHorizontal(16);
+                                    }
 
                                 tableCellColourIndex++;
                             }
