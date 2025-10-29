@@ -18,19 +18,39 @@
 <input type="text" @bind="VehicleLicensePlate" />
 
 <br />
-<button @onclick="() => GenerateEfficiencyReport()">Preview Efficiency Report</button>
+<button @onclick="() => PreviewEfficiencyReport()">Preview Efficiency Report</button>
 <br />
-<button @onclick="() => GenerateWorkOrdersReport()">Preview Work Orders Report</button>
+<button @onclick="() => PreviewWorkOrdersReport()">Preview Work Orders Report</button>
 <br />
-<button @onclick="() => GenerateCustomerHistoryReport()">Preview Customer History Report</button>
+<button @onclick="() => PreviewCustomerHistoryReport()">Preview Customer History Report</button>
 <br />
-<button @onclick="() => GenerateVehicleHistoryReport()">Preview Vehicle History Report</button>
+<button @onclick="() => PreviewVehicleHistoryReport()">Preview Vehicle History Report</button>
 <br />
-<button @onclick="() => GenerateTopTasksReport()">Preview Popular Tasks Report</button>
+<button @onclick="() => PreviewTopTasksReport()">Preview Popular Tasks Report</button>
 <br />
-<button @onclick="() => GeneratePartsReport()">Preview Parts Usage Expense Report</button>
+<button @onclick="() => PreviewPartsReport()">Preview Parts Usage Expense Report</button>
 <br />
-<button @onclick="() => GenerateRevenueReport()">Preview Revenue Report</button>
+<button @onclick="() => PreviewRevenueReport()">Preview Revenue Report</button>
+<br />
+<br />
+<br />
+<br />
+<br />
+<br />
+<button @onclick="() => DownloadEfficiencyReport()">Download Efficiency Report</button>
+<br />
+<button @onclick="() => DownloadWorkOrdersReport()">Download Work Orders Report</button>
+<br />
+<button @onclick="() => DownloadCustomerHistoryReport()">Download Customer History Report</button>
+<br />
+<button @onclick="() => DownloadVehicleHistoryReport()">Download Vehicle History Report</button>
+<br />
+<button @onclick="() => DownloadTopTasksReport()">Download Popular Tasks Report</button>
+<br />
+<button @onclick="() => DownloadPartsReport()">Download Parts Usage Expense Report</button>
+<br />
+<button @onclick="() => DownloadRevenueReport()">Download Revenue Report</button>
+
 
 @code {
 
@@ -44,59 +64,104 @@
     [Inject] private WorkOrderTaskTemplateService TemplateService { get; set; }
     [Inject] private PreviewDownloadService PreviewDownloadService { get; set; } = default!;
 
-    public async void GenerateEfficiencyReport()
+    public async void PreviewEfficiencyReport()
     {
         List<WorkOrder> workOrders = await WorkOrderService.GetWorkOrderByDatePeriod(StartDate, EndDate);
         List<WorkOrderTaskTemplate> templates = TemplateService.GetAllTaskTemplates();
 
-        // await PreviewEfficiencyReportAsync(workOrders, templates, StartDate, EndDate);
         await PreviewDownloadService.PreviewEfficiencyReportAsync(workOrders, templates, StartDate, EndDate);
     }
 
-    public async void GenerateWorkOrdersReport()
+    public async void PreviewWorkOrdersReport()
     {
         List<WorkOrder> workOrders = await WorkOrderService.GetWorkOrderByDatePeriod(StartDate, EndDate);
 
         await PreviewDownloadService.PreviewWorkOrdersReportAsync(workOrders, StartDate, EndDate);
     }
 
-    public async void GenerateCustomerHistoryReport()
+    public async void PreviewCustomerHistoryReport()
     {
         List<WorkOrder> workOrders = await WorkOrderService.GetWorkOrdersByCustomerNameAsync(CustomerName);
 
         await PreviewDownloadService.PreviewCustomerHistoryReportAsync(workOrders, CustomerName);
     }
 
-    public async void GenerateVehicleHistoryReport()
+    public async void PreviewVehicleHistoryReport()
     {
         List<WorkOrder> workOrders = await WorkOrderService.GetWorkOrdersByVehiclePlateAsync(VehicleLicensePlate);
 
         await PreviewDownloadService.PreviewVehicleHistoryReportAsync(workOrders, VehicleLicensePlate);
     }
 
-    public async void GenerateTopTasksReport()
+    public async void PreviewTopTasksReport()
     {
         List<WorkOrderTask> tasks = await TaskService.GetTasksByDatePeriod(StartDate, EndDate);
 
         await PreviewDownloadService.PreviewTopTasksReportAsync(tasks, StartDate, EndDate);
     }
 
-    public async void GeneratePartsReport()
+    public async void PreviewPartsReport()
     {
         List<WorkOrderPart> parts = await PartService.GetPartsByDatePeriod(StartDate, EndDate);
 
         await PreviewDownloadService.PreviewPartsExpenseReportAsync(parts, StartDate, EndDate);
     }
 
-    public async void GenerateRevenueReport()
+    public async void PreviewRevenueReport()
     {
         List<WorkOrder> workOrders = await WorkOrderService.GetWorkOrderByDatePeriod(StartDate, EndDate);
 
         await PreviewDownloadService.PreviewRevenueReportAsync(workOrders, StartDate, EndDate);
     }
 
-    // public async void GenerateMechanicProductivityReport()
-    // {
-        
-    // }
+
+    public async void DownloadEfficiencyReport()
+    {
+        List<WorkOrder> workOrders = await WorkOrderService.GetWorkOrderByDatePeriod(StartDate, EndDate);
+        List<WorkOrderTaskTemplate> templates = TemplateService.GetAllTaskTemplates();
+
+        await PreviewDownloadService.DownloadEfficiencyReportAsync(workOrders, templates, StartDate, EndDate);
+    }
+
+    public async void DownloadWorkOrdersReport()
+    {
+        List<WorkOrder> workOrders = await WorkOrderService.GetWorkOrderByDatePeriod(StartDate, EndDate);
+
+        await PreviewDownloadService.DownloadWorkOrdersReportAsync(workOrders, StartDate, EndDate);
+    }
+
+    public async void DownloadCustomerHistoryReport()
+    {
+        List<WorkOrder> workOrders = await WorkOrderService.GetWorkOrdersByCustomerNameAsync(CustomerName);
+
+        await PreviewDownloadService.DownloadCustomerHistoryReportAsync(workOrders, CustomerName);
+    }
+
+    public async void DownloadVehicleHistoryReport()
+    {
+        List<WorkOrder> workOrders = await WorkOrderService.GetWorkOrdersByVehiclePlateAsync(VehicleLicensePlate);
+
+        await PreviewDownloadService.DownloadVehicleHistoryReportAsync(workOrders, VehicleLicensePlate);
+    }
+
+    public async void DownloadTopTasksReport()
+    {
+        List<WorkOrderTask> tasks = await TaskService.GetTasksByDatePeriod(StartDate, EndDate);
+
+        await PreviewDownloadService.DownloadTopTasksReportAsync(tasks, StartDate, EndDate);
+    }
+
+    public async void DownloadPartsReport()
+    {
+        List<WorkOrderPart> parts = await PartService.GetPartsByDatePeriod(StartDate, EndDate);
+
+        await PreviewDownloadService.DownloadPartsExpenseReportAsync(parts, StartDate, EndDate);
+    }
+
+    public async void DownloadRevenueReport()
+    {
+        List<WorkOrder> workOrders = await WorkOrderService.GetWorkOrderByDatePeriod(StartDate, EndDate);
+
+        await PreviewDownloadService.DownloadRevenueReportAsync(workOrders, StartDate, EndDate);
+    }
 }

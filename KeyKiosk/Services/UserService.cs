@@ -48,11 +48,12 @@ namespace KeyKiosk.Services
         /// Get all  users
         /// </summary>
         /// <returns></returns>
-        public List<User> GetAllUsers()
+        public async Task<List<User>> GetAllAsync()
         {
-            return db.Users
-                     .OrderBy(u => u.Id)
-                     .ToList();
+            return await db.Users
+                .OrderBy(u => u.Id)
+                .AsNoTracking()
+                .ToListAsync();
         }
 
         /// <summary>
@@ -60,52 +61,47 @@ namespace KeyKiosk.Services
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        public User GetUserById(int id)
+        public async Task<User?> GetUserById(int id)
         {
-            return db.Users
-                     .First(t => t.Id == id);
+            return await db.Users.FirstOrDefaultAsync(t => t.Id == id);
         }
 
         /// <summary>
         /// Add a new user to the database
         /// </summary>
-        /// <param name="user"></param>
-        public void AddUser(User user)
+        /// <param name="newUser"></param>
+        public async Task<User> AddAsync(User newUser)
         {
-            var newUser = new User { Name = user.Name, Pin = user.Pin, UserType = user.UserType };
             db.Users.Add(newUser);
-            db.SaveChanges();
+            await db.SaveChangesAsync();
+            return newUser;
         }
 
         /// <summary>
         /// Update existing user using id
         /// </summary>
-        /// <param name="idToUpdate"></param>
-        /// <param name="user"></param>
-        public void UpdateUser(User updatedUser)
+        /// <param name="id"></param>
+        /// <param name="updated"></param>
+    public async Task UpdateAsync(int id, User updated)
         {
-            var userToUpdate = db.Users.FirstOrDefault(t => t.Id == updatedUser.Id);
-            if (userToUpdate != null)
-            {
-                userToUpdate.Name = updatedUser.Name;
-                userToUpdate.Pin = updatedUser.Pin;
-                userToUpdate.UserType = updatedUser.UserType;
-            }
-            db.SaveChanges();
+            var userToUpdate = await db.Users.FirstOrDefaultAsync(x => x.Id == id);
+            if (userToUpdate is null) return;
+            userToUpdate.Name = updated.Name ?? userToUpdate.Name;
+            userToUpdate.Pin = updated.Pin ?? userToUpdate.Pin;
+            userToUpdate.UserType = updated.UserType;
+            await db.SaveChangesAsync();
         }
 
         /// <summary>
         /// Delete existing user using id
         /// </summary>
-        /// <param name="idToDelete"></param>
-        public void DeleteUser(int idToDelete)
+        /// <param name="id"></param>
+        public async Task DeleteAsync(int id)
         {
-            var userToDelete = db.Users.FirstOrDefault(t => t.Id == idToDelete);
-            if (userToDelete != null)
-            {
-                db.Users.Remove(userToDelete);
-            }
-            db.SaveChanges();
+            var userToDelete = await db.Users.FirstOrDefaultAsync(x => x.Id == id);
+            if (userToDelete is null) return;
+            db.Users.Remove(userToDelete);
+            await db.SaveChangesAsync();
         }
     }
 }

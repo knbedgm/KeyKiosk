@@ -3,90 +3,216 @@
 @layout Layout.MainLayout
 
 @using KeyKiosk.Data
+@using Microsoft.AspNetCore.Components.Forms
+@inject KeyKiosk.Services.WorkOrderTaskTemplateService TemplateService
+@inject ISnackbar Snackbar
 
-<h3>WorkOrdersTaskTemplatesPage</h3>
+<link href="app.css" rel="stylesheet" />
+<link href="WorkOrderTaskTemplate.css" rel="stylesheet" />
 
-@* Display list of existing templates*@
-@if (TemplateList != null && TemplateList.Count > 0)
+<PageTitle>Task Templates</PageTitle>
+<h1>Work Order Task Templates</h1>
+
+@if (Templates is null)
 {
-	<table>
-		<tr>
-			<th>Id</th>
-			<th>Title</th>
-			<th>Details</th>
-			<th>Cost</th>
-		</tr>
-		@foreach (WorkOrderTaskTemplate template in TemplateList)
-		{
-			<tr>
-				<td>@template.Id</td>
-				<td>@template.TaskTitle</td>
-				<td>@template.TaskDetails</td>
-				<td>@template.TaskCostCents</td>
-				<td>
-					@* Deletes selected template *@
-					<button @onclick="@(e => DeleteTemplate(template.Id))">
-						Delete
-					</button>
-				</td>
-			</tr>
-		}
-	</table>
+    <p>Loading…</p>
+}
+else if (Templates.Count > 0)
+{
+    <table class="workorders-table">
+        <thead>
+            <tr>
+                <th style="width:80px;">Id</th>
+                <th>Title</th>
+                <th>Details</th>
+                <th style="width:140px;">Cost</th>
+                <th style="width:1%;">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var t in Templates)
+            {
+                var isEditing = EditingId == t.Id;
+                <tr>
+                    <td>@t.Id</td>
+                    <td>
+                        @if (isEditing)
+                        {
+                            <InputText class="table-input" @bind-Value="EditingRow.TaskTitle" />
+                        }
+                        else
+                        {
+                            @t.TaskTitle
+                        }
+                    </td>
+                    <td>
+                        @if (isEditing)
+                        {
+                            <InputText class="table-input" @bind-Value="EditingRow.TaskDetails" />
+                        }
+                        else
+                        {
+                            @t.TaskDetails
+                        }
+                    </td>
+                    <td style="text-align:right;">
+                        @if (isEditing)
+                        {
+                            <InputNumber class="table-input" @bind-Value="EditingRow.TaskCostCents" />
+                        }
+                        else
+                        {
+                            @FormatCost(t.TaskCostCents)
+                        }
+                    </td>
+                    <td style="white-space:nowrap;">
+                        @if (isEditing)
+                        {
+                            <button class="save-btn" @onclick="SaveRowAsync">Save</button>
+                            <button class="cancel-btn" @onclick="CancelEdit">Cancel</button>
+                        }
+                        else
+                        {
+                            <button class="btn-primary" @onclick="() => BeginEdit(t)">Edit</button>
+                            <button class="delete-btn" @onclick="() => OnDelete(t.Id)">Delete</button>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <div class="card-like" style="padding:1rem;border:1px solid #e5e7eb;border-radius:12px;max-width:760px;margin:1rem auto;">
+        <p style="margin:0;text-align:center;color:#6b7280">
+            No templates yet. Add your first template below.
+        </p>
+    </div>
 }
 
 <br />
-<br />
-<br />
-
 <h1>Add New Template</h1>
 
-<br />
+<EditForm class="new-workorder-form" Model="@AddModel" OnValidSubmit="@OnAdd">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
 
-@* Form to add new template *@
-<EditForm Model="@TemplateToAdd" OnValidSubmit="@AddNewTemplate">
-	<DataAnnotationsValidator />
-	<ValidationSummary />
+    <label>Title</label>
+    <InputText @bind-Value="AddModel.TaskTitle" />
 
-	<label>Title</label>
-	<input type="text" @bind="TemplateToAdd.TaskTitle" />
-	
-	<label>Details</label>
-	<input type="text" @bind="TemplateToAdd.TaskDetails" />
+    <label>Details</label>
+    <InputText @bind-Value="AddModel.TaskDetails" />
 
-	<label>Cost in Cents</label>
-	<input type="number" @bind="TemplateToAdd.TaskCostCents"/>
+    <label>Cost in Cents</label>
+    <InputNumber @bind-Value="AddModel.TaskCostCents" />
 
-	<button type="submit">Submit</button>
+    <button class="btn-primary" type="submit">Submit</button>
 </EditForm>
 
-<br />
-<br />
-<br />
+@code {
+    // Data
+    private List<WorkOrderTaskTemplate>? Templates;
 
-@if (TemplateList != null && TemplateList.Count > 0)
-{
-	<h1>Update Existing Template</h1>
+    // Add form model
+    private AddTemplateModel AddModel = new();
 
-	<br />
+    // Inline edit model
+    private int? EditingId;
+    private WorkOrderTaskTemplate EditingRow = new();
 
-	@* Form to update existing template *@
-	<EditForm Model="@TemplateToUpdate" OnValidSubmit="@UpdateExistingTemplate">
-		<DataAnnotationsValidator />
-		<ValidationSummary />
+    protected override void OnInitialized()
+    {
+        LoadTemplates();
+    }
 
-		<select @bind="TemplateToUpdate.Id">
-			@foreach (WorkOrderTaskTemplate template in TemplateList)
-			{
-				<option value="@template.Id">@template.TaskTitle</option>
-			}
-		</select>
+    private void LoadTemplates()
+    {
+        Templates = TemplateService.GetAllTaskTemplates();
+        StateHasChanged();
+    }
 
-		<label>New Details</label>
-		<input type="text" @bind="TemplateToUpdate.TaskDetails" />
+    // Actions
+    private void OnAdd()
+    {
+        try
+        {
+            var template = new WorkOrderTaskTemplate
+            {
+                TaskTitle = AddModel.TaskTitle?.Trim() ?? string.Empty,
+                TaskDetails = AddModel.TaskDetails?.Trim() ?? string.Empty,
+                TaskCostCents = AddModel.TaskCostCents
+            };
 
-		<label>New Cost in Cents</label>
-		<input type="number" @bind="TemplateToUpdate.TaskCostCents" />
+            TemplateService.AddWorkOrderTaskTemplate(template);
+            LoadTemplates();
 
-		<button type="submit">Submit</button>
-	</EditForm>
+            AddModel = new(); // reset
+            Snackbar.Add("Template created successfully.", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Create failed: {ex.Message}", Severity.Error);
+        }
+    }
+
+    // Inline edit
+    private void BeginEdit(WorkOrderTaskTemplate t)
+    {
+        EditingId = t.Id;
+        EditingRow = new WorkOrderTaskTemplate
+        {
+            Id = t.Id,
+            TaskTitle = t.TaskTitle,
+            TaskDetails = t.TaskDetails,
+            TaskCostCents = t.TaskCostCents
+        };
+    }
+
+    private void CancelEdit()
+    {
+        EditingId = null;
+        EditingRow = new WorkOrderTaskTemplate();
+    }
+
+    private void SaveRowAsync()
+    {
+        if (EditingId is null) return;
+
+        try
+        {
+            TemplateService.UpdateWorkOrderTaskTemplate(EditingRow);
+            LoadTemplates();
+            EditingId = null;
+            Snackbar.Add("Template updated successfully.", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Update failed: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private void OnDelete(int id)
+    {
+        try
+        {
+            TemplateService.DeleteWorkOrderTaskTemplate(id);
+            LoadTemplates();
+            Snackbar.Add($"Template #{id} deleted.", Severity.Info);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Delete failed: {ex.Message}", Severity.Error);
+        }
+    }
+
+    // Helpers
+    private static string FormatCost(int cents) => (cents / 100m).ToString("C");
+
+    private sealed class AddTemplateModel
+    {
+        public string? TaskTitle { get; set; }
+        public string? TaskDetails { get; set; }
+        public int TaskCostCents { get; set; }
+    }
 }

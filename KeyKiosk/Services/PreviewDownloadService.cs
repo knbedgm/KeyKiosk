@@ -15,6 +15,8 @@ public class PreviewDownloadService
         _jsRuntime = jsRuntime;
     }
 
+    #region Preview
+
     public async Task PreviewEfficiencyReportAsync(List<WorkOrder> workOrders, List<WorkOrderTaskTemplate> templates, DateTimeOffset startDate, DateTimeOffset endDate)
     {
         var pdfBytes = PDFService.GenerateEfficiencyReport(workOrders, templates, startDate, endDate);
@@ -176,25 +178,6 @@ public class PreviewDownloadService
         await _jsRuntime.InvokeVoidAsync("openPdfPreview", base64);
     }
 
-    public async Task DownloadMechanicTodoAsync(WorkOrder workOrder)
-    {
-        var pdfBytes = PDFService.GenerateWorkOrderWithTasksPDF(workOrder);
-
-        var base64 = Convert.ToBase64String(pdfBytes);
-
-        var js = @"
-            window.downloadFileFromBytes = (filename, base64) => {
-                const link = document.createElement('a');
-                link.href = 'data:application/pdf;base64,' + base64;
-                link.download = filename;
-                link.click();
-            };
-        ";
-        await _jsRuntime.InvokeVoidAsync("eval", js);
-
-        await _jsRuntime.InvokeVoidAsync("downloadFileFromBytes", "report.pdf", base64);
-    }
-
     public async Task PreviewMechanicTodoAsync(WorkOrder workOrder)
     {
         var pdfBytes = PDFService.GenerateWorkOrderWithTasksPDF(workOrder);
@@ -215,4 +198,164 @@ public class PreviewDownloadService
 
         await _jsRuntime.InvokeVoidAsync("openPdfPreview", base64);
     }
+
+    #endregion
+
+
+
+    #region Download
+
+    public async Task DownloadEfficiencyReportAsync(List<WorkOrder> workOrders, List<WorkOrderTaskTemplate> templates, DateTimeOffset startDate, DateTimeOffset endDate)
+    {
+        var pdfBytes = PDFService.GenerateEfficiencyReport(workOrders, templates, startDate, endDate);
+
+        var base64 = Convert.ToBase64String(pdfBytes);
+
+        var js = @"
+            window.downloadFileFromBytes = (filename, base64) => {
+                const link = document.createElement('a');
+                link.href = 'data:application/pdf;base64,' + base64;
+                link.download = filename;
+                link.click();
+            };
+        ";
+        await _jsRuntime.InvokeVoidAsync("eval", js);
+
+        await _jsRuntime.InvokeVoidAsync("downloadFileFromBytes", "report.pdf", base64);
+    }
+
+    public async Task DownloadWorkOrdersReportAsync(List<WorkOrder> workOrders, DateTimeOffset startDate, DateTimeOffset endDate)
+    {
+        var pdfBytes = PDFService.GenerateWorkOrdersReport(workOrders, startDate, endDate);
+
+        var base64 = Convert.ToBase64String(pdfBytes);
+
+        var js = @"
+            window.downloadFileFromBytes = (filename, base64) => {
+                const link = document.createElement('a');
+                link.href = 'data:application/pdf;base64,' + base64;
+                link.download = filename;
+                link.click();
+            };
+        ";
+        await _jsRuntime.InvokeVoidAsync("eval", js);
+
+        await _jsRuntime.InvokeVoidAsync("downloadFileFromBytes", "report.pdf", base64);
+    }
+
+    public async Task DownloadCustomerHistoryReportAsync(List<WorkOrder> workOrders, string customerName)
+    {
+        var pdfBytes = PDFService.GenerateCustomerHistoryReport(workOrders, customerName);
+
+        var base64 = Convert.ToBase64String(pdfBytes);
+
+        var js = @"
+            window.downloadFileFromBytes = (filename, base64) => {
+                const link = document.createElement('a');
+                link.href = 'data:application/pdf;base64,' + base64;
+                link.download = filename;
+                link.click();
+            };
+        ";
+        await _jsRuntime.InvokeVoidAsync("eval", js);
+
+        await _jsRuntime.InvokeVoidAsync("downloadFileFromBytes", "report.pdf", base64);
+    }
+
+    public async Task DownloadVehicleHistoryReportAsync(List<WorkOrder> workOrders, string vehicleLicensePlate)
+    {
+        var pdfBytes = PDFService.GenerateVehicleHistoryReport(workOrders, vehicleLicensePlate);
+
+        var base64 = Convert.ToBase64String(pdfBytes);
+
+        var js = @"
+            window.downloadFileFromBytes = (filename, base64) => {
+                const link = document.createElement('a');
+                link.href = 'data:application/pdf;base64,' + base64;
+                link.download = filename;
+                link.click();
+            };
+        ";
+        await _jsRuntime.InvokeVoidAsync("eval", js);
+
+        await _jsRuntime.InvokeVoidAsync("downloadFileFromBytes", "report.pdf", base64);
+    }
+
+    public async Task DownloadTopTasksReportAsync(List<WorkOrderTask> tasks, DateTimeOffset startDate, DateTimeOffset endDate)
+    {
+        var pdfBytes = PDFService.GenerateTopTasksReport(tasks, startDate, endDate);
+
+        var base64 = Convert.ToBase64String(pdfBytes);
+
+        var js = @"
+            window.downloadFileFromBytes = (filename, base64) => {
+                const link = document.createElement('a');
+                link.href = 'data:application/pdf;base64,' + base64;
+                link.download = filename;
+                link.click();
+            };
+        ";
+        await _jsRuntime.InvokeVoidAsync("eval", js);
+
+        await _jsRuntime.InvokeVoidAsync("downloadFileFromBytes", "report.pdf", base64);
+    }
+
+    public async Task DownloadPartsExpenseReportAsync(List<WorkOrderPart> parts, DateTimeOffset startDate, DateTimeOffset endDate)
+    {
+        var pdfBytes = PDFService.GeneratePartsUsageExpenseReport(parts, startDate, endDate);
+
+        var base64 = Convert.ToBase64String(pdfBytes);
+
+        var js = @"
+            window.downloadFileFromBytes = (filename, base64) => {
+                const link = document.createElement('a');
+                link.href = 'data:application/pdf;base64,' + base64;
+                link.download = filename;
+                link.click();
+            };
+        ";
+        await _jsRuntime.InvokeVoidAsync("eval", js);
+
+        await _jsRuntime.InvokeVoidAsync("downloadFileFromBytes", "report.pdf", base64);
+    }
+
+    public async Task DownloadRevenueReportAsync(List<WorkOrder> workOrders, DateTimeOffset startDate, DateTimeOffset endDate)
+    {
+        var pdfBytes = PDFService.GenerateRevenueReport(workOrders, startDate, endDate);
+
+        var base64 = Convert.ToBase64String(pdfBytes);
+
+        var js = @"
+            window.downloadFileFromBytes = (filename, base64) => {
+                const link = document.createElement('a');
+                link.href = 'data:application/pdf;base64,' + base64;
+                link.download = filename;
+                link.click();
+            };
+        ";
+        await _jsRuntime.InvokeVoidAsync("eval", js);
+
+        await _jsRuntime.InvokeVoidAsync("downloadFileFromBytes", "report.pdf", base64);
+    }
+
+    public async Task DownloadMechanicTodoAsync(WorkOrder workOrder)
+    {
+        var pdfBytes = PDFService.GenerateWorkOrderWithTasksPDF(workOrder);
+
+        var base64 = Convert.ToBase64String(pdfBytes);
+
+        var js = @"
+            window.downloadFileFromBytes = (filename, base64) => {
+                const link = document.createElement('a');
+                link.href = 'data:application/pdf;base64,' + base64;
+                link.download = filename;
+                link.click();
+            };
+        ";
+        await _jsRuntime.InvokeVoidAsync("eval", js);
+
+        await _jsRuntime.InvokeVoidAsync("downloadFileFromBytes", "report.pdf", base64);
+    }
+
+    #endregion
 }
