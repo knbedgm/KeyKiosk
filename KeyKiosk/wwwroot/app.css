@@ -100,6 +100,8 @@ a, .btn-link {
 .nav-logo {
     height: 108px;
     width: auto;
+/*    outline: 3px solid rgba(59,130,246,.45);*/
+/*    border-color: #3b82f6;*/
 }
 
 /* Nav links styling */
@@ -134,7 +136,6 @@ a, .btn-link {
         transform: translateY(-1px);
     }
 
-
 /* Page content wrapper (controls horizontal margins site-wide) */
 .page-body {
     flex: 1;
@@ -146,9 +147,54 @@ a, .btn-link {
     background-color: #f8fafc;
 }
 
+/* ===== Headings ===== */
 h1 {
     text-align: center;
     font-size: 2.5rem;
     font-weight: 700;
-    margin-bottom: 1rem;
+    margin: 1rem 0 1.25rem;
+    color: hsl(var(--primary)); /* theme red */
+    position: relative;
+}
+
+    /* subtle red underline */
+    h1::after {
+        content: "";
+        display: block;
+        width: 80px;
+        height: 4px;
+        background-color: hsl(var(--primary));
+        margin: 0.5rem auto 0;
+        border-radius: 2px;
+    }
+
+/* optional glow for extra depth */
+h1 {
+    text-shadow: 0 1px 2px hsl(var(--primary) / 0.35);
+}
+
+/* ===== Headings ===== */
+h2 {
+    text-align: center;
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin: 1rem 0 1.25rem;
+    color: hsl(var(--primary)); /* theme red */
+    position: relative;
+}
+
+    /* subtle red underline */
+    h2::after {
+        content: "";
+        display: block;
+        width: 80px;
+        height: 4px;
+        background-color: hsl(var(--primary));
+        margin: 0.5rem auto 0;
+        border-radius: 2px;
+    }
+
+/* optional glow for extra depth */
+h2 {
+    text-shadow: 0 1px 2px hsl(var(--primary) / 0.35);
 }

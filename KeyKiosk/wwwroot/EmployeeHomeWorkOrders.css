@@ -1,4 +1,4 @@
-﻿/* Buttons */
+﻿/* ===== Global Buttons ===== */
 button,
 .edit-btn,
 .delete-btn,
@@ -13,60 +13,108 @@ button,
     cursor: pointer;
     border: none;
     border-radius: 4px;
-    transition: background-color 0.2s ease;
+    transition: background-color 0.2s ease, transform 0.1s ease, opacity 0.2s ease;
+    font-weight: 600;
+    color: #fff;
 }
 
-    button:hover,
-    .edit-btn:hover,
-    .delete-btn:hover,
-    .save-btn:hover,
-    .cancel-btn:hover,
-    .btn-primary:hover,
-    .new-workorder-form button:hover,
-    .search-block button:hover,
-    .show-all-button button:hover {
-        opacity: 0.9;
-    }
+/* Red as the global primary */
+button,
+.btn-primary,
+.new-workorder-form button {
+    background-color: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
+}
 
-/* Button colors */
+/* Variants */
 .edit-btn {
-    background-color: #007bff;
-    color: white;
+    background-color: #007bff; /* blue */
 }
 
 .delete-btn {
-    background-color: #dc3545;
-    color: white;
+    background-color: #dc3545; /* red */
 }
 
 .save-btn {
-    background-color: #28a745;
-    color: white;
+    background-color: #28a745; /* green */
 }
 
 .cancel-btn {
-    background-color: #6c757d;
-    color: white;
+    background-color: #6c757d; /* gray */
 }
 
-.btn-primary,
-.new-workorder-form button {
-    background-color: #007bff;
-    color: white;
+/* Table action defaults red */
+td > button {
+    background-color: #dc3545;
 }
 
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-    box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+/* Hover effects */
+button:hover,
+.edit-btn:hover,
+.delete-btn:hover,
+.save-btn:hover,
+.cancel-btn:hover,
+.btn-primary:hover,
+.new-workorder-form button:hover,
+.search-block button:hover,
+.show-all-button button:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
 }
 
-.content {
-    padding-top: 1.1rem;
+button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
 }
 
-h1:focus {
-    outline: none;
+/* Focus visuals */
+.btn:focus,
+.btn:active:focus,
+.btn-link.nav-link:focus,
+.form-control:focus,
+.form-check-input:focus {
+    box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem hsl(var(--primary));
 }
 
+/* ===== Table styling ===== */
+.workorders-table thead tr:first-child th {
+    background-color: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
+    text-align: left;
+    padding: 10px;
+    font-weight: 600;
+    border-bottom: 2px solid hsl(var(--border));
+}
+
+.workorders-table thead tr:nth-child(2) th,
+.workorders-table thead tr:nth-child(2) td {
+    background-color: hsl(var(--primary) / 0.06);
+    color: var(--foreground);
+}
+
+.workorders-table th,
+.workorders-table td {
+    padding: 8px 12px;
+    border: 1px solid #e5e7eb;
+}
+
+.workorders-table tbody tr:nth-child(even) {
+    background-color: hsl(var(--primary) / 0.03);
+}
+
+.workorders-table tbody tr:hover {
+    background-color: hsl(var(--primary) / 0.08);
+}
+
+.workorders-table {
+    border-collapse: separate;
+    border-spacing: 0;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #fff;
+}
+
+/* ===== Validation & Misc ===== */
 .valid.modified:not([type="checkbox"]) {
     outline: 1px solid #26b050;
 }
@@ -77,6 +125,13 @@ h1:focus {
 
 .validation-message {
     color: #e50000;
+}
+
+/* Layout + error visuals */
+.layout-shell {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
 }
 
 .blazor-error-boundary {
@@ -93,9 +148,105 @@ h1:focus {
     border-color: #929292;
 }
 
-/* Layout shell */
-.layout-shell {
+/* ===== Pagination: red theme, readable ===== */
+.pager-bar {
     display: flex;
-    flex-direction: column;
-    min-height: 100vh;
+    align-items: center;
+    justify-content: center;
+    gap: .75rem 1rem;
+    margin: 1rem auto;
+    flex-wrap: wrap;
+    text-align: center;
+}
+
+.pager-left,
+.pager-middle,
+.pager-right {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    flex-wrap: wrap;
+}
+
+/* Red outline button style */
+.pager-btn {
+    background: #fff;
+    color: hsl(var(--primary));
+    border: 1.5px solid hsl(var(--primary));
+    border-radius: 8px;
+    padding: 8px 12px;
+    min-width: 92px;
+    font-size: .95rem;
+    font-weight: 800;
+    letter-spacing: .2px;
+    cursor: pointer;
+    transition: background-color .15s ease, color .15s ease, border-color .15s ease, transform .08s ease, box-shadow .15s ease;
+    box-shadow: 0 1px 0 rgba(17,24,39,.06);
+}
+
+    /* Hover: solid red */
+    .pager-btn:hover {
+        background: hsl(var(--primary));
+        color: hsl(var(--primary-foreground));
+        transform: translateY(-1px);
+    }
+
+    /* Focus ring */
+    .pager-btn:focus-visible {
+        outline: 2px solid hsl(var(--primary));
+        outline-offset: 2px;
+        box-shadow: 0 0 0 3px hsl(var(--primary) / 0.25);
+    }
+
+    /* Disabled */
+    .pager-btn:disabled {
+        background: #fff;
+        color: hsl(var(--primary) / 0.45);
+        border-color: hsl(var(--primary) / 0.35);
+        cursor: not-allowed;
+        box-shadow: none;
+        transform: none;
+        opacity: 1;
+    }
+
+/* Solid variant (optional) */
+.pager-btn--solid {
+    background: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
+    border-color: hsl(var(--primary));
+}
+
+    .pager-btn--solid:hover {
+        filter: brightness(0.95);
+    }
+
+/* Selects */
+.pager-select {
+    padding: 8px 10px;
+    border-radius: 8px;
+    border: 1.5px solid hsl(var(--primary));
+    background: #fff;
+    color: #111827;
+    font-weight: 600;
+    transition: border-color .15s ease, box-shadow .15s ease;
+}
+
+    .pager-select:focus-visible {
+        outline: 2px solid hsl(var(--primary));
+        outline-offset: 2px;
+        box-shadow: 0 0 0 3px hsl(var(--primary) / 0.25);
+    }
+
+.pager-sep {
+    color: #9ca3af;
+    margin: 0 .25rem;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+    .pager-btn {
+        min-width: 84px;
+        padding: 8px 10px;
+        font-size: .92rem;
+    }
 }

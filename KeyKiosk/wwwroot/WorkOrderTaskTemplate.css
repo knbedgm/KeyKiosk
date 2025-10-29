@@ -4,7 +4,24 @@ h1 {
     font-size: 2.5rem;
     font-weight: 700;
     margin: 1rem 0 1.25rem;
-    color: #111827;
+    color: hsl(var(--primary)); /* theme red */
+    position: relative;
+}
+
+    /* subtle red underline */
+    h1::after {
+        content: "";
+        display: block;
+        width: 80px;
+        height: 4px;
+        background-color: hsl(var(--primary));
+        margin: 0.5rem auto 0;
+        border-radius: 2px;
+    }
+
+/* optional glow for extra depth */
+h1 {
+    text-shadow: 0 1px 2px hsl(var(--primary) / 0.35);
 }
 
 h2, h3 {
@@ -12,8 +29,21 @@ h2, h3 {
     font-size: 1.5rem;
     font-weight: 600;
     margin: 1rem 0;
-    color: #222;
+    color: hsl(var(--primary));
+    position: relative;
 }
+
+    /* thinner underline for h2/h3 */
+    h2::after,
+    h3::after {
+        content: "";
+        display: block;
+        width: 60px;
+        height: 3px;
+        background-color: hsl(var(--primary) / 0.8);
+        margin: 0.35rem auto 0;
+        border-radius: 2px;
+    }
 
 /* ===== Table (templates list) ===== */
 table {
@@ -21,10 +51,11 @@ table {
     min-width: 720px;
     border-collapse: collapse;
     font-family: Arial, sans-serif;
-    margin: 0 auto; /* center table */
+    margin: 0 auto;
     box-sizing: border-box;
 }
 
+/* Cells */
 th, td {
     border: 1px solid #ddd;
     padding: 8px 10px;
@@ -32,18 +63,20 @@ th, td {
     vertical-align: top;
 }
 
+/* Red header bar */
 th {
-    background-color: #4caf50;
-    color: #fff;
+    background-color: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
     font-weight: bold;
 }
 
+/* Alternating rows and hover tint */
 tr:nth-child(even) {
-    background-color: #f9f9f9;
+    background-color: hsl(var(--primary) / 0.03);
 }
 
 tr:hover {
-    background-color: #e6f2ff;
+    background-color: hsl(var(--primary) / 0.08);
 }
 
 /* Keep long details readable */
@@ -53,7 +86,7 @@ td:nth-child(3) {
     overflow-wrap: anywhere;
 }
 
-/* ===== Buttons (consistent with app) ===== */
+/* ===== Buttons ===== */
 button {
     padding: 6px 12px;
     margin: 2px;
@@ -61,49 +94,55 @@ button {
     border: none;
     border-radius: 6px;
     transition: background-color .2s ease, opacity .2s ease, transform .08s ease;
-    background-color: #007bff;
-    color: #fff;
     font-weight: 600;
+    color: #fff;
 }
 
-    button:hover {
-        opacity: 0.95;
-        transform: translateY(-1px);
-    }
-
-    button:disabled {
-        opacity: .6;
-        cursor: not-allowed;
-    }
-
-/* Special styles you can reuse where desired */
+/* Default primary (red) for general buttons */
+button,
 .btn-primary {
-    background-color: #007bff;
+    color: hsl(var(--primary-foreground));
+}
+
+/* ===== Individual Button Variants ===== */
+.edit-btn {
+    background-color: #007bff; /* blue edit */
     color: #fff;
 }
 
 .delete-btn {
-    background-color: #dc3545;
+    background-color: #dc3545; /* red delete */
     color: #fff;
 }
 
 .save-btn {
-    background-color: #28a745;
+    background-color: #28a745; /* green save */
     color: #fff;
 }
 
 .cancel-btn {
-    background-color: #6c757d;
+    background-color: #6c757d; /* gray cancel */
     color: #fff;
 }
 
-/* Make the Delete button in the table red automatically if you used plain <button> */
+/* Table default button (plain <button> inside td) stays red */
 td > button {
     background-color: #dc3545;
 }
 
+/* Hover + disabled styles */
+button:hover {
+    opacity: 0.95;
+    transform: translateY(-1px);
+}
+
+button:disabled {
+    opacity: .6;
+    cursor: not-allowed;
+}
+
+
 /* ===== Forms (Add + Update) ===== */
-/* Both EditForms render as <form>, so styling the element is fine here */
 form {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -111,13 +150,13 @@ form {
     max-width: 720px;
     margin: 1rem auto 2rem;
     padding: 1rem 1rem 1.25rem;
-    background: #f9f9f9;
+    background: #fff;
     border: 1px solid #e5e7eb;
     border-radius: 12px;
     box-shadow: 0 4px 12px rgba(0,0,0,.05);
 }
 
-    /* Labels stacked */
+    /* Labels */
     form label {
         display: block;
         font-size: .95rem;
@@ -139,38 +178,40 @@ form {
         box-sizing: border-box;
     }
 
-    /* Put the Title and Details full-width nicely */
+    /* Title + Details full-width */
     form label + input[type="text"] {
         grid-column: span 2;
     }
 
-    /* Action button row */
+    /* Submit / cancel buttons */
     form button[type="submit"] {
-        grid-column: 2; /* right column */
+        grid-column: 2;
         justify-self: end;
-        background: #007bff;
+        background: hsl(var(--primary));
+        color: hsl(var(--primary-foreground));
     }
 
     form .cancel-btn {
-        grid-column: 1; /* left column, if you add one later */
+        grid-column: 1;
         justify-self: start;
     }
 
-    /* Smaller/centered “section” headings for the forms if you add any */
+    /* Optional section headings */
     form .form-section-title {
         grid-column: span 2;
         text-align: center;
         margin: .25rem 0 .5rem;
         font-weight: 700;
+        color: hsl(var(--primary));
     }
 
-/* ===== Utility/container alignment (optional) ===== */
+/* ===== Layout ===== */
 .page-wrap {
     max-width: 1200px;
     margin: 0 auto;
 }
 
-/* Responsive: stack to single column on smaller screens */
+/* Responsive */
 @media (max-width: 768px) {
     table {
         min-width: 100%;
@@ -186,7 +227,7 @@ form {
         }
 }
 
-/* Optional: match the modal/button hover vibe from app.css */
+/* Hover accent for submit button */
 form button[type="submit"]:hover {
-    background-color: #0056b3;
+    background-color: hsl(var(--primary) / 0.85);
 }
