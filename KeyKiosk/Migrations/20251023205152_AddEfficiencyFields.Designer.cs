@@ -3,6 +3,7 @@ using System;
 using KeyKiosk.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace KeyKiosk.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251023205152_AddEfficiencyFields")]
+    partial class AddEfficiencyFields
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -74,30 +77,6 @@ namespace KeyKiosk.Migrations
                     b.ToTable("DrawerLog");
                 });
 
-            modelBuilder.Entity("KeyKiosk.Data.PartTemplate", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("CostCents")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Details")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("PartName")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("PartTemplates");
-                });
-
             modelBuilder.Entity("KeyKiosk.Data.User", b =>
                 {
                     b.Property<int>("Id")
@@ -111,6 +90,7 @@ namespace KeyKiosk.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("Pin")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("UserType")
@@ -118,9 +98,6 @@ namespace KeyKiosk.Migrations
                         .HasColumnType("text");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("Pin")
-                        .IsUnique();
 
                     b.ToTable("Users");
                 });
@@ -227,35 +204,6 @@ namespace KeyKiosk.Migrations
                     b.HasDiscriminator<string>("EventType");
 
                     b.UseTphMappingStrategy();
-                });
-
-            modelBuilder.Entity("KeyKiosk.Data.WorkOrderPart", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("CostCents")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Details")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("PartName")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<int>("WorkOrderId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("WorkOrderId");
-
-                    b.ToTable("WorkOrderParts");
                 });
 
             modelBuilder.Entity("KeyKiosk.Data.WorkOrderTask", b =>
@@ -447,35 +395,6 @@ namespace KeyKiosk.Migrations
                     b.HasDiscriminator().HasValue("TaskStatusChanged");
                 });
 
-            modelBuilder.Entity("KeyKiosk.Data.User", b =>
-                {
-                    b.OwnsOne("KeyKiosk.Data.UserDesktopLogin", "DesktopLogin", b1 =>
-                        {
-                            b1.Property<int>("UserId")
-                                .HasColumnType("integer");
-
-                            b1.Property<string>("HashedPassword")
-                                .IsRequired()
-                                .HasColumnType("text");
-
-                            b1.Property<string>("Username")
-                                .IsRequired()
-                                .HasColumnType("text");
-
-                            b1.HasKey("UserId");
-
-                            b1.HasIndex("Username")
-                                .IsUnique();
-
-                            b1.ToTable("Users");
-
-                            b1.WithOwner()
-                                .HasForeignKey("UserId");
-                        });
-
-                    b.Navigation("DesktopLogin");
-                });
-
             modelBuilder.Entity("KeyKiosk.Data.WorkOrderLogEvent", b =>
                 {
                     b.HasOne("KeyKiosk.Data.WorkOrder", "workOrder")
@@ -485,17 +404,6 @@ namespace KeyKiosk.Migrations
                         .IsRequired();
 
                     b.Navigation("workOrder");
-                });
-
-            modelBuilder.Entity("KeyKiosk.Data.WorkOrderPart", b =>
-                {
-                    b.HasOne("KeyKiosk.Data.WorkOrder", "WorkOrder")
-                        .WithMany("Parts")
-                        .HasForeignKey("WorkOrderId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("WorkOrder");
                 });
 
             modelBuilder.Entity("KeyKiosk.Data.WorkOrderTask", b =>
@@ -555,8 +463,6 @@ namespace KeyKiosk.Migrations
 
             modelBuilder.Entity("KeyKiosk.Data.WorkOrder", b =>
                 {
-                    b.Navigation("Parts");
-
                     b.Navigation("Tasks");
                 });
 #pragma warning restore 612, 618

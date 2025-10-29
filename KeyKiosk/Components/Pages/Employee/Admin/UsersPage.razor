@@ -3,7 +3,7 @@
 @layout Layout.MainLayout
 @using KeyKiosk.Data
 @inject KeyKiosk.Services.UserService UserService
-@inject KeyKiosk.Services.ToastService Toast
+@inject ISnackbar Snackbar
 
 <link href="app.css" rel="stylesheet" />
 <link href="Employees.css" rel="stylesheet" />
@@ -230,12 +230,12 @@ else
     {
         if (string.IsNullOrWhiteSpace(NewUser.Name) || string.IsNullOrWhiteSpace(NewUser.Pin))
         {
-            Toast.ShowToast("Name and PIN are required.", "warning");
+            Snackbar.Add("Name and PIN are required.", Severity.Warning);
             return;
         }
 
         var created = await UserService.AddAsync(NewUser);
-        Toast.ShowToast($"User '{created.Name}' created.", "success");
+        Snackbar.Add($"User '{created.Name}' created.", Severity.Success);
 
         Users = await UserService.GetAllAsync();
         NewUser = new();
@@ -273,7 +273,7 @@ else
             UserType = EditModel.UserType
         });
 
-        Toast.ShowToast("User updated.", "success");
+        Snackbar.Add("User updated.", Severity.Success);
         Users = await UserService.GetAllAsync();
         CancelEdit();
     }
@@ -281,7 +281,7 @@ else
     private async Task DeleteUserAsync(int id)
     {
         await UserService.DeleteAsync(id);
-        Toast.ShowToast("User deleted.", "info");
+        Snackbar.Add("User deleted.", Severity.Info);
         Users = await UserService.GetAllAsync();
 
         if (Page > TotalPages) Page = TotalPages;

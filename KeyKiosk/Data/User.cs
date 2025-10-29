@@ -1,10 +1,15 @@
-﻿namespace KeyKiosk.Data
+﻿using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
+
+namespace KeyKiosk.Data
 {
-    public class User
+	[Index(nameof(Pin), IsUnique = true)]
+	public class User
     {
         public int Id { get; set; }
         public string Name { get; set; } = "";
-        public string Pin { get; set; } = "000000";
+        public string? Pin { get; set; } = null;
+        public UserDesktopLogin? DesktopLogin { get; set; }
         public UserType UserType { get; set; } = UserType.User;
     }
 
@@ -14,4 +19,12 @@
         Manager,
         Admin
     }
+
+	[Owned]
+	[Index(nameof(Username), IsUnique=true)]
+    public class UserDesktopLogin
+    {
+		public required string Username { get; set; }
+		public required string HashedPassword { get; set; }
+	}
 }

@@ -1,7 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
+    <!--<TargetFramework>net9.0</TargetFramework>-->
+	 <TargetFramework>net9.0-windows</TargetFramework> <!-- Temp so that the hardware sim will work -->
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UserSecretsId>bade79bb-5554-4aee-aaa7-89aeb45ba453</UserSecretsId>
@@ -35,9 +36,15 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="MudBlazor" Version="8.13.0" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
     <PackageReference Include="QuestPDF" Version="2025.7.3" />
     <PackageReference Include="System.IO.Ports" Version="9.0.9" />
+	  <PackageReference Include="WSCT.Wrapper.Desktop" Version="1.5.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\HardwareSimulator\HardwareSimulator.csproj" />
   </ItemGroup>
 
   <ItemGroup>

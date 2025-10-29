@@ -6,8 +6,7 @@ namespace KeyKiosk.Components.Pages.Employee.Admin;
 
 public partial class WorkOrderTaskTemplatesPage
 {
-    [Inject]
-    private WorkOrderTaskTemplateService TaskTemplateService { get; set; }
+    [Inject] private WorkOrderTaskTemplateService TaskTemplateService { get; set; }
 
     /// <summary>
     /// Displays list of existing templates

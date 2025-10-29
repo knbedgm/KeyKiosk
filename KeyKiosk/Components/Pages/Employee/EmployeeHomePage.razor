@@ -8,10 +8,9 @@
 @using Microsoft.JSInterop
 
 @inject KeyKiosk.Services.WorkOrderService WorkOrderService
-@inject KeyKiosk.Services.ToastService ToastService
+@inject ISnackbar Snackbar
 @inject IJSRuntime JSRuntime
 @inject NavigationManager Nav
-@inject ReportService ReportService
 
 <link href="app.css" rel="stylesheet" />
 <link href="EmployeeHomeWorkOrders.css" rel="stylesheet" />
@@ -308,6 +307,18 @@ else
     private DateTimeOffset? _originalStart;
     private DateTimeOffset? _originalEnd;
 
+    // = PDF actions =
+    [Inject] private PreviewDownloadService PreviewDownloadService { get; set; } = default!;
+    private async Task DownloadPdfAsync(WorkOrder workOrder)
+    {
+        await PreviewDownloadService.DownloadMechanicTodoAsync(workOrder);
+    }
+
+    private async Task PreviewPdfAsync(WorkOrder workOrder)
+    {
+        await PreviewDownloadService.PreviewMechanicTodoAsync(workOrder);
+    }
+
     // Search (EditForm requires a model)
     private class WorkOrderSearch { public string Plate { get; set; } = string.Empty; }
     private WorkOrderSearch SearchModel { get; set; } = new();
@@ -455,8 +466,7 @@ else
         _originalStatus = null;
         _originalStart = null;
         _originalEnd = null;
-
-        ToastService.ShowToast($"Work order {workOrder.Id} updated successfully.", "success");
+        Snackbar.Add($"Work order {workOrder.Id} updated successfully.", Severity.Success);
     }
 
     // Modal open/close
@@ -489,12 +499,12 @@ else
         if (string.IsNullOrWhiteSpace(NewWorkOrder.CustomerName) ||
             string.IsNullOrWhiteSpace(NewWorkOrder.VehiclePlate))
         {
-            ToastService.ShowToast("Please fill all required fields.", "warning");
+            Snackbar.Add("Please fill all required fields.", Severity.Warning);
             return;
         }
 
         var created = await WorkOrderService.AddWorkOrderAsync(NewWorkOrder);
-        ToastService.ShowToast("New work order created successfully.", "success");
+        Snackbar.Add("New work order created successfully.", Severity.Success);
 
         // Refresh list and go to details
         WorkOrders = await WorkOrderService.GetAllWorkOrdersAsync();
@@ -514,39 +524,6 @@ else
             (string.IsNullOrWhiteSpace(FilterTotalCost) || w.TotalCostCents.ToString().Contains(FilterTotalCost))
         );
 
-    // = PDF actions =
-    private async Task GeneratePdfAsync(WorkOrder workOrder)
-    {
-        var pdfBytes = ReportService.GenerateReport(workOrder);
-        var base64 = Convert.ToBase64String(pdfBytes);
-        var js = @"
-          window.downloadFileFromBytes = (filename, base64) => {
-            const link = document.createElement('a');
-            link.href = 'data:application/pdf;base64,' + base64;
-            link.download = filename;
-            link.click();
-          };
-        ";
-        await JSRuntime.InvokeVoidAsync("eval", js);
-        await JSRuntime.InvokeVoidAsync("downloadFileFromBytes", $"WorkOrder_{workOrder.Id}.pdf", base64);
-    }
-
-    private async Task PreviewPdfAsync(WorkOrder workOrder)
-    {
-        var pdfBytes = ReportService.GenerateReport(workOrder);
-        var base64 = Convert.ToBase64String(pdfBytes);
-        var js = @"
-          window.openPdfPreview = (base64) => {
-            const pdfDataUri = 'data:application/pdf;base64,' + base64;
-            const win = window.open();
-            win.document.write(
-              '<iframe src=""' + pdfDataUri + '"" frameborder=""0"" style=""width:100%;height:100%;""></iframe>'
-            );
-          };
-        ";
-        await JSRuntime.InvokeVoidAsync("eval", js);
-        await JSRuntime.InvokeVoidAsync("openPdfPreview", base64);
-    }
 
     // Formatting helpers
     private static string FormatDate(DateTimeOffset? date)

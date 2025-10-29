@@ -1,4 +1,5 @@
 ﻿using KeyKiosk.Data;
+using KeyKiosk.Services.Auth;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Routing;
 
@@ -6,9 +7,9 @@ namespace KeyKiosk.Services
 {
     public class KioskNavAuthService
     {
-        public required KioskUserSessionService UserSessionService { get; set; }
+        public required AppAuthenticationStateProvider UserSessionService { get; set; }
 
-        public KioskNavAuthService(KioskUserSessionService userSessionService)
+        public KioskNavAuthService(AppAuthenticationStateProvider userSessionService)
         {
             this.UserSessionService = userSessionService;
         }
@@ -23,14 +24,14 @@ namespace KeyKiosk.Services
             if (!path.StartsWith("kiosk/")) return null;
             path = path.Substring("kiosk/".Length);
 
-            Console.WriteLine($"attemt auth {path} for {UserSessionService.User?.Name}");
+            Console.WriteLine($"attemt auth {path} for {UserSessionService.CurrentSession?.User.Name}");
             List<string> publicPaths = [""];
             List<string> userPaths = ["home"];
             List<string> managerPaths = ["home"];
             userPaths.AddRange(publicPaths);
             managerPaths.AddRange(userPaths);
 
-            var user = UserSessionService.User;
+            var user = UserSessionService.CurrentSession?.User;
 
             // list of authorized roles
             List<UserType> requiredRole = [UserType.Admin];
@@ -63,7 +64,7 @@ namespace KeyKiosk.Services
                 return null;
             }
 
-            if (!(UserSessionService.User is null))
+            if (!(UserSessionService.CurrentSession?.User is null))
             {
                 switch (user.UserType)
                 {

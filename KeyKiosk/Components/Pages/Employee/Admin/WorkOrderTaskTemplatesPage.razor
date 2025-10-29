@@ -1,11 +1,11 @@
-﻿@page "/employee/admin/WorkOrderTaskTemplates"
+﻿@page "/employee/admin/TaskTemplates"
 @rendermode InteractiveServer
 @layout Layout.MainLayout
 
 @using KeyKiosk.Data
 @using Microsoft.AspNetCore.Components.Forms
 @inject KeyKiosk.Services.WorkOrderTaskTemplateService TemplateService
-@inject KeyKiosk.Services.ToastService ToastService
+@inject ISnackbar Snackbar
 
 <link href="app.css" rel="stylesheet" />
 <link href="WorkOrderTaskTemplate.css" rel="stylesheet" />
@@ -148,11 +148,11 @@ else
             LoadTemplates();
 
             AddModel = new(); // reset
-            ToastService.ShowToast("Template created successfully.", "success");
+            Snackbar.Add("Template created successfully.", Severity.Success);
         }
         catch (Exception ex)
         {
-            ToastService.ShowToast($"Create failed: {ex.Message}", "error");
+            Snackbar.Add($"Create failed: {ex.Message}", Severity.Error);
         }
     }
 
@@ -184,11 +184,11 @@ else
             TemplateService.UpdateWorkOrderTaskTemplate(EditingRow);
             LoadTemplates();
             EditingId = null;
-            ToastService.ShowToast("Template updated successfully.", "success");
+            Snackbar.Add("Template updated successfully.", Severity.Success);
         }
         catch (Exception ex)
         {
-            ToastService.ShowToast($"Update failed: {ex.Message}", "error");
+            Snackbar.Add($"Update failed: {ex.Message}", Severity.Error);
         }
     }
 
@@ -198,11 +198,11 @@ else
         {
             TemplateService.DeleteWorkOrderTaskTemplate(id);
             LoadTemplates();
-            ToastService.ShowToast($"Template #{id} deleted.", "info");
+            Snackbar.Add($"Template #{id} deleted.", Severity.Info);
         }
         catch (Exception ex)
         {
-            ToastService.ShowToast($"Delete failed: {ex.Message}", "error");
+            Snackbar.Add($"Delete failed: {ex.Message}", Severity.Error);
         }
     }
 

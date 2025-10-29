@@ -1,9 +1,97 @@
 ﻿@page "/home"
+@using KeyKiosk.Data
 
 <PageTitle>Home</PageTitle>
 
 <h3>Home</h3>
 
+<label>Start Date: </label>
+<input type="date" @bind="StartDate" />
+
+<label>End Date: </label>
+<input type="date" @bind="EndDate"/>
+
+<label>Customer Name: </label>
+<input type="text" @bind="CustomerName" />
+
+<label>Vehicle Plate: </label>
+<input type="text" @bind="VehicleLicensePlate" />
+
+<br />
+<button @onclick="() => GenerateEfficiencyReport()">Preview Efficiency Report</button>
+<br />
+<button @onclick="() => GenerateWorkOrdersReport()">Preview Work Orders Report</button>
+<br />
+<button @onclick="() => GenerateCustomerHistoryReport()">Preview Customer History Report</button>
+<br />
+<button @onclick="() => GenerateVehicleHistoryReport()">Preview Vehicle History Report</button>
+<br />
+<button @onclick="() => GenerateTopTasksReport()">Preview Popular Tasks Report</button>
+<br />
+<button @onclick="() => GeneratePartsReport()">Preview Parts Usage Expense Report</button>
+<br />
+<button @onclick="() => GenerateRevenueReport()">Preview Revenue Report</button>
+
 @code {
 
+    public DateTimeOffset StartDate { get; set; } = new DateTimeOffset(DateTime.Now);
+    public DateTimeOffset EndDate { get; set; } = new DateTimeOffset(DateTime.Now);
+    public string CustomerName { get; set; } = "";
+    public string VehicleLicensePlate { get; set; } = "";
+    [Inject] private WorkOrderService WorkOrderService { get; set; }
+    [Inject] private WorkOrderTaskService TaskService { get; set; }
+    [Inject] private WorkOrderPartService PartService { get; set; }
+    [Inject] private WorkOrderTaskTemplateService TemplateService { get; set; }
+    [Inject] private PreviewDownloadService PreviewDownloadService { get; set; } = default!;
+
+    public async void GenerateEfficiencyReport()
+    {
+        List<WorkOrder> workOrders = await WorkOrderService.GetWorkOrderByDatePeriod(StartDate, EndDate);
+        List<WorkOrderTaskTemplate> templates = TemplateService.GetAllTaskTemplates();
+
+        // await PreviewEfficiencyReportAsync(workOrders, templates, StartDate, EndDate);
+        await PreviewDownloadService.PreviewEfficiencyReportAsync(workOrders, templates, StartDate, EndDate);
+    }
+
+    public async void GenerateWorkOrdersReport()
+    {
+        List<WorkOrder> workOrders = await WorkOrderService.GetWorkOrderByDatePeriod(StartDate, EndDate);
+
+        await PreviewDownloadService.PreviewWorkOrdersReportAsync(workOrders, StartDate, EndDate);
+    }
+
+    public async void GenerateCustomerHistoryReport()
+    {
+        List<WorkOrder> workOrders = await WorkOrderService.GetWorkOrdersByCustomerNameAsync(CustomerName);
+
+        await PreviewDownloadService.PreviewCustomerHistoryReportAsync(workOrders, CustomerName);
+    }
+
+    public async void GenerateVehicleHistoryReport()
+    {
+        List<WorkOrder> workOrders = await WorkOrderService.GetWorkOrdersByVehiclePlateAsync(VehicleLicensePlate);
+
+        await PreviewDownloadService.PreviewVehicleHistoryReportAsync(workOrders, VehicleLicensePlate);
+    }
+
+    public async void GenerateTopTasksReport()
+    {
+        List<WorkOrderTask> tasks = await TaskService.GetTasksByDatePeriod(StartDate, EndDate);
+
+        await PreviewDownloadService.PreviewTopTasksReportAsync(tasks, StartDate, EndDate);
+    }
+
+    public async void GeneratePartsReport()
+    {
+        List<WorkOrderPart> parts = await PartService.GetPartsByDatePeriod(StartDate, EndDate);
+
+        await PreviewDownloadService.PreviewPartsExpenseReportAsync(parts, StartDate, EndDate);
+    }
+
+    public async void GenerateRevenueReport()
+    {
+        List<WorkOrder> workOrders = await WorkOrderService.GetWorkOrderByDatePeriod(StartDate, EndDate);
+
+        await PreviewDownloadService.PreviewRevenueReportAsync(workOrders, StartDate, EndDate);
+    }
 }

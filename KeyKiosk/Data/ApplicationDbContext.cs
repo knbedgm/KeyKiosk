@@ -14,6 +14,7 @@ namespace KeyKiosk.Data
         public DbSet<WorkOrderPart> WorkOrderParts { get; set; }
         public DbSet<WorkOrderTaskTemplate> WorkOrderTaskTemplates { get; set; }
         public DbSet<PartTemplate> PartTemplates { get; set; }
+
         public DbSet<DrawerLogEvent> DrawerLog { get; set; }
         public DbSet<UserLogEvent> UserLog { get; set; }
         public DbSet<WorkOrderLogEvent> WorkOrderLog { get; set; }
