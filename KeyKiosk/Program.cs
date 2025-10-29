@@ -1,5 +1,6 @@
 using KeyKiosk.Components;
 using KeyKiosk.Data;
+using KeyKiosk.Data.Interceptors;
 using KeyKiosk.Services;
 using KeyKiosk.Services.Auth;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -34,6 +35,7 @@ namespace KeyKiosk
 
             var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
+            //pdf generation
             void DbOptions(DbContextOptionsBuilder options)
             {
                 //options.UseSqlite(connectionString);
@@ -44,6 +46,19 @@ namespace KeyKiosk
             }
 
             builder.Services.AddDbContext<ApplicationDbContext>(DbOptions);
+
+            builder.Services.AddScoped<WorkOrderLogService>();
+            builder.Services.AddScoped<WorkOrderAuditService>();
+            builder.Services.AddScoped<WorkOrderAuditInterceptor>();
+
+            // DbContext for DI with interceptor
+            builder.Services.AddDbContext<ApplicationDbContext>((sp, options) =>
+            {
+                options.UseNpgsql(connectionString);
+                options.EnableSensitiveDataLogging();
+                options.AddInterceptors(sp.GetRequiredService<WorkOrderAuditInterceptor>());
+            });
+
 
             // prevent config issues from blocking `dotnet ef migration` commands
             if (!EF.IsDesignTime)

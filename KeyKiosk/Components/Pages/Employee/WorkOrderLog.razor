@@ -2,10 +2,13 @@
 @using KeyKiosk.Data
 @using KeyKiosk.Services
 @using System.Text
+@layout Layout.MainLayout
 @inject WorkOrderLogService LogService
+@inject WorkOrderAuditService AuditService
 @inject IJSRuntime JS
+
 <PageTitle>Work Order Logs</PageTitle>
-<h2 class="mb-4"> Work Order Logs </h2>
+<h2 class="mb-4">Work Order Logs</h2>
 
 <!-- Filter Form -->
 <div class="card mb-4">
@@ -37,6 +40,11 @@
     </div>
 </div>
 
+<!-- Demo Button -->
+<div class="mb-3">
+    <button class="btn btn-success" @onclick="CreateTestWorkOrder">Create Test Work Order (demo)</button>
+</div>
+
 <!-- Results -->
 @if (logs == null)
 {
@@ -49,33 +57,53 @@ else if (!logs.Any())
 else
 {
     <div class="table-responsive">
-        <table class="table table-hover align-middle">
+        <table class="table table-bordered table-striped align-middle">
             <thead class="table-light">
                 <tr>
-                    <th>ID</th>
-                    <th>Date</th>
-                    <th>User</th>
-                    <th>WorkOrder</th>
-                    <th>Customer</th>
-                    <th>Plate</th>
-                    <th>Event</th>
-                    <th>Details</th>
+                    <th class="text-center">ID</th>
+                    <th class="text-center">Date</th>
+                    <th class="text-center">User</th>
+                    <th class="text-center">WorkOrder</th>
+                    <th class="text-center">Customer</th>
+                    <th class="text-center">Plate</th>
+                    <th class="text-center">Status</th>
+                    <th class="text-center">Start</th>
+                    <th class="text-center">End</th>
+                    <th class="text-center">Event</th>
+                    <th class="text-center">Details</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach (var log in logs)
                 {
                     <tr>
-                        <td>@log.ID</td>
-                        <td>@log.DateTime.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</td>
-                        <td>@log.UserName</td>
-                        <td>@log.workOrder.Id</td>
-                        <td>@log.workOrder.CustomerName</td>
-                        <td>@log.workOrder.VehiclePlate</td>
-                        <td>
-                            <span class="badge bg-info text-dark">@log.EventType</span>
+                        <td class="px-3">@log.ID</td>
+                        <td class="px-3">@log.DateTime.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</td>
+                        <td class="px-3">@log.UserName</td>
+                        <td class="px-3">@log.workOrder.Id</td>
+                        <td class="px-3">@log.workOrder.CustomerName</td>
+                        <td class="px-3">@log.workOrder.VehiclePlate</td>
+                        <td class="px-3">@log.workOrder.Status</td>
+                        <td class="px-3">@(log.workOrder.StartDate?.ToLocalTime().ToString("g") ?? "-")</td>
+                        <td class="px-3">@(log.workOrder.EndDate?.ToLocalTime().ToString("g") ?? "-")</td>
+                        <td class="px-3">
+                            <span class="badge bg-info text-dark">
+                                @(
+                                    log.EventType switch
+                                    {
+                                        WorkOrderLogEvent.WorkOrderLogEventType.Created => "Work Order Created",
+                                        WorkOrderLogEvent.WorkOrderLogEventType.StatusChanged => "Status Updated",
+                                        WorkOrderLogEvent.WorkOrderLogEventType.DetailsChanged => "Details Updated",
+                                        WorkOrderLogEvent.WorkOrderLogEventType.TaskAdded => "Task Added",
+                                        WorkOrderLogEvent.WorkOrderLogEventType.TaskRemoved => "Task Removed",
+                                        WorkOrderLogEvent.WorkOrderLogEventType.TaskStatusChanged => "Task Status Updated",
+                                        WorkOrderLogEvent.WorkOrderLogEventType.TaskDetailsChanged => "Task Details Updated",
+                                        _ => log.EventType.ToString()
+                                    }
+                                )
+                            </span>
                         </td>
-                        <td>
+                        <td class="px-3">
                             @switch (log)
                             {
                                 case WorkOrderLogEvent.DetailsChangedEvent detailsEvent:
@@ -124,7 +152,6 @@ else
     </div>
 }
 
-
 @code {
     private List<WorkOrderLogEvent>? logs;
 
@@ -157,4 +184,22 @@ else
         await JS.InvokeVoidAsync("downloadFileFromStream", fileName, streamRef);
     }
 
+    // Demo handler: creates a dummy work order and logs it
+    private async Task CreateTestWorkOrder()
+    {
+        var newWorkOrder = new WorkOrder
+        {
+            CustomerName = "Goofy Duck",
+            VehiclePlate = "GGDD423",
+            Details = "Headlight replacement",
+            Status = WorkOrderStatusType.Created,
+            StartDate = DateTimeOffset.Now,
+            EndDate = DateTimeOffset.Now.AddHours(2),
+            Tasks = new List<WorkOrderTask>(),
+            Parts = new List<WorkOrderPart>()
+        };
+
+        await AuditService.AddWorkOrderAsync(newWorkOrder);
+        await LoadLogs();
+    }
 }

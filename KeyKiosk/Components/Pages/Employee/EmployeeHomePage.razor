@@ -7,6 +7,9 @@
 @using Microsoft.AspNetCore.Components.Forms
 @using Microsoft.JSInterop
 
+@inject KeyKiosk.Services.WorkOrderAuditService AuditService
+@inject KeyKiosk.Data.ApplicationDbContext DbContext
+
 @inject KeyKiosk.Services.WorkOrderService WorkOrderService
 @inject ISnackbar Snackbar
 @inject IJSRuntime JSRuntime
