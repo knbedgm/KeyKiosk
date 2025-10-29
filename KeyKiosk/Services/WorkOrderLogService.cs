@@ -1,5 +1,4 @@
-﻿using KeyKiosk.Components;
-using KeyKiosk.Data;
+﻿using KeyKiosk.Data;
 using Microsoft.EntityFrameworkCore;
 using System.Text;
 
@@ -7,9 +6,6 @@ namespace KeyKiosk.Services
 {
     public class WorkOrderLogService
     {
-        /// <summary>
-        /// Contructor, service crteated that injects depenedency injection and use in quieries are stored  
-        /// </summary> 
         private readonly ApplicationDbContext _context;
 
         public WorkOrderLogService(ApplicationDbContext context)
@@ -17,20 +13,162 @@ namespace KeyKiosk.Services
             _context = context;
         }
 
-        /// <summary>
-        /// Retrieves a filtered list of WorkOrderLogEvent objects from the database.Inputs (all optional):
-        /// such as username, work order ID, status, vehicle plate, search term, and event type.  
-        /// All parameters are optional. If no parameters are provided, the method returns all logs.
-        /// Parameters can be combined(e.g., filter by both username and status).
-        /// Designed for UI filtering in Razor pages.
-        /// </summary>
-        public async Task<List<WorkOrderLogEvent>> GetFilteredLogsAsync( 
-            string? username = null, //Filters logs by matching part of the username.
-            int? workOrderId = null, //Filters logs by a specific Work Order ID.
-            string? status = null, //Filters logs by matching the work order status.
-            string? vehiclePlate = null, //Filters logs by vehicle plate
-            string? search = null, //Searches across username and work order details.
-            WorkOrderLogEvent.WorkOrderLogEventType? eventType = null) //Filters logs by event type.
+        // -------------------------------
+        // WRITE METHODS 
+        // -------------------------------
+        public async Task LogCreatedAsync(WorkOrder workOrder, User user)
+        {
+            // Ensure EF treats WorkOrder as existing
+            _context.Attach(workOrder);
+            _context.Attach(user);
+
+            var log = new WorkOrderLogEvent.CreateEvent
+            {
+                User = user,
+                UserId = user.Id,
+                UserName = user.Name,
+                workOrder = workOrder,
+                DateTime = DateTimeOffset.Now
+            };
+
+            _context.Add(log);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task LogStatusChangedAsync(WorkOrder workOrder, User user)
+        {
+            _context.Attach(workOrder);
+            _context.Attach(user);
+
+            var log = new WorkOrderLogEvent.StatusChangedEvent
+            {
+                User = user,
+                UserId = user.Id,
+                UserName = user.Name,
+                workOrder = workOrder,
+                Status = workOrder.Status,
+                DateTime = DateTimeOffset.Now
+            };
+
+            _context.Add(log);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task LogDetailsChangedAsync(WorkOrder workOrder, User user)
+        {
+            _context.Attach(workOrder);
+            _context.Attach(user);
+
+            var log = new WorkOrderLogEvent.DetailsChangedEvent
+            {
+                User = user,
+                UserId = user.Id,
+                UserName = user.Name,
+                workOrder = workOrder,
+                CustomerName = workOrder.CustomerName,
+                VehiclePlate = workOrder.VehiclePlate,
+                Details = workOrder.Details,
+                DateTime = DateTimeOffset.Now
+            };
+
+            _context.Add(log);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task LogTaskAddedAsync(WorkOrderTask task, User user)
+        {
+            // Attach parent entities first so EF doesn't try to insert them
+            if (task.WorkOrder != null) _context.Attach(task.WorkOrder);
+            _context.Attach(task);
+            _context.Attach(user);
+
+            var log = new WorkOrderLogEvent.TaskAddedEvent
+            {
+                User = user,
+                UserId = user.Id,
+                UserName = user.Name,
+                workOrder = task.WorkOrder!,
+                Task = task,
+                DateTime = DateTimeOffset.Now
+            };
+
+            _context.Add(log);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task LogTaskRemovedAsync(WorkOrderTask task, User user)
+        {
+            if (task.WorkOrder != null) _context.Attach(task.WorkOrder);
+            _context.Attach(task);
+            _context.Attach(user);
+
+            var log = new WorkOrderLogEvent.TaskRemovedEvent
+            {
+                User = user,
+                UserId = user.Id,
+                UserName = user.Name,
+                workOrder = task.WorkOrder!,
+                Task = task,
+                DateTime = DateTimeOffset.Now
+            };
+
+            _context.Add(log);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task LogTaskStatusChangedAsync(WorkOrderTask task, User user)
+        {
+            if (task.WorkOrder != null) _context.Attach(task.WorkOrder);
+            _context.Attach(task);
+            _context.Attach(user);
+
+            var log = new WorkOrderLogEvent.TaskStatusChangedEvent
+            {
+                User = user,
+                UserId = user.Id,
+                UserName = user.Name,
+                workOrder = task.WorkOrder!,
+                Task = task,
+                Status = task.Status,
+                DateTime = DateTimeOffset.Now
+            };
+
+            _context.Add(log);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task LogTaskDetailsChangedAsync(WorkOrderTask task, User user)
+        {
+            if (task.WorkOrder != null) _context.Attach(task.WorkOrder);
+            _context.Attach(task);
+            _context.Attach(user);
+
+            var log = new WorkOrderLogEvent.TaskDetailsChangedEvent
+            {
+                User = user,
+                UserId = user.Id,
+                UserName = user.Name,
+                workOrder = task.WorkOrder!,
+                Task = task,
+                Details = task.Details,
+                CostCents = task.CostCents,
+                DateTime = DateTimeOffset.Now
+            };
+
+            _context.Add(log);
+            await _context.SaveChangesAsync();
+        }
+
+        // -------------------------------
+        // READ / EXPORT METHODS (unchanged)
+        // -------------------------------
+        public async Task<List<WorkOrderLogEvent>> GetFilteredLogsAsync(
+            string? username = null,
+            int? workOrderId = null,
+            string? status = null,
+            string? vehiclePlate = null,
+            string? search = null,
+            WorkOrderLogEvent.WorkOrderLogEventType? eventType = null)
         {
             var query = _context.Set<WorkOrderLogEvent>()
                                 .Include(e => e.workOrder)
@@ -57,16 +195,9 @@ namespace KeyKiosk.Services
             if (eventType.HasValue)
                 query = query.Where(e => e.EventType == eventType.Value);
 
-            return await query.OrderByDescending(e => e.DateTime).ToListAsync(); //orders logs  by the newest first
+            return await query.OrderByDescending(e => e.DateTime).ToListAsync();
         }
 
-        /// <summary>
-        /// Method reuses the filter logix to export logs as a CSV string filtered by the provided parameters
-        ///Intended for data export to CSV/Excel.
-        ///Reuses the same filtering logic as GetFilteredLogsAsync.
-        ///Can be combined with the JavaScript helper(Site.js) to trigger a file download in the browser.
-        /// Inputs(all optional, same as GetFilteredLogsAsync) 
-        /// </summary>
         public async Task<string> ExportLogsToCsvAsync(
             string? username = null,
             int? workOrderId = null,
@@ -80,12 +211,12 @@ namespace KeyKiosk.Services
             var sb = new StringBuilder();
             sb.AppendLine("ID,DateTime,UserName,EventType,WorkOrderId,Status,VehiclePlate,Details");
 
-            foreach (var log in logs) //creates a CSV header row
+            foreach (var log in logs)
             {
                 sb.AppendLine($"{log.ID},{log.DateTime},{log.UserName},{log.EventType},{log.workOrder.Id},{log.workOrder.Status},{log.workOrder.VehiclePlate},{log.workOrder.Details}");
             }
 
-            return sb.ToString(); //returns the CSV as a string
+            return sb.ToString();
         }
     }
 }

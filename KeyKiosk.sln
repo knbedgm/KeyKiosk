@@ -10,8 +10,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		README.md = README.md
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KeyKiosk.Tests", "KeyKiosk.Tests\KeyKiosk.Tests.csproj", "{F89BE8BB-5317-2C08-91F3-02EFCF779E83}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HardwareSimulator", "HardwareSimulator\HardwareSimulator.csproj", "{A16888B8-F4E3-4C81-B418-5113B45E77B8}"
 EndProject
 Global
@@ -24,10 +22,6 @@ Global
 		{535D3C07-6CD1-400E-BC37-79775E295D3B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{535D3C07-6CD1-400E-BC37-79775E295D3B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{535D3C07-6CD1-400E-BC37-79775E295D3B}.Release|Any CPU.Build.0 = Release|Any CPU
-		{F89BE8BB-5317-2C08-91F3-02EFCF779E83}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F89BE8BB-5317-2C08-91F3-02EFCF779E83}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F89BE8BB-5317-2C08-91F3-02EFCF779E83}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F89BE8BB-5317-2C08-91F3-02EFCF779E83}.Release|Any CPU.Build.0 = Release|Any CPU
 		{A16888B8-F4E3-4C81-B418-5113B45E77B8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{A16888B8-F4E3-4C81-B418-5113B45E77B8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A16888B8-F4E3-4C81-B418-5113B45E77B8}.Release|Any CPU.ActiveCfg = Release|Any CPU
