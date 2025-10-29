@@ -1,154 +1,385 @@
 ﻿using KeyKiosk.Data;
 using KeyKiosk.Services;
 using Microsoft.AspNetCore.Components;
+using Microsoft.JSInterop;
+using MudBlazor;
 using static KeyKiosk.Services.WorkOrderTaskService;
 
 namespace KeyKiosk.Components.Pages.Employee;
 
 public partial class WorkOrderTasksPage : ComponentBase
 {
-#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
-    [Inject] private WorkOrderTaskService TaskService { get; set; }
-    [Inject] private WorkOrderService WorkOrderService { get; set; }
-    [Inject] private WorkOrderTaskTemplateService TemplateService { get; set; }
-
-#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
+    // services
+    [Inject] private WorkOrderTaskService TaskService { get; set; } = default!;
+    [Inject] private WorkOrderService WorkOrderService { get; set; } = default!;
+    [Inject] private WorkOrderTaskTemplateService TemplateService { get; set; } = default!;
+    [Inject] private PreviewDownloadService PreviewDownloadService { get; set; } = default!;
+    [Inject] private NavigationManager Nav { get; set; } = default!;
+    [Inject] private IJSRuntime JS { get; set; } = default!;
+    [Inject] private ISnackbar Snackbar { get; set; } = default!;
+    [Inject] private WorkOrderPartService PartService { get; set; } = default!;
+    [Inject] private PartTemplateService PartTemplateService { get; set; } = default!;
 
     [Parameter] public int WorkOrderId { get; set; }
-    private WorkOrder? WorkOrder;
 
-    private List<WorkOrderTaskTemplate> TemplateList { get; set; } = new List<WorkOrderTaskTemplate>();
+    // state
+    protected WorkOrder? WorkOrder { get; set; }
+    protected List<WorkOrderTask> TaskList { get; set; } = new();
+    protected List<WorkOrderTaskTemplate> TemplateList { get; set; } = new();
+    protected List<WorkOrderPart> PartList { get; set; } = new();
+    private List<PartTemplate> PartTemplateList { get; set; } = new();
 
-    /// <summary>
-    /// Displays list of existing tasks
-    /// </summary>
-    private List<WorkOrderTask> TaskList { get; set; } = new List<WorkOrderTask>();
+    // add/edit task
+    protected AddWorkOrderTaskModel TaskToAdd { get; set; } = new();
+    protected bool ShowAddForm { get; set; }
+    protected int? EditingTaskId { get; set; }
+    protected UpdateWorkOrderTaskModel EditingModel { get; set; } = new();
 
-    /// <summary>
-    /// Model for adding task form
-    /// </summary>
-    private AddWorkOrderTaskModel TaskToAdd { get; set; } = new AddWorkOrderTaskModel();
+    // filters
+    protected string TaskSearch { get; set; } = "";
+    protected string FilterTitle { get; set; } = "";
+    protected string FilterDetails { get; set; } = "";
+    protected string FilterCost { get; set; } = "";
+    protected DateTime? FilterStart { get; set; }
+    protected DateTime? FilterEnd { get; set; }
+    protected string FilterStatus { get; set; } = "";
 
-    /// <summary>
-    /// Model for updating task form
-    /// </summary>
-    private UpdateWorkOrderTaskModel TaskToUpdate { get; set; } = new UpdateWorkOrderTaskModel();
-    private WorkOrderTask? TaskToUpdateOriginal { get; set; }
-    private int? TaskToUpdateId { get; set; }
+    // parts
+    private int? SelectedPartTemplateId { get; set; }
+    protected string PartFilter { get; set; } = "";
 
-    /// <summary>
-    /// Loads existing tasks to display on page
-    /// </summary>
-    /// <returns></returns>
-    protected override Task OnInitializedAsync()
+    // header details inline edit
+    protected bool IsEditingWoDetails { get; set; } = false;
+    protected string WoDetailsDraft { get; set; } = string.Empty;
+
+    // === Header inline edit state ===
+    protected bool IsEditingHeader { get; set; } = false;
+    protected string HeaderCustomerDraft { get; set; } = string.Empty;
+    protected string HeaderVehicleDraft { get; set; } = string.Empty;
+    protected WorkOrderStatusType HeaderStatusDraft { get; set; }
+
+    // lifecycle
+    protected override async Task OnInitializedAsync()
     {
-        TemplateList.AddRange(TemplateService.GetAllTaskTemplates());
-        RefreshTasksList();
-        return Task.CompletedTask;
+        TemplateList = TemplateService.GetAllTaskTemplates().ToList();
+        PartTemplateList = PartTemplateService.GetAllPartTemplates();
     }
 
     protected override async Task OnParametersSetAsync()
     {
-        WorkOrder = await WorkOrderService.GetByIdAsync(WorkOrderId);
-        RefreshTasksList();
+        await LoadWorkOrderAsync();
+        RefreshAllLists();
     }
 
-    /// <summary>
-    /// Refreshes displayed tasks after changes are made
-    /// </summary>
-    private void RefreshTasksList()
+    // ui handlers
+    protected void ToggleAddForm() => ShowAddForm = !ShowAddForm;
+
+    protected void ModifyCreateTaskFromTemplate(ChangeEventArgs e)
     {
-        var tasks = WorkOrder?.Tasks;
-        TaskList.Clear();
-        if (tasks != null)
-            TaskList.AddRange(tasks);
-        //this.StateHasChanged();
+        if (e.Value is null) return;
+        if (!int.TryParse(e.Value.ToString(), out var tplId)) return;
+
+        var t = TemplateService.GetWorkOrderTaskTemplateById(tplId);
+        if (t is null) return;
+
+        TaskToAdd.Title = t.TaskTitle;
+        TaskToAdd.Details = t.TaskDetails;
+        TaskToAdd.CostCents = t.TaskCostCents;
+        ResetAddTaskDefaults();
     }
 
-    /// <summary>
-    /// Updates the task to add description and automatically fills in the cost
-    /// </summary>
-    /// <param name="e"></param>
-    private void ModifyCreateTaskFromTemplate(ChangeEventArgs e)
+    protected void BeginEditTask(WorkOrderTask t)
     {
-        int selectedTemplateId = Int32.Parse(e.Value?.ToString());
-        WorkOrderTaskTemplate tempTemplate = TemplateService.GetWorkOrderTaskTemplateById(selectedTemplateId);
-        TaskToAdd.Title = tempTemplate.TaskTitle;
-        TaskToAdd.Details = tempTemplate.TaskDetails;
-        TaskToAdd.CostCents = tempTemplate.TaskCostCents;
-    }
-
-    /// <summary>
-    /// Updates the task to add description and automatically fills in the cost
-    /// </summary>
-    /// <param name="e"></param>
-    private void ModifyUpdateTaskFromTemplate(ChangeEventArgs e)
-    {
-        int selectedTemplateId = Int32.Parse(e.Value?.ToString());
-        WorkOrderTaskTemplate tempTemplate = TemplateService.GetWorkOrderTaskTemplateById(selectedTemplateId);
-        TaskToUpdate.TaskTitle = tempTemplate.TaskTitle;
-        TaskToUpdate.Details = tempTemplate.TaskDetails;
-        TaskToUpdate.CostCents = tempTemplate.TaskCostCents;
-    }
-
-    private async Task LoadUpdateTask(int? val)
-    {
-        //var val = e.Value?.ToString();
-
-        if (val == null)
+        EditingTaskId = t.Id;
+        EditingModel = new UpdateWorkOrderTaskModel
         {
-            ClearTaskToUpdate();
-            return;
-        }
-
-        TaskToUpdateId = val;
-        var t = WorkOrder!.Tasks.First(t => t.Id == TaskToUpdateId);
-        TaskToUpdateOriginal = t;
-
-        TaskToUpdate = new UpdateWorkOrderTaskModel
-        {
+            TaskTitle = t.Title,     // locked in UI
             Details = t.Details,
-            StartDate = t.StartDate,
-            EndDate = t.EndDate,
-            Status = t.Status,
-            CostCents = t.CostCents,
+            CostCents = t.CostCents, // locked
+            StartDate = t.StartDate, // locked
+            EndDate = t.EndDate,     // locked
+            Status = t.Status
         };
     }
 
-    private void ClearTaskToUpdate()
+    protected void CancelEditTask()
     {
-        TaskToUpdateId = null;
-        TaskToUpdateOriginal = null;
-        TaskToUpdate = new UpdateWorkOrderTaskModel();
+        EditingTaskId = null;
+        EditingModel = new UpdateWorkOrderTaskModel();
     }
 
-    /// <summary>
-    /// Method to add new task
-    /// </summary>
-    public void AddNewTask()
+    protected async Task SaveTaskAsync()
     {
-        TaskService.AddWorkOrderTask(WorkOrderId, TaskToAdd);
-        RefreshTasksList();
-        TaskToAdd = new AddWorkOrderTaskModel();
+        if (EditingTaskId is null) return;
+
+        var current = TaskList.FirstOrDefault(x => x.Id == EditingTaskId.Value);
+        if (current is not null)
+        {
+            ApplyStatusDates(current, EditingModel);
+            // keep locked fields
+            EditingModel.TaskTitle = current.Title;
+            EditingModel.CostCents = current.CostCents;
+        }
+
+        TaskService.UpdateWorkOrderTask(EditingTaskId.Value, EditingModel);
+        await ReloadAndRefreshAsync("Task updated.", Severity.Success);
+        CancelEditTask();
     }
 
-    /// <summary>
-    /// Method to delete existing task using id
-    /// </summary>
-    /// <param name="id"></param>
-    public void DeleteTask(int id)
+    protected void DeleteTask(int id)
     {
         TaskService.DeleteWorkOrderTask(id);
         RefreshTasksList();
+        RecalcTotalsAsync(); // fire and forget
+        ShowToast("Task deleted.", Severity.Info);
     }
 
-    /// <summary>
-    /// Method to update existing task
-    /// </summary>
-    private void UpdateExistingTask()
+    protected void AddNewTask()
     {
-        TaskService.UpdateWorkOrderTask(TaskToUpdateId!.Value, TaskToUpdate);
+        ResetAddTaskDefaults(); // enforce defaults
+        TaskService.AddWorkOrderTask(WorkOrderId, TaskToAdd);
+        TaskToAdd = new AddWorkOrderTaskModel();
         RefreshTasksList();
-        ClearTaskToUpdate();
+        RecalcTotalsAsync(); // fire and forget
+        ShowToast("Task added.", Severity.Success);
+        ShowAddForm = false;
+    }
+
+    protected async Task DeleteWorkOrderAsync()
+    {
+        if (WorkOrder is null) return;
+        await WorkOrderService.DeleteWorkOrderAsync(WorkOrder.Id);
+        ShowToast($"Work order {WorkOrder.Id} deleted.", Severity.Info);
+        Nav.NavigateTo("/employee/home");
+    }
+
+    protected async Task GenerateWorkOrderDoc()
+    {
+        if (WorkOrder is null) return;
+        await PreviewDownloadService.DownloadMechanicTodoAsync(WorkOrder);
+        ShowToast("Generated work order PDF.", Severity.Success);
+    }
+
+    // tasks filtering
+    protected IEnumerable<WorkOrderTask> FilteredTasks =>
+        TaskList.Where(t =>
+            (string.IsNullOrWhiteSpace(TaskSearch) ||
+                t.Title.Contains(TaskSearch, StringComparison.OrdinalIgnoreCase) ||
+                (t.Details ?? "").Contains(TaskSearch, StringComparison.OrdinalIgnoreCase)) &&
+            (string.IsNullOrWhiteSpace(FilterTitle) || t.Title.Contains(FilterTitle, StringComparison.OrdinalIgnoreCase)) &&
+            (string.IsNullOrWhiteSpace(FilterDetails) || (t.Details ?? "").Contains(FilterDetails, StringComparison.OrdinalIgnoreCase)) &&
+            (string.IsNullOrWhiteSpace(FilterCost) || t.CostCents.ToString().Contains(FilterCost)) &&
+            (!FilterStart.HasValue || (t.StartDate.HasValue && t.StartDate.Value.Date == FilterStart.Value.Date)) &&
+            (!FilterEnd.HasValue || (t.EndDate.HasValue && t.EndDate.Value.Date == FilterEnd.Value.Date)) &&
+            (string.IsNullOrWhiteSpace(FilterStatus) || t.Status.ToString() == FilterStatus)
+        );
+
+    // parts
+    private async Task AddPartFromTemplate()
+    {
+        if (!SelectedPartTemplateId.HasValue || WorkOrder is null) return;
+
+        var tpl = PartTemplateService.GetPartTemplateById(SelectedPartTemplateId.Value);
+        if (tpl is null) return;
+
+        var model = new WorkOrderPartService.AddWorkOrderPartModel
+        {
+            PartName = tpl.PartName,
+            Details = tpl.Details,
+            CostCents = tpl.CostCents
+        };
+
+        PartService.AddWorkOrderPart(WorkOrder.Id, model);
+        await ReloadAndRefreshAsync("Part added from template.", Severity.Success);
+        SelectedPartTemplateId = null;
+    }
+
+    private async Task DeletePart(int id)
+    {
+        PartService.DeleteWorkOrderPart(id);
+        await ReloadAndRefreshAsync("Part deleted.", Severity.Info);
+    }
+
+    private IEnumerable<WorkOrderPart> FilteredParts =>
+        PartList
+            .Where(p =>
+                string.IsNullOrWhiteSpace(PartFilter)
+                || p.PartName.Contains(PartFilter, StringComparison.OrdinalIgnoreCase)
+                || (p.Details ?? "").Contains(PartFilter, StringComparison.OrdinalIgnoreCase))
+            .OrderBy(p => p.Id);
+
+    // header details edit
+    protected void BeginEditWoDetails()
+    {
+        if (WorkOrder is null) return;
+        WoDetailsDraft = WorkOrder.Details ?? string.Empty;
+        IsEditingWoDetails = true;
+    }
+
+    protected void CancelEditWoDetails()
+    {
+        IsEditingWoDetails = false;
+        WoDetailsDraft = string.Empty;
+    }
+
+    protected async Task SaveWoDetailsAsync()
+    {
+        if (WorkOrder is null) return;
+        WorkOrder.Details = WoDetailsDraft ?? string.Empty;
+        await WorkOrderService.UpdateWorkOrderAsync(WorkOrder);
+        IsEditingWoDetails = false;
+        await ReloadAndRefreshAsync("Work order details updated.", Severity.Success);
+    }
+
+    // helpers (DRY)
+
+    private async Task LoadWorkOrderAsync()
+    {
+        WorkOrder = await WorkOrderService.GetByIdAsync(WorkOrderId);
+    }
+
+    private void RefreshAllLists()
+    {
+        RefreshTasksList();
+        RefreshPartsList();
+    }
+
+    protected void RefreshTasksList()
+    {
+        TaskList = (WorkOrder?.Tasks ?? new List<WorkOrderTask>()).OrderBy(t => t.Id).ToList();
+        StateHasChanged();
+    }
+
+    protected void RefreshPartsList()
+    {
+        PartList = (WorkOrder?.Parts ?? new List<WorkOrderPart>()).OrderBy(p => p.Id).ToList();
+        StateHasChanged();
+    }
+
+    private async Task ReloadAndRefreshAsync(string toastMsg, Severity toastType)
+    {
+        await LoadWorkOrderAsync();
+        RefreshAllLists();
+        ShowToast(toastMsg, toastType);
+    }
+
+    private void ShowToast(string message, Severity type) => Snackbar.Add(message, type);
+
+    private void ResetAddTaskDefaults()
+    {
+        TaskToAdd.Status = WorkOrderTaskStatusType.Created;
+        TaskToAdd.StartDate = null;
+        TaskToAdd.EndDate = null;
+    }
+
+    // central rule for status->dates
+    private static void ApplyStatusDates(WorkOrderTask current, UpdateWorkOrderTaskModel edit)
+    {
+        var now = DateTimeOffset.Now;
+
+        switch (edit.Status)
+        {
+            case WorkOrderTaskStatusType.Created:
+                edit.StartDate = null;
+                edit.EndDate = null;
+                break;
+
+            case WorkOrderTaskStatusType.WorkStarted:
+                edit.StartDate = current.StartDate ?? now;
+                edit.EndDate = null;
+                break;
+
+            case WorkOrderTaskStatusType.WorkFinished:
+                edit.StartDate = current.StartDate ?? now;
+                edit.EndDate = now;
+                break;
+        }
+    }
+
+    private async void RecalcTotalsAsync()
+    {
+        await LoadWorkOrderAsync();
+        RefreshAllLists();
+    }
+
+    // formatting
+    protected static string FormatDateTime(DateTimeOffset? dt) =>
+    dt.HasValue ? dt.Value.ToLocalTime().ToString("yyyy-MM-dd HH:mm") : "N/A";
+
+    protected static string FormatCost(int cents)
+    {
+        decimal dollars = cents / 100.0m;
+        return dollars.ToString("C");
+    }
+
+    // Begin/Cancel header edit
+    protected void BeginEditHeader()
+    {
+        if (WorkOrder is null) return;
+        HeaderCustomerDraft = WorkOrder.CustomerName ?? string.Empty;
+        HeaderVehicleDraft = WorkOrder.VehiclePlate ?? string.Empty;
+        HeaderStatusDraft = WorkOrder.Status;
+        IsEditingHeader = true;
+    }
+
+    protected void CancelEditHeader()
+    {
+        IsEditingHeader = false;
+        HeaderCustomerDraft = string.Empty;
+        HeaderVehicleDraft = string.Empty;
+    }
+
+    // Save header (apply status->dates rule, then persist)
+    protected async Task SaveHeaderAsync()
+    {
+        if (WorkOrder is null) return;
+
+        // Update editable fields from drafts
+        WorkOrder.CustomerName = (HeaderCustomerDraft ?? string.Empty).Trim();
+        WorkOrder.VehiclePlate = (HeaderVehicleDraft ?? string.Empty).Trim();
+
+        // Apply status transitions to dates
+        ApplyWorkOrderStatusDates(WorkOrder, HeaderStatusDraft);
+
+        // Persist
+        await WorkOrderService.UpdateWorkOrderAsync(WorkOrder);
+
+        IsEditingHeader = false;
+        await ReloadAndRefreshAsync("Work order header updated.", Severity.Success);
+    }
+
+    // Central rule for WorkOrder status -> Start/End dates
+    private static void ApplyWorkOrderStatusDates(WorkOrder wo, WorkOrderStatusType newStatus)
+    {
+        var now = DateTimeOffset.Now;
+
+        switch (newStatus)
+        {
+            case WorkOrderStatusType.Created:
+                wo.Status = newStatus;
+                wo.StartDate = null;
+                wo.EndDate = null;
+                break;
+
+            case WorkOrderStatusType.WorkStarted:
+                wo.Status = newStatus;
+                // set start if not already set; end stays null
+                wo.StartDate ??= now;
+                wo.EndDate = null;
+                break;
+
+            // If your enum has WorkFinished use that; if not, treat Closed as the "finished" state
+            case WorkOrderStatusType.Closed:
+                // If the order was never started, set StartDate now so both have values
+                wo.StartDate ??= now;
+                wo.EndDate = now;
+                wo.Status = newStatus;
+                break;
+
+            default:
+                // Fallback: just set the status
+                wo.Status = newStatus;
+                break;
+        }
     }
 }

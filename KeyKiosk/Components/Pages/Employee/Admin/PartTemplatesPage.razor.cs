@@ -6,8 +6,6 @@ namespace KeyKiosk.Components.Pages.Employee.Admin;
 
 public partial class PartTemplatesPage
 {
-    [Inject] private PartTemplateService PartTemplateService { get; set; }
-
     /// <summary>
     /// Displays list of existing templates
     /// </summary>
@@ -84,5 +82,64 @@ public partial class PartTemplatesPage
         PartTemplateService.UpdatePartTemplate(TemplateToUpdate);
         RefreshPartTemplatesList();
         TemplateToUpdate = new PartTemplate();
+    }
+
+    // -----------------------------------------------------
+    // Inline Editing Logic (added for editable in-table view)
+    // -----------------------------------------------------
+
+    /// <summary>
+    /// Tracks which row is currently being edited
+    /// </summary>
+    private int? EditingId { get; set; }
+
+    /// <summary>
+    /// Holds the editable row data
+    /// </summary>
+    private PartTemplate EditingRow { get; set; } = new PartTemplate();
+
+    /// <summary>
+    /// Begin editing a selected template row
+    /// </summary>
+    private void BeginEdit(PartTemplate template)
+    {
+        EditingId = template.Id;
+        EditingRow = new PartTemplate
+        {
+            Id = template.Id,
+            PartName = template.PartName,
+            Details = template.Details,
+            CostCents = template.CostCents
+        };
+    }
+
+    /// <summary>
+    /// Cancel current edit session
+    /// </summary>
+    private void CancelEdit()
+    {
+        EditingId = null;
+        EditingRow = new PartTemplate();
+    }
+
+    /// <summary>
+    /// Save the edited template data back to the database
+    /// </summary>
+    private void SaveRowAsync()
+    {
+        if (EditingId is null) return;
+
+        var updatedTemplate = new PartTemplate
+        {
+            Id = EditingRow.Id,
+            Details = EditingRow.Details ?? string.Empty,
+            CostCents = EditingRow.CostCents
+        };
+
+        PartTemplateService.UpdatePartTemplate(updatedTemplate);
+
+        EditingId = null;
+        EditingRow = new PartTemplate();
+        RefreshPartTemplatesList();
     }
 }

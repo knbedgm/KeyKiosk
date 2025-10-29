@@ -33,7 +33,8 @@ namespace KeyKiosk.Tests
                 VehiclePlate = "ABC123",
                 Details = "Oil change",
                 Status = WorkOrderStatusType.Created,
-                Tasks = new List<WorkOrderTask>()
+                Tasks = new List<WorkOrderTask>(),
+                Parts = new List<WorkOrderPart>()
             };
 
             context.WorkOrders.Add(workOrder);

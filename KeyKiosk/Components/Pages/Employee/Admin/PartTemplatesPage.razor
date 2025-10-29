@@ -2,91 +2,101 @@
 @rendermode InteractiveServer
 @layout Layout.MainLayout
 
+<link href="app.css" rel="stylesheet" />
+<link href="PartTemplatesPage.css" rel="stylesheet" />
+
 @using KeyKiosk.Data
+@inject KeyKiosk.Services.PartTemplateService PartTemplateService
 
-<h3>Part Templates Page</h3>
+<PageTitle>Part Templates</PageTitle>
+<h1>Part Templates Page</h1>
 
-@* Display list of existing templates*@
-@if (TemplateList != null && TemplateList.Count > 0)
+@* Display list of existing templates *@
+@if (TemplateList?.Count > 0)
 {
-	<table>
-		<tr>
-			<th>Id</th>
-			<th>Part Name</th>
-			<th>Details</th>
-			<th>Cost</th>
-		</tr>
-		@foreach (PartTemplate template in TemplateList)
-		{
-			<tr>
-				<td>@template.Id</td>
-				<td>@template.PartName</td>
-				<td>@template.Details</td>
-				<td>@template.CostCents</td>
-				<td>
-					@* Deletes selected template *@
-					<button @onclick="@(e => DeleteTemplate(template.Id))">
-						Delete
-					</button>
-				</td>
-			</tr>
-		}
-	</table>
+    <table>
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Part Name</th>
+                <th>Details</th>
+                <th>Cost (¢)</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var t in TemplateList)
+            {
+                var isEditing = EditingId == t.Id;
+                <tr>
+                    <td>@t.Id</td>
+
+                    <!-- Name is read-only -->
+                    <td>@t.PartName</td>
+
+                    <td>
+                        @if (isEditing)
+                        {
+                            <InputText class="table-input" @bind-Value="EditingRow.Details" />
+                        }
+                        else
+                        {
+                            @t.Details
+                        }
+                    </td>
+
+                    <td style="text-align:right;">
+                        @if (isEditing)
+                        {
+                            <InputNumber class="table-input" @bind-Value="EditingRow.CostCents" />
+                        }
+                        else
+                        {
+                            @t.CostCents
+                        }
+                    </td>
+
+                    <td style="white-space:nowrap;">
+                        @if (isEditing)
+                        {
+                            <button class="save-btn" @onclick="SaveRowAsync">Save</button>
+                            <button class="cancel-btn" @onclick="CancelEdit">Cancel</button>
+                        }
+                        else
+                        {
+                            <button class="btn-primary" @onclick="() => BeginEdit(t)">Edit</button>
+                            <button class="delete-btn" @onclick="() => DeleteTemplate(t.Id)">Delete</button>
+                        }
+
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <p style="text-align:center;color:#6b7280;">No part templates yet.</p>
 }
 
-<br />
-<br />
 <br />
 
 <h1>Add New Template</h1>
 
-<br />
 
 @* Form to add new template *@
 <EditForm Model="@TemplateToAdd" OnValidSubmit="@AddNewTemplate">
-	<DataAnnotationsValidator />
-	<ValidationSummary />
+    <DataAnnotationsValidator />
+    <ValidationSummary />
 
-	<label>Part Name</label>
-	<input type="text" @bind="TemplateToAdd.PartName" />
+    <label>Part Name</label>
+    <input type="text" @bind="TemplateToAdd.PartName" />
 
-	<label>Details</label>
-	<input type="text" @bind="TemplateToAdd.Details" />
+    <label>Details</label>
+    <input type="text" @bind="TemplateToAdd.Details" />
 
-	<label>Cost in Cents</label>
-	<input type="number" @bind="TemplateToAdd.CostCents" />
+    <label>Cost in Cents</label>
+    <input type="number" @bind="TemplateToAdd.CostCents" />
 
-	<button type="submit">Submit</button>
+    <button type="submit">Submit</button>
 </EditForm>
-
-<br />
-<br />
-<br />
-
-@if (TemplateList != null && TemplateList.Count > 0)
-{
-	<h1>Update Existing Template</h1>
-
-	<br />
-
-	@* Form to update existing template *@
-	<EditForm Model="@TemplateToUpdate" OnValidSubmit="@UpdateExistingTemplate">
-		<DataAnnotationsValidator />
-		<ValidationSummary />
-
-		<select @bind="TemplateToUpdate.Id">
-			@foreach (PartTemplate template in TemplateList)
-			{
-				<option value="@template.Id">@template.PartName</option>
-			}
-		</select>
-
-		<label>New Details</label>
-		<input type="text" @bind="TemplateToUpdate.Details" />
-
-		<label>New Cost in Cents</label>
-		<input type="number" @bind="TemplateToUpdate.CostCents" />
-
-		<button type="submit">Submit</button>
-	</EditForm>
-}

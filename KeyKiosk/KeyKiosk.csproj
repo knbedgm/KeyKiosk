@@ -9,7 +9,24 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Components\Layout\NewFolder1\**" />
+    <Compile Remove="Components\Layout\NewFolder\**" />
+    <Content Remove="Components\Layout\NewFolder1\**" />
+    <Content Remove="Components\Layout\NewFolder\**" />
+    <EmbeddedResource Remove="Components\Layout\NewFolder1\**" />
+    <EmbeddedResource Remove="Components\Layout\NewFolder\**" />
+    <None Remove="Components\Layout\NewFolder1\**" />
+    <None Remove="Components\Layout\NewFolder\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Remove="wwwroot\favicon.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="wwwroot\images\KEYOSK_icon.png" />
     <None Include="wwwroot\js\Site.js" />
+    <None Include="wwwroot\favicon.png" />
   </ItemGroup>
 
   <ItemGroup>
@@ -21,13 +38,17 @@
     </PackageReference>
     <PackageReference Include="MudBlazor" Version="8.13.0" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
-    <PackageReference Include="QuestPDF" Version="2025.12.0-alpha2" />
+    <PackageReference Include="QuestPDF" Version="2025.7.3" />
     <PackageReference Include="System.IO.Ports" Version="9.0.9" />
 	  <PackageReference Include="WSCT.Wrapper.Desktop" Version="1.5.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\HardwareSimulator\HardwareSimulator.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="wwwroot\images\" />
   </ItemGroup>
 
 </Project>
