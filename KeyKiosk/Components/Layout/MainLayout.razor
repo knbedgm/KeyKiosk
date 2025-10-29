@@ -2,6 +2,16 @@
 @using Microsoft.AspNetCore.Components.Routing
 @inject NavigationManager Nav
 
+@* Required *@
+<MudThemeProvider />
+<MudPopoverProvider />
+
+@* Needed for dialogs *@
+<MudDialogProvider />
+
+@* Needed for snackbars *@
+<MudSnackbarProvider />
+
 <div class="layout-shell">
     @if (!IsLoginPage)
     {
@@ -46,9 +56,6 @@
     <main class="page-body">
         <article class="content px-4">
             @Body
-
-            <br /><br />
-            <Toast />
         </article>
     </main>
 </div>

@@ -55,7 +55,6 @@ public class WorkOrderTaskTemplateService
         var templateToUpdate = dbContext.WorkOrderTaskTemplates.FirstOrDefault(t => t.Id == updatedTemplate.Id);
         if (templateToUpdate != null)
         {
-            templateToUpdate.TaskTitle = updatedTemplate.TaskTitle;
             templateToUpdate.TaskDetails = updatedTemplate.TaskDetails;
             templateToUpdate.TaskCostCents = updatedTemplate.TaskCostCents;
         }

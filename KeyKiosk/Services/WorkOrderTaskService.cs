@@ -13,6 +13,10 @@ public class WorkOrderTaskService
         this.dbContext = dbContext;
     }
 
+	/// <summary>
+	/// Get all work order tasks
+	/// </summary>
+	/// <returns></returns>
     public List<WorkOrderTask> GetAllTasks()
     {
         return dbContext.WorkOrderTasks
@@ -20,6 +24,11 @@ public class WorkOrderTaskService
                         .ToList();
     }
 
+	/// <summary>
+	/// Get work order tasks by work order id
+	/// </summary>
+	/// <param name="workOrderId"></param>
+	/// <returns></returns>
     public List<WorkOrderTask> GetWorkOrderTasksByWorkOrderId(int workOrderId)
     {
         var workOrder = dbContext.WorkOrders
@@ -32,6 +41,11 @@ public class WorkOrderTaskService
         return workOrder.Tasks.OrderBy(t => t.Id).ToList();
     }
 
+	/// <summary>
+	/// Get a single work order task by id
+	/// </summary>
+	/// <param name="taskId"></param>
+	/// <returns></returns>
     public WorkOrderTask GetWorkOrderTaskById(int taskId)
     {
         return dbContext.WorkOrderTasks
@@ -48,6 +62,11 @@ public class WorkOrderTaskService
         public int CostCents { get; set; }
     }
 
+	/// <summary>
+	/// Add a new work order task to the database
+	/// </summary>
+	/// <param name="newTask"></param>
+	/// 
     public void AddWorkOrderTask(int workOrderId, AddWorkOrderTaskModel newTask)
     {
         var workOrder = dbContext.WorkOrders.FirstOrDefault(t => t.Id == workOrderId);
@@ -79,6 +98,11 @@ public class WorkOrderTaskService
         public int CostCents { get; set; }
     }
 
+	/// <summary>
+	/// Update existing work order task using id
+	/// </summary>
+	/// <param name="idToUpdate"></param>
+	/// <param name="template"></param>
     public void UpdateWorkOrderTask(int TaskId, UpdateWorkOrderTaskModel updatedTask)
     {
         var taskToUpdate = dbContext.WorkOrderTasks.FirstOrDefault(t => t.Id == TaskId);
@@ -92,7 +116,10 @@ public class WorkOrderTaskService
         }
         dbContext.SaveChanges();
     }
-
+	/// <summary>
+	/// Deletes work order task using id
+	/// </summary>
+	/// <param name="idToDelete"></param>
     public void DeleteWorkOrderTask(int idToDelete)
     {
         var taskToDelete = dbContext.WorkOrderTasks.FirstOrDefault(t => t.Id == idToDelete);

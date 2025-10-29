@@ -2,6 +2,7 @@
 using KeyKiosk.Services;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
+using MudBlazor;
 using static KeyKiosk.Services.WorkOrderTaskService;
 
 namespace KeyKiosk.Components.Pages.Employee;
@@ -12,10 +13,10 @@ public partial class WorkOrderTasksPage : ComponentBase
     [Inject] private WorkOrderTaskService TaskService { get; set; } = default!;
     [Inject] private WorkOrderService WorkOrderService { get; set; } = default!;
     [Inject] private WorkOrderTaskTemplateService TemplateService { get; set; } = default!;
-    [Inject] private ReportService ReportService { get; set; } = default!;
+    [Inject] private PreviewDownloadService PreviewDownloadService { get; set; } = default!;
     [Inject] private NavigationManager Nav { get; set; } = default!;
     [Inject] private IJSRuntime JS { get; set; } = default!;
-    [Inject] private ToastService ToastService { get; set; } = default!;
+    [Inject] private ISnackbar Snackbar { get; set; } = default!;
     [Inject] private WorkOrderPartService PartService { get; set; } = default!;
     [Inject] private PartTemplateService PartTemplateService { get; set; } = default!;
 
@@ -121,7 +122,7 @@ public partial class WorkOrderTasksPage : ComponentBase
         }
 
         TaskService.UpdateWorkOrderTask(EditingTaskId.Value, EditingModel);
-        await ReloadAndRefreshAsync("Task updated.", "success");
+        await ReloadAndRefreshAsync("Task updated.", Severity.Success);
         CancelEditTask();
     }
 
@@ -130,7 +131,7 @@ public partial class WorkOrderTasksPage : ComponentBase
         TaskService.DeleteWorkOrderTask(id);
         RefreshTasksList();
         RecalcTotalsAsync(); // fire and forget
-        ShowToast("Task deleted.", "info");
+        ShowToast("Task deleted.", Severity.Info);
     }
 
     protected void AddNewTask()
@@ -140,7 +141,7 @@ public partial class WorkOrderTasksPage : ComponentBase
         TaskToAdd = new AddWorkOrderTaskModel();
         RefreshTasksList();
         RecalcTotalsAsync(); // fire and forget
-        ShowToast("Task added.", "success");
+        ShowToast("Task added.", Severity.Success);
         ShowAddForm = false;
     }
 
@@ -148,26 +149,15 @@ public partial class WorkOrderTasksPage : ComponentBase
     {
         if (WorkOrder is null) return;
         await WorkOrderService.DeleteWorkOrderAsync(WorkOrder.Id);
-        ShowToast($"Work order {WorkOrder.Id} deleted.", "info");
+        ShowToast($"Work order {WorkOrder.Id} deleted.", Severity.Info);
         Nav.NavigateTo("/employee/home");
     }
 
     protected async Task GenerateWorkOrderDoc()
     {
         if (WorkOrder is null) return;
-
-        var pdfBytes = ReportService.GenerateReport(WorkOrder);
-        var base64 = Convert.ToBase64String(pdfBytes);
-        var js = @"
-            window.downloadFileFromBytes = (filename, base64) => {
-                const link = document.createElement('a');
-                link.href = 'data:application/pdf;base64,' + base64;
-                link.download = filename;
-                link.click();
-            };";
-        await JS.InvokeVoidAsync("eval", js);
-        await JS.InvokeVoidAsync("downloadFileFromBytes", $"WorkOrder_{WorkOrder.Id}.pdf", base64);
-        ShowToast("Generated work order PDF.", "success");
+        await PreviewDownloadService.DownloadMechanicTodoAsync(WorkOrder);
+        ShowToast("Generated work order PDF.", Severity.Success);
     }
 
     // tasks filtering
@@ -200,14 +190,14 @@ public partial class WorkOrderTasksPage : ComponentBase
         };
 
         PartService.AddWorkOrderPart(WorkOrder.Id, model);
-        await ReloadAndRefreshAsync("Part added from template.", "success");
+        await ReloadAndRefreshAsync("Part added from template.", Severity.Success);
         SelectedPartTemplateId = null;
     }
 
     private async Task DeletePart(int id)
     {
         PartService.DeleteWorkOrderPart(id);
-        await ReloadAndRefreshAsync("Part deleted.", "info");
+        await ReloadAndRefreshAsync("Part deleted.", Severity.Info);
     }
 
     private IEnumerable<WorkOrderPart> FilteredParts =>
@@ -238,7 +228,7 @@ public partial class WorkOrderTasksPage : ComponentBase
         WorkOrder.Details = WoDetailsDraft ?? string.Empty;
         await WorkOrderService.UpdateWorkOrderAsync(WorkOrder);
         IsEditingWoDetails = false;
-        await ReloadAndRefreshAsync("Work order details updated.", "success");
+        await ReloadAndRefreshAsync("Work order details updated.", Severity.Success);
     }
 
     // helpers (DRY)
@@ -266,14 +256,14 @@ public partial class WorkOrderTasksPage : ComponentBase
         StateHasChanged();
     }
 
-    private async Task ReloadAndRefreshAsync(string toastMsg, string toastType)
+    private async Task ReloadAndRefreshAsync(string toastMsg, Severity toastType)
     {
         await LoadWorkOrderAsync();
         RefreshAllLists();
         ShowToast(toastMsg, toastType);
     }
 
-    private void ShowToast(string message, string type) => ToastService.ShowToast(message, type);
+    private void ShowToast(string message, Severity type) => Snackbar.Add(message, type);
 
     private void ResetAddTaskDefaults()
     {
@@ -355,7 +345,7 @@ public partial class WorkOrderTasksPage : ComponentBase
         await WorkOrderService.UpdateWorkOrderAsync(WorkOrder);
 
         IsEditingHeader = false;
-        await ReloadAndRefreshAsync("Work order header updated.", "success");
+        await ReloadAndRefreshAsync("Work order header updated.", Severity.Success);
     }
 
     // Central rule for WorkOrder status -> Start/End dates

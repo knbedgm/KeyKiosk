@@ -39,6 +39,9 @@ public class WorkOrderService
         if (workOrder.Tasks == null)
             workOrder.Tasks = new List<WorkOrderTask>();
 
+        if (workOrder.Parts == null)
+            workOrder.Parts = new List<WorkOrderPart>();
+
         _dbContext.WorkOrders.Add(workOrder);
         await _dbContext.SaveChangesAsync();
         return workOrder;
@@ -64,6 +67,7 @@ public class WorkOrderService
         // Get the tracked entity if it exists
         var trackedEntity = await _dbContext.WorkOrders
                                             .Include(w => w.Tasks)
+                                            .Include(w => w.Parts)
                                             .FirstOrDefaultAsync(w => w.Id == workOrder.Id);
 
         if (trackedEntity != null)
@@ -89,6 +93,7 @@ public class WorkOrderService
     {
         var workOrder = await _dbContext.WorkOrders
                                         .Include(w => w.Tasks)
+                                        .Include(w => w.Parts)
                                         .FirstOrDefaultAsync(w => w.Id == workOrderId);
         if (workOrder != null)
         {
@@ -96,12 +101,14 @@ public class WorkOrderService
             await _dbContext.SaveChangesAsync();
         }
     }
+
     // Get work orders by vehicle plate
     public async Task<List<WorkOrder>> GetWorkOrdersByVehiclePlateAsync(string plate)
     {
         return await _dbContext.WorkOrders
                                .Where(w => w.VehiclePlate.ToLower() == plate.ToLower())
                                .Include(w => w.Tasks)
+                               .Include(w => w.Parts)
                                .OrderBy(w => w.StartDate)
                                .ToListAsync();
     }

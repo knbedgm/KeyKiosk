@@ -3,6 +3,7 @@ using System;
 using KeyKiosk.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace KeyKiosk.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251026195219_PartTemplate")]
+    partial class PartTemplate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -111,6 +114,7 @@ namespace KeyKiosk.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("Pin")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("UserType")
@@ -118,9 +122,6 @@ namespace KeyKiosk.Migrations
                         .HasColumnType("text");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("Pin")
-                        .IsUnique();
 
                     b.ToTable("Users");
                 });
@@ -445,35 +446,6 @@ namespace KeyKiosk.Migrations
                         });
 
                     b.HasDiscriminator().HasValue("TaskStatusChanged");
-                });
-
-            modelBuilder.Entity("KeyKiosk.Data.User", b =>
-                {
-                    b.OwnsOne("KeyKiosk.Data.UserDesktopLogin", "DesktopLogin", b1 =>
-                        {
-                            b1.Property<int>("UserId")
-                                .HasColumnType("integer");
-
-                            b1.Property<string>("HashedPassword")
-                                .IsRequired()
-                                .HasColumnType("text");
-
-                            b1.Property<string>("Username")
-                                .IsRequired()
-                                .HasColumnType("text");
-
-                            b1.HasKey("UserId");
-
-                            b1.HasIndex("Username")
-                                .IsUnique();
-
-                            b1.ToTable("Users");
-
-                            b1.WithOwner()
-                                .HasForeignKey("UserId");
-                        });
-
-                    b.Navigation("DesktopLogin");
                 });
 
             modelBuilder.Entity("KeyKiosk.Data.WorkOrderLogEvent", b =>
