@@ -9,7 +9,7 @@ public class WorkOrderTask
 	public DateTimeOffset? EndDate { get; set; }
 	public WorkOrderTaskStatusType Status { get; set; }
 	public int CostCents { get; set; }
-	public int DaysForCompletion { get; set; }
+	public int HoursForCompletion { get; set; }
 
     public int WorkOrderId { get; set; }
     public required virtual WorkOrder WorkOrder { get; set; }

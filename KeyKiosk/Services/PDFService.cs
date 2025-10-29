@@ -291,18 +291,18 @@ public class PDFService
 
                 foreach (WorkOrderTask task in workOrder.Tasks)
                 {
-                    totalActualDays += task.DaysForCompletion;
+                    totalActualDays += task.HoursForCompletion;
 
                     tempTaskListData = new EfficiencyReportTaskList();
                     tempTaskListData.TaskTitle = task.Title;
-                    tempTaskListData.ActualDays = task.DaysForCompletion;
+                    tempTaskListData.ActualDays = task.HoursForCompletion;
 
                     foreach (WorkOrderTaskTemplate template in templateList)
                     {
                         if (task.Title == template.TaskTitle)
                         {
-                            totalTheoreticalDays += template.ExpectedDaysForCompletion;
-                            tempTaskListData.ExpectedDays = template.ExpectedDaysForCompletion;
+                            totalTheoreticalDays += template.ExpectedHoursForCompletion;
+                            tempTaskListData.ExpectedDays = template.ExpectedHoursForCompletion;
                         }
                     }
 
@@ -974,6 +974,118 @@ public class PDFService
                                         .PaddingVertical(8)
                                         .PaddingHorizontal(16);
                                 }
+
+                                tableCellColourIndex++;
+                            }
+                        });
+                    });
+
+                    page.Footer().AlignCenter().Text(x =>
+                    {
+                        x.Span("Page ");
+                        x.CurrentPageNumber();
+                    });
+                });
+            });
+
+            return document.GeneratePdf();
+        }
+    }
+
+    public byte[] GenerateMechanicProductivityReport(List<WorkOrderLogEvent> workOrderLogList, DateTimeOffset startDate, DateTimeOffset endDate, string mechName)
+    {
+        if (workOrderLogList == null || workOrderLogList.Count() == 0)
+        {
+            var document = Document.Create(container =>
+            {
+                container.Page(page =>
+                {
+                    page.Margin(50);
+
+                    page.Header().Text(text =>
+                    {
+                        text.AlignCenter();
+                        text.Span("No work orders completed by").FontSize(30).Bold();
+                        text.EmptyLine();
+                        text.EmptyLine();
+                        text.Span(mechName).FontSize(25).Bold();
+                        text.EmptyLine();
+                        text.Span("between").FontSize(25).Bold();
+                        text.EmptyLine();
+                        text.Span($"{startDate.Date:MMMM dd, yyyy}").FontSize(25).Bold();
+                        text.EmptyLine();
+                        text.Span("and").FontSize(25).Bold();
+                        text.EmptyLine();
+                        text.Span($"{endDate.Date:MMMM dd, yyyy}").FontSize(25).Bold();
+                    });
+                });
+            });
+            return document.GeneratePdf();
+        }
+        else
+        {
+            var document = Document.Create(container =>
+            {
+                container.Page(page =>
+                {
+                    page.Margin(50);
+
+                    page.Header().Text(text =>
+                    {
+                        text.AlignCenter();
+                        text.Span("Mechanic Productivity Report").FontSize(30).Bold();
+                        text.EmptyLine();
+                        text.EmptyLine();
+                        text.Span($"{startDate.Date:MMMM dd, yyyy} - {endDate.Date:MMMM dd, yyyy}").FontSize(20).Bold();
+                    });
+
+                    page.Content().PaddingVertical(1, Unit.Centimetre).Column(col =>
+                    {
+                        col.Item().Text($"Work orders completed: {workOrderLogList.Count}");
+
+                        col.Item().PaddingTop(40).Table(table =>
+                        {
+                            table.ColumnsDefinition(columns =>
+                            {
+                                columns.RelativeColumn(2);
+                                columns.RelativeColumn(3);
+                                columns.RelativeColumn(3);
+                            });
+
+                            table.Header(header =>
+                            {
+                                header.Cell().Element(CellStyle).Text("WorkOrder ID");
+                                header.Cell().Element(CellStyle).Text("Date");
+                                header.Cell().Element(CellStyle).Text("Work Type");
+
+                                static IContainer CellStyle(IContainer container)
+                                {
+                                    return container
+                                        .Background(Colors.Blue.Darken2)
+                                        .DefaultTextStyle(x => x.FontColor(Colors.White).Bold())
+                                        .PaddingVertical(8)
+                                        .PaddingHorizontal(16);
+                                }
+                            });
+
+                            int tableCellColourIndex = 0;
+                            foreach (WorkOrderLogEvent item in workOrderLogList)
+                            {
+                                table.Cell().Element(CellStyle).Text(item.workOrder.Id.ToString());
+                                table.Cell().Element(CellStyle).Text($"{item.DateTime:MMMM dd, yyyy}");
+                                table.Cell().Element(CellStyle).Text(item.EventType.ToString());
+
+                                IContainer CellStyle(IContainer container)
+                                    {
+                                        var backgroundColor = tableCellColourIndex % 2 == 0
+                                            ? Colors.Blue.Lighten5
+                                            : Colors.Blue.Lighten4;
+
+                                        return container
+                                            .Background(backgroundColor)
+                                            .PaddingVertical(8)
+                                            .PaddingHorizontal(16);
+                                    }
 
                                 tableCellColourIndex++;
                             }
