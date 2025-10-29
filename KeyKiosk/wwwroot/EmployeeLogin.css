@@ -1,0 +1,105 @@
+﻿body {
+    background-color: #f8fafc;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+
+/* Center container */
+.login-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: calc(100vh - 140px); /* leaves space for nav bar */
+    padding: 1rem;
+}
+
+/* Card */
+.login-card {
+    background-color: #ffffff;
+    padding: 2.5rem 2rem;
+    border-radius: 16px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    width: 100%;
+    max-width: 420px;
+    text-align: center;
+    border: 1px solid #e5e7eb;
+}
+
+/* Logo */
+.login-logo {
+    height: 80px;
+    width: auto;
+    margin-bottom: 0.5rem;
+}
+
+/* Title */
+.login-card h1 {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    color: #1e293b;
+}
+
+/* Form fields */
+.form-group {
+    text-align: left;
+    margin-bottom: 1rem;
+}
+
+    .form-group label {
+        display: block;
+        font-size: 0.95rem;
+        color: #334155;
+        margin-bottom: 0.25rem;
+    }
+
+.input-field {
+    width: 100%;
+    padding: 0.6rem 0.75rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+    .input-field:focus {
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59,130,246,0.25);
+        outline: none;
+    }
+
+/* Button */
+.login-btn {
+    width: 100%;
+    padding: 0.75rem;
+    background-color: #3b82f6;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.05rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.25s ease, transform 0.1s ease;
+}
+
+    .login-btn:hover {
+        background-color: #2563eb;
+        transform: scale(1.02);
+    }
+
+/* Footer text */
+.login-footer {
+    margin-top: 1.5rem;
+    font-size: 0.85rem;
+    color: #64748b;
+}
+
+/* Mobile */
+/*@media (max-width: 480px) {
+    .login-card {
+        padding: 1.75rem 1.25rem;
+    }
+
+    .login-logo {
+        height: 65px;
+    }
+}*/

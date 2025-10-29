@@ -1,0 +1,108 @@
+﻿.admin-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1.5rem;
+    justify-items: center;
+    align-items: center;
+    max-width: 960px;
+    margin: 2rem auto;
+}
+
+.admin-card {
+    width: 100%;
+    max-width: 320px;
+    aspect-ratio: 1 / 1;
+    background: #fff;
+    border: 2px solid #e5e7eb;
+    border-radius: 16px;
+    box-shadow: 0 4px 10px rgba(0,0,0,.08);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: .75rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #1e293b;
+    transition: transform .15s ease, box-shadow .15s ease, background-color .15s ease, color .15s ease, border-color .15s ease;
+    cursor: pointer;
+    text-align: center;
+}
+
+    /* Default hover = theme red */
+    .admin-card:hover:not(:disabled) {
+        background: hsl(var(--primary));
+        color: hsl(var(--primary-foreground));
+        border-color: hsl(var(--primary));
+        transform: translateY(-4px);
+        box-shadow: 0 8px 20px hsl(var(--primary) / 0.25);
+    }
+
+    /* Pressed state */
+    .admin-card:active:not(:disabled) {
+        transform: translateY(-2px) scale(0.99);
+    }
+
+    /* Keyboard focus */
+    .admin-card:focus-visible {
+        outline: 3px solid hsl(var(--primary) / 0.5);
+        outline-offset: 2px;
+        border-color: hsl(var(--primary));
+    }
+
+    /* Disabled */
+    .admin-card:disabled {
+        opacity: .55;
+        cursor: not-allowed;
+        background: #f3f4f6;
+        color: #9ca3af;
+        border-color: #e5e7eb;
+        box-shadow: none;
+        transform: none;
+    }
+
+    /* If your card includes an SVG icon, inherit color on hover */
+    .admin-card svg,
+    .admin-card i {
+        transition: color .15s ease, fill .15s ease, opacity .15s ease;
+    }
+
+    .admin-card:hover svg path,
+    .admin-card:hover svg,
+    .admin-card:hover i {
+        color: currentColor;
+        fill: currentColor;
+    }
+
+/* ─────────────────────────────────────────────
+   Blue "edit" variant (opt-in)
+   Add class="admin-card admin-card--edit" to keep it blue
+   ───────────────────────────────────────────── */
+.admin-card--edit:hover:not(:disabled) {
+    background: #3b82f6; /* blue */
+    color: #fff;
+    border-color: #3b82f6;
+    box-shadow: 0 8px 20px rgba(59,130,246,.25);
+}
+
+.admin-card--edit:focus-visible {
+    outline: 3px solid rgba(59,130,246,.45);
+    border-color: #3b82f6;
+}
+
+/* Optional: a neutral/info variant if you need it later */
+.admin-card--info:hover:not(:disabled) {
+    background: #0ea5e9; /* cyan-ish info */
+    color: #fff;
+    border-color: #0ea5e9;
+    box-shadow: 0 8px 20px rgba(14,165,233,.25);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .admin-grid {
+        grid-template-columns: repeat(2, 1fr);
+        max-width: 700px;
+    }
+}
+

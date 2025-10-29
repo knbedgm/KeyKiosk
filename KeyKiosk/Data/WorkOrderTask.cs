@@ -11,12 +11,12 @@ public class WorkOrderTask
 	public int CostCents { get; set; }
 	public int DaysForCompletion { get; set; }
 
-	public int WorkOrderId { get; set; }
-	public required virtual WorkOrder WorkOrder { get; set; }
+    public int WorkOrderId { get; set; }
+    public required virtual WorkOrder WorkOrder { get; set; }
 }
 public enum WorkOrderTaskStatusType
 {
-	Created,
-	WorkStarted,
-	WorkFinished,
+    Created,
+    WorkStarted,
+    WorkFinished,
 }
