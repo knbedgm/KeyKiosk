@@ -291,18 +291,18 @@ public class PDFService
 
                 foreach (WorkOrderTask task in workOrder.Tasks)
                 {
-                    totalActualDays += task.DaysForCompletion;
+                    totalActualDays += task.HoursForCompletion;
 
                     tempTaskListData = new EfficiencyReportTaskList();
                     tempTaskListData.TaskTitle = task.Title;
-                    tempTaskListData.ActualDays = task.DaysForCompletion;
+                    tempTaskListData.ActualDays = task.HoursForCompletion;
 
                     foreach (WorkOrderTaskTemplate template in templateList)
                     {
                         if (task.Title == template.TaskTitle)
                         {
-                            totalTheoreticalDays += template.ExpectedDaysForCompletion;
-                            tempTaskListData.ExpectedDays = template.ExpectedDaysForCompletion;
+                            totalTheoreticalDays += template.ExpectedHoursForCompletion;
+                            tempTaskListData.ExpectedDays = template.ExpectedHoursForCompletion;
                         }
                     }
 
