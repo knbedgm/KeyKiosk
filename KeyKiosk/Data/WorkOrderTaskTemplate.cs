@@ -6,5 +6,5 @@ public class WorkOrderTaskTemplate
     public string TaskTitle { get; set; } = "";
     public string TaskDetails { get; set; } = "";
     public int TaskCostCents { get; set; }
-    public int ExpectedDaysForCompletion { get; set; }
+    public int ExpectedHoursForCompletion { get; set; }
 }
