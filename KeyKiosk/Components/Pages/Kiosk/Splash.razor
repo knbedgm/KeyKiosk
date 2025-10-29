@@ -2,7 +2,7 @@
 @layout Layout.BlankLayout
 @rendermode InteractiveServer
 @inject NavigationManager navManager
-@inject KioskUserSessionService session
+@inject AppAuthenticationStateProvider session
 @implements IAsyncDisposable
 
 
@@ -40,9 +40,9 @@
         return;
     }
 
-    public void OnPinEntered(string pin)
+    public async Task OnPinEntered(string pin)
     {
-        if (session.Login(pin))
+        if (await session.LoginKioskAsync(pin))
         {
             navManager.NavigateTo("kiosk/home");
         } else

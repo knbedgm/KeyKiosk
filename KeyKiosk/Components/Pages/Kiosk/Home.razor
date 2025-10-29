@@ -1,13 +1,14 @@
 ﻿@page "/kiosk/home"
 @layout Layout.KioskLayout
 @inject SerialTest ser
-@inject KioskUserSessionService session
+@inject AppAuthenticationStateProvider session
 @inject DrawerService drawers
 @rendermode InteractiveServer
+@attribute [Authorize("Kiosk")]
 
 <PageTitle>Home</PageTitle>
 
-<h1>Hello, @session.User?.Name! (@session.User?.UserType.ToString()) </h1>
+<h1>Hello, @session.CurrentSession?.User.Name! (@session.CurrentSession?.User.UserType.ToString()) </h1>
 @foreach (var port in ser.GetPorts())
 {
     <p>@port</p>

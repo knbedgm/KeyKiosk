@@ -1,5 +1,5 @@
 ﻿@inherits LayoutComponentBase
-@inject KioskUserSessionService session
+@inject AppAuthenticationStateProvider session
 @inject NavigationManager nav
 
 @* Required *@
@@ -19,7 +19,7 @@
             <div class="py-4 h-full">
                 <img class="object-contain h-full" src="/splash logo.png" alt="Logo" />
             </div>
-            <a @onclick="() => session.Logout()">Exit</a>
+            <a @onclick="logout">Exit</a>
         </div>
         <main>
              @Body
@@ -47,18 +47,33 @@
 </div>
 
 @code {
+    [CascadingParameter] protected Task<AuthenticationState> AuthStat { get; set; }
+
     List<string> History = [];
 
     public bool ShowBack { get; set; } = false;
     public bool ShowExit { get; set; } = true;
 
-    protected override void OnInitialized()
+    protected async override Task OnInitializedAsync()
     {
+        await base.OnInitializedAsync();
+        var user = (await AuthStat).User;
+        if (!(user?.Identity?.IsAuthenticated ?? false))
+        {
+            // nav.NavigateTo($"authentication/login?returnUrl={Uri.EscapeDataString(nav.Uri)}");
+            nav.NavigateTo($"kiosk");
+        }
         nav.LocationChanged += OnLocationChange;
         if (History.Count == 0)
         {
             History.Add(nav.Uri);
         }
+    }
+
+    void logout()
+    {
+        session.Logout();
+        nav.NavigateTo("/kiosk");
     }
 
     void OnLocationChange(object? sender, LocationChangedEventArgs e)
