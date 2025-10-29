@@ -991,6 +991,118 @@ public class PDFService
             return document.GeneratePdf();
         }
     }
+
+    public byte[] GenerateMechanicEfficiencyReport(List<WorkOrder> workOrderList, DateTimeOffset startDate, DateTimeOffset endDate, string mechName)
+    {
+        if (workOrderList == null || workOrderList.Count() == 0)
+        {
+            var document = Document.Create(container =>
+            {
+                container.Page(page =>
+                {
+                    page.Margin(50);
+
+                    page.Header().Text(text =>
+                    {
+                        text.AlignCenter();
+                        text.Span("No work orders completed by").FontSize(30).Bold();
+                        text.EmptyLine();
+                        text.EmptyLine();
+                        text.Span(mechName).FontSize(25).Bold();
+                        text.EmptyLine();
+                        text.Span("between");
+                        text.EmptyLine();
+                        text.Span($"{startDate.Date:MMMM dd, yyyy}").FontSize(25).Bold();
+                        text.EmptyLine();
+                        text.Span("and").FontSize(25).Bold();
+                        text.EmptyLine();
+                        text.Span($"{endDate.Date:MMMM dd, yyyy}").FontSize(25).Bold();
+                    });
+                });
+            });
+            return document.GeneratePdf();
+        }
+        else
+        {
+            var document = Document.Create(container =>
+            {
+                container.Page(page =>
+                {
+                    page.Margin(50);
+
+                    page.Header().Text(text =>
+                    {
+                        text.AlignCenter();
+                        text.Span("Mechanic Productivity Report").FontSize(30).Bold();
+                        text.EmptyLine();
+                        text.EmptyLine();
+                        text.Span($"{startDate.Date:MMMM dd, yyyy} - {endDate.Date:MMMM dd, yyyy}").FontSize(20).Bold();
+                    });
+
+                    page.Content().PaddingVertical(1, Unit.Centimetre).Column(col =>
+                    {
+                        col.Item().Text($"Work orders completed: ${workOrderList.Count}");
+
+                        col.Item().PaddingTop(40).Table(table =>
+                        {
+                            table.ColumnsDefinition(columns =>
+                            {
+                                columns.RelativeColumn(2);
+                                columns.RelativeColumn(3);
+                                columns.RelativeColumn(3);
+                            });
+
+                            table.Header(header =>
+                            {
+                                header.Cell().Element(CellStyle).Text("Work Order ID");
+                                header.Cell().Element(CellStyle).Text("License Plate");
+                                header.Cell().Element(CellStyle).Text("Date");
+
+                                static IContainer CellStyle(IContainer container)
+                                {
+                                    return container
+                                        .Background(Colors.Blue.Darken2)
+                                        .DefaultTextStyle(x => x.FontColor(Colors.White).Bold())
+                                        .PaddingVertical(8)
+                                        .PaddingHorizontal(16);
+                                }
+                            });
+
+                            int tableCellColourIndex = 0;
+                            foreach (WorkOrder item in workOrderList)
+                            {
+                                table.Cell().Element(CellStyle).Text(item.Id.ToString());
+                                table.Cell().Element(CellStyle).Text(item.VehiclePlate);
+                                table.Cell().Element(CellStyle).Text($"{item.StartDate:MMMM dd, yyyy}");
+
+                                IContainer CellStyle(IContainer container)
+                                {
+                                    var backgroundColor = tableCellColourIndex % 2 == 0
+                                        ? Colors.Blue.Lighten5
+                                        : Colors.Blue.Lighten4;
+
+                                    return container
+                                        .Background(backgroundColor)
+                                        .PaddingVertical(8)
+                                        .PaddingHorizontal(16);
+                                }
+
+                                tableCellColourIndex++;
+                            }
+                        });
+                    });
+
+                    page.Footer().AlignCenter().Text(x =>
+                    {
+                        x.Span("Page ");
+                        x.CurrentPageNumber();
+                    });
+                });
+            });
+
+            return document.GeneratePdf();
+        }
+    }
 }
 
 public class EfficiencyReportTaskList()
