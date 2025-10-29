@@ -17,6 +17,9 @@
 <label>Vehicle Plate: </label>
 <input type="text" @bind="VehicleLicensePlate" />
 
+<label>Employee Name: </label>
+<input type="text" @bind="EmployeeName" />
+
 <br />
 <button @onclick="() => PreviewEfficiencyReport()">Preview Efficiency Report</button>
 <br />
@@ -31,6 +34,8 @@
 <button @onclick="() => PreviewPartsReport()">Preview Parts Usage Expense Report</button>
 <br />
 <button @onclick="() => PreviewRevenueReport()">Preview Revenue Report</button>
+<br />
+<button @onclick="() => PreviewMechanicProductivityReport()">Preview Mechanic Productivity Report</button>
 <br />
 <br />
 <br />
@@ -58,10 +63,12 @@
     public DateTimeOffset EndDate { get; set; } = new DateTimeOffset(DateTime.Now);
     public string CustomerName { get; set; } = "";
     public string VehicleLicensePlate { get; set; } = "";
+    public string EmployeeName { get; set; } = "";
     [Inject] private WorkOrderService WorkOrderService { get; set; }
     [Inject] private WorkOrderTaskService TaskService { get; set; }
     [Inject] private WorkOrderPartService PartService { get; set; }
     [Inject] private WorkOrderTaskTemplateService TemplateService { get; set; }
+    [Inject] private WorkOrderLogService WorkOrderLogService { get; set; }
     [Inject] private PreviewDownloadService PreviewDownloadService { get; set; } = default!;
 
     public async void PreviewEfficiencyReport()
@@ -113,6 +120,15 @@
 
         await PreviewDownloadService.PreviewRevenueReportAsync(workOrders, StartDate, EndDate);
     }
+
+    public async void PreviewMechanicProductivityReport()
+    {
+        List<WorkOrderLogEvent> workOrderLogs = await WorkOrderLogService.GetWorkOrderLogsByUsernameDatePeriod(EmployeeName, StartDate, EndDate);
+
+        await PreviewDownloadService.PreviewMechanicProductivityReportAsync(workOrderLogs, StartDate, EndDate, EmployeeName);
+    }
+
+
 
 
     public async void DownloadEfficiencyReport()

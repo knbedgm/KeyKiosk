@@ -87,5 +87,13 @@ namespace KeyKiosk.Services
 
             return sb.ToString(); //returns the CSV as a string
         }
+
+        public async Task<List<WorkOrderLogEvent>> GetWorkOrderLogsByUsernameDatePeriod(string username, DateTimeOffset startDate, DateTimeOffset endDate)
+        {
+            return await _context.WorkOrderLog
+                                   .Where(l => l.UserName == username && l.DateTime >= startDate && l.DateTime <= endDate)
+                                   .Include(l => l.workOrder)
+                                   .ToListAsync();
+        }
     }
 }

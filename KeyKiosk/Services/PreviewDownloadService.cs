@@ -199,6 +199,30 @@ public class PreviewDownloadService
         await _jsRuntime.InvokeVoidAsync("openPdfPreview", base64);
     }
 
+    public async Task PreviewMechanicProductivityReportAsync(List<WorkOrderLogEvent> workOrderLogs, DateTimeOffset startDate, DateTimeOffset endDate, string mechName)
+    {
+        var pdfBytes = PDFService.GenerateMechanicProductivityReport(workOrderLogs, startDate, endDate, mechName);
+
+        var base64 = Convert.ToBase64String(pdfBytes);
+
+        // Inject JS function directly here
+        var js = @"
+            window.openPdfPreview = (base64) => {
+                const pdfDataUri = ""data:application/pdf;base64,"" + base64;
+                const win = window.open();
+                win.document.write(
+                    ""<iframe src='"" + pdfDataUri + ""' "" +
+                    ""frameborder='0' style='width:100%;height:100%;'></iframe>""
+                );
+            };
+        ";
+        await _jsRuntime.InvokeVoidAsync("eval", js);
+
+        // Call JS function to open in new tab
+        await _jsRuntime.InvokeVoidAsync("openPdfPreview", base64);
+    }
+
+
     #endregion
 
 
@@ -341,6 +365,25 @@ public class PreviewDownloadService
     public async Task DownloadMechanicTodoAsync(WorkOrder workOrder)
     {
         var pdfBytes = PDFService.GenerateWorkOrderWithTasksPDF(workOrder);
+
+        var base64 = Convert.ToBase64String(pdfBytes);
+
+        var js = @"
+            window.downloadFileFromBytes = (filename, base64) => {
+                const link = document.createElement('a');
+                link.href = 'data:application/pdf;base64,' + base64;
+                link.download = filename;
+                link.click();
+            };
+        ";
+        await _jsRuntime.InvokeVoidAsync("eval", js);
+
+        await _jsRuntime.InvokeVoidAsync("downloadFileFromBytes", "report.pdf", base64);
+    }
+
+    public async Task DownloadMechanicProductivityReportAsync(List<WorkOrderLogEvent> workOrderLogs, DateTimeOffset startDate, DateTimeOffset endDate, string mechName)
+    {
+        var pdfBytes = PDFService.GenerateMechanicProductivityReport(workOrderLogs, startDate, endDate, mechName);
 
         var base64 = Convert.ToBase64String(pdfBytes);
 
