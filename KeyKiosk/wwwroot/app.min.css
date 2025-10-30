@@ -638,12 +638,24 @@ video {
   z-index: 50;
 }
 
-.m-4 {
-  margin: 1rem;
+.col-span-2 {
+  grid-column: span 2 / span 2;
 }
 
-.mb-4 {
-  margin-bottom: 1rem;
+.col-span-3 {
+  grid-column: span 3 / span 3;
+}
+
+.col-span-4 {
+  grid-column: span 4 / span 4;
+}
+
+.col-span-6 {
+  grid-column: span 6 / span 6;
+}
+
+.m-4 {
+  margin: 1rem;
 }
 
 .inline {
@@ -848,10 +860,6 @@ video {
   text-align: center;
 }
 
-.align-middle {
-  vertical-align: middle;
-}
-
 .text-2xl {
   font-size: 1.5rem;
   line-height: 2rem;
@@ -952,177 +960,6 @@ video {
 
 .fluent--person-edit-24-filled {
   --svg: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Cpath fill='black' d='M12.49 17.865L16.356 14H6.253a2.25 2.25 0 0 0-2.25 2.25v.919c0 .572.18 1.13.511 1.596c1.388 1.947 3.57 3.01 6.486 3.204q-.007-.274.064-.561l.457-1.83c.162-.649.497-1.24.97-1.713M12 2.005a5 5 0 1 1 0 10a5 5 0 0 1 0-10m7.1 10.665l-5.903 5.902a2.7 2.7 0 0 0-.706 1.247l-.458 1.831a1.087 1.087 0 0 0 1.319 1.318l1.83-.457a2.7 2.7 0 0 0 1.248-.707l5.902-5.902A2.286 2.286 0 0 0 19.1 12.67'/%3E%3C/svg%3E");
-}
-
-html, body {
-  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  overscroll-behavior: none;
-  touch-action: pan-x pan-y;
-}
-
-a, .btn-link {
-  color: #006bb7;
-}
-
-/* ========== NAVBAR FIX ========== */
-
-.top-nav {
-  width: 100%;
-  background-color: #fff;
-  border-bottom: 1px solid #e5e7eb;
-  position: relative;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 80px;
-}
-
-.nav-container {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  /* for left + right */
-  padding: 0 1.5rem;
-  position: relative;
-}
-
-/* Keep left and right aligned normally */
-
-.nav-left,
-.nav-right {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-/* --- Center logo perfectly --- */
-
-.nav-center {
-  position: absolute;
-  /* take it out of flex flow */
-  left: 50%;
-  transform: translateX(-50%);
-  /* perfectly center it */
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-/* Logo sizing */
-
-.nav-logo {
-  height: 108px;
-  width: auto;
-  /*    outline: 3px solid rgba(59,130,246,.45);*/
-  /*    border-color: #3b82f6;*/
-}
-
-/* Nav links styling */
-
-.nav-link {
-  text-decoration: none;
-  color: #333;
-  font-weight: 600;
-  transition: color 0.2s ease;
-}
-
-.nav-link.active {
-  color: #007bff;
-}
-
-.nav-link:hover {
-  color: #0056b3;
-}
-
-/* Buttons */
-
-.btn-primary {
-  background-color: #007bff;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  padding: 6px 12px;
-  cursor: pointer;
-  transition: background-color 0.2s ease, transform 0.1s ease;
-}
-
-.btn-primary:hover {
-  background-color: #0056b3;
-  transform: translateY(-1px);
-}
-
-/* Page content wrapper (controls horizontal margins site-wide) */
-
-.page-body {
-  flex: 1;
-  width: 100%;
-  /* match navbar/container width */
-  max-width: 2000px;
-  margin: 0 auto;
-  /* center */
-  padding: 1.5rem 1.25rem;
-  background-color: #f8fafc;
-}
-
-/* ===== Headings ===== */
-
-h1 {
-  text-align: center;
-  font-size: 2.5rem;
-  font-weight: 700;
-  margin: 1rem 0 1.25rem;
-  color: hsl(var(--primary));
-  /* theme red */
-  position: relative;
-}
-
-/* subtle red underline */
-
-h1::after {
-  content: "";
-  display: block;
-  width: 80px;
-  height: 4px;
-  background-color: hsl(var(--primary));
-  margin: 0.5rem auto 0;
-  border-radius: 2px;
-}
-
-/* optional glow for extra depth */
-
-h1 {
-  text-shadow: 0 1px 2px hsl(var(--primary) / 0.35);
-}
-
-/* ===== Headings ===== */
-
-h2 {
-  text-align: center;
-  font-size: 2.5rem;
-  font-weight: 700;
-  margin: 1rem 0 1.25rem;
-  color: hsl(var(--primary));
-  /* theme red */
-  position: relative;
-}
-
-/* subtle red underline */
-
-h2::after {
-  content: "";
-  display: block;
-  width: 80px;
-  height: 4px;
-  background-color: hsl(var(--primary));
-  margin: 0.5rem auto 0;
-  border-radius: 2px;
-}
-
-/* optional glow for extra depth */
-
-h2 {
-  text-shadow: 0 1px 2px hsl(var(--primary) / 0.35);
 }
 
 .first\:rounded-l-md:first-child {
