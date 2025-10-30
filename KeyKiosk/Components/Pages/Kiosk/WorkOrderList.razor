@@ -1,0 +1,66 @@
+﻿@page "/kiosk/home"
+@layout Layout.KioskLayout
+@inject AppAuthenticationStateProvider session
+@inject WorkOrderService WorkOrderService
+@inject IRFIDReader RFIDReader
+@inject NavigationManager navManager
+@rendermode InteractiveServer
+@attribute [Authorize("Kiosk")]
+
+<PageTitle>Home</PageTitle>
+<div class="m-4">
+
+	<MudText Typo="Typo.h1">Available Workorders</MudText>
+	<MudText Typo="Typo.h2">Hello, @session.CurrentSession?.User.Name!</MudText>
+
+	<div class="grid grid-cols-2 gap-4 mt-4">
+		@foreach (var wo in WOs)
+		{
+			<MudCard Outlined>
+				<MudCardHeader>
+					<CardHeaderContent>
+						<MudText Typo="Typo.h5">@wo.VehiclePlate</MudText>
+						<MudText Typo="Typo.h6">@(PDFService.ConvertWorkOrderStatus(wo.Status))</MudText>
+					</CardHeaderContent>
+					<CardHeaderActions>
+						@* <MudIconButton Icon="@Icons.Material.Filled.Settings" Color="Color.Default" /> *@
+						<MudText Typo="Typo.h5">@wo.Tasks.Count Tasks</MudText>
+					</CardHeaderActions>
+				</MudCardHeader>
+				<MudCardContent>
+					<MudText>@wo.Details</MudText>
+				</MudCardContent>
+				<MudCardActions>
+					<MudButton Href="@($"/kiosk/wo/{wo.Id}")" Variant="Variant.Text" Color="Color.Primary">Show Details</MudButton>
+				</MudCardActions>
+			</MudCard>
+		}
+	</div>
+</div>
+
+@code {
+
+	List<Data.WorkOrder> WOs = new List<Data.WorkOrder>();
+
+	protected override async Task OnInitializedAsync()
+	{
+		await base.OnInitializedAsync();
+
+		RFIDReader.OnCardScannedEvent += OnCardScanned;
+		WOs = await WorkOrderService.GetAllAsync();
+	}
+
+
+	private void OnCardScanned(object? source, OnCardScannedEventArgs e)
+	{
+		navManager.NavigateTo($"/kiosk/wo/{WOs.First().Id}");
+	}
+
+	public ValueTask DisposeAsync()
+	{
+		RFIDReader.OnCardScannedEvent -= OnCardScanned;
+
+		return new();
+	}
+
+}

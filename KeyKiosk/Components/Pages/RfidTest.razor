@@ -29,4 +29,11 @@
 		uids.Add(e.CardId);
 		this.InvokeAsync(() => this.StateHasChanged());
 	}
+
+	public ValueTask DisposeAsync()
+	{
+		rfid.OnCardScannedEvent -= this.OnRead;
+
+		return new();
+	}
 }
