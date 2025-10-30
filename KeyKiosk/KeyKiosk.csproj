@@ -24,7 +24,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="wwwroot\images\KEYOSK_icon.png" />
     <None Include="wwwroot\js\Site.js" />
     <None Include="wwwroot\favicon.png" />
   </ItemGroup>

@@ -13,10 +13,9 @@ public class WorkOrderTaskService
         this.dbContext = dbContext;
     }
 
-	/// <summary>
-	/// Get all work order tasks
-	/// </summary>
-	/// <returns></returns>
+    /// <summary>
+    /// Get all work order tasks
+    /// </summary>
     public List<WorkOrderTask> GetAllTasks()
     {
         return dbContext.WorkOrderTasks
@@ -24,11 +23,9 @@ public class WorkOrderTaskService
                         .ToList();
     }
 
-	/// <summary>
-	/// Get work order tasks by work order id
-	/// </summary>
-	/// <param name="workOrderId"></param>
-	/// <returns></returns>
+    /// <summary>
+    /// Get work order tasks by work order id
+    /// </summary>
     public List<WorkOrderTask> GetWorkOrderTasksByWorkOrderId(int workOrderId)
     {
         var workOrder = dbContext.WorkOrders
@@ -41,11 +38,9 @@ public class WorkOrderTaskService
         return workOrder.Tasks.OrderBy(t => t.Id).ToList();
     }
 
-	/// <summary>
-	/// Get a single work order task by id
-	/// </summary>
-	/// <param name="taskId"></param>
-	/// <returns></returns>
+    /// <summary>
+    /// Get a single work order task by id
+    /// </summary>
     public WorkOrderTask GetWorkOrderTaskById(int taskId)
     {
         return dbContext.WorkOrderTasks
@@ -60,18 +55,18 @@ public class WorkOrderTaskService
         public DateTimeOffset? EndDate { get; set; }
         public WorkOrderTaskStatusType Status { get; set; }
         public int CostCents { get; set; }
+
+        // NEW: default 0 on add
+        public int HoursForCompletion { get; set; } = 0;
     }
 
-	/// <summary>
-	/// Add a new work order task to the database
-	/// </summary>
-	/// <param name="newTask"></param>
-	/// 
+    /// <summary>
+    /// Add a new work order task to the database
+    /// </summary>
     public void AddWorkOrderTask(int workOrderId, AddWorkOrderTaskModel newTask)
     {
-        var workOrder = dbContext.WorkOrders.FirstOrDefault(t => t.Id == workOrderId);
-        if (workOrder == null)
-            throw new ArgumentException($"Work order with id {workOrderId} doesn't exist", nameof(workOrderId));
+        var workOrder = dbContext.WorkOrders.FirstOrDefault(t => t.Id == workOrderId)
+            ?? throw new ArgumentException($"Work order with id {workOrderId} doesn't exist", nameof(workOrderId));
 
         var taskToAdd = new WorkOrderTask
         {
@@ -81,6 +76,7 @@ public class WorkOrderTaskService
             EndDate = newTask.EndDate,
             Status = newTask.Status,
             CostCents = newTask.CostCents,
+            HoursForCompletion = newTask.HoursForCompletion, // NEW
             WorkOrder = workOrder,
         };
 
@@ -96,13 +92,14 @@ public class WorkOrderTaskService
         public DateTimeOffset? EndDate { get; set; }
         public WorkOrderTaskStatusType Status { get; set; }
         public int CostCents { get; set; }
+
+        // NEW: editable during row edit
+        public int HoursForCompletion { get; set; } = 0;
     }
 
-	/// <summary>
-	/// Update existing work order task using id
-	/// </summary>
-	/// <param name="idToUpdate"></param>
-	/// <param name="template"></param>
+    /// <summary>
+    /// Update existing work order task using id
+    /// </summary>
     public void UpdateWorkOrderTask(int TaskId, UpdateWorkOrderTaskModel updatedTask)
     {
         var taskToUpdate = dbContext.WorkOrderTasks.FirstOrDefault(t => t.Id == TaskId);
@@ -113,13 +110,14 @@ public class WorkOrderTaskService
             taskToUpdate.EndDate = updatedTask.EndDate;
             taskToUpdate.Status = updatedTask.Status;
             taskToUpdate.CostCents = updatedTask.CostCents;
+            taskToUpdate.HoursForCompletion = updatedTask.HoursForCompletion; // NEW
         }
         dbContext.SaveChanges();
     }
-	/// <summary>
-	/// Deletes work order task using id
-	/// </summary>
-	/// <param name="idToDelete"></param>
+
+    /// <summary>
+    /// Deletes work order task using id
+    /// </summary>
     public void DeleteWorkOrderTask(int idToDelete)
     {
         var taskToDelete = dbContext.WorkOrderTasks.FirstOrDefault(t => t.Id == idToDelete);

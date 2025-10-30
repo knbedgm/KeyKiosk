@@ -7,110 +7,136 @@
 @inject WorkOrderAuditService AuditService
 @inject IJSRuntime JS
 
-<PageTitle>Work Order Logs</PageTitle>
-<h2 class="mb-4">Work Order Logs</h2>
+<link href="app.css" rel="stylesheet" />
+<link href="WorkOrderLogs.css" rel="stylesheet" />
 
-<!-- Filter Form -->
-<div class="card mb-4">
-    <div class="card-body">
-        <div class="row g-2">
-            <div class="col-md-2">
-                <input class="form-control" placeholder="Username" @bind="username" />
-            </div>
-            <div class="col-md-2">
-                <input class="form-control" placeholder="WorkOrder ID" type="number" @bind="workOrderId" />
-            </div>
-            <div class="col-md-2">
-                <input class="form-control" placeholder="Vehicle Plate" @bind="vehiclePlate" />
-            </div>
-            <div class="col-md-2">
-                <select class="form-select" @bind="eventType">
-                    <option value="">-- Event Type --</option>
-                    @foreach (var type in Enum.GetValues<WorkOrderLogEvent.WorkOrderLogEventType>())
-                    {
-                        <option value="@type">@type</option>
-                    }
-                </select>
-            </div>
-            <div class="col-md-2 d-flex gap-2">
-                <button class="btn btn-primary flex-fill" @onclick="LoadLogs">Search</button>
-                <button class="btn btn-outline-secondary flex-fill" @onclick="ExportCsv">Export</button>
-            </div>
-        </div>
+<PageTitle>Work Order Logs</PageTitle>
+<h1 style="text-align:center">Work Order Logs</h1>
+
+<!-- Filters -->
+<div class="logs-toolbar card-like">
+    <div class="filters">
+        <input class="table-input" placeholder="Username" @bind="username" />
+        <input class="table-input" placeholder="WorkOrder ID" type="number" @bind="workOrderId" />
+        <input class="table-input" placeholder="Vehicle Plate" @bind="vehiclePlate" />
+        <select class="table-select" @bind="eventType">
+            <option value="">Event Type</option>
+            @foreach (var type in Enum.GetValues<WorkOrderLogEvent.WorkOrderLogEventType>())
+            {
+                <option value="@type">@type</option>
+            }
+        </select>
+    </div>
+    <div class="actions">
+        <button class="btn-primary" @onclick="LoadLogs">Search</button>
+        <button class="btn-outline" @onclick="ClearFilters">Clear</button>
+        <button class="btn-outline" @onclick="ExportCsv">Export</button>
     </div>
 </div>
 
-<!-- Demo Button -->
-<div class="mb-3">
-    <button class="btn btn-success" @onclick="CreateTestWorkOrder">Create Test Work Order (demo)</button>
-</div>
-
-<!-- Results -->
-@if (logs == null)
+@if (logs is null)
 {
-    <p><em>Loading...</em></p>
+    <p class="text-center">Loading…</p>
 }
 else if (!logs.Any())
 {
-    <div class="alert alert-warning">No log events found.</div>
+    <div class="empty card-like">
+        <div>No log events found.</div>
+        <small class="muted">Try adjusting the filters above.</small>
+    </div>
 }
 else
 {
-    <div class="table-responsive">
-        <table class="table table-bordered table-striped align-middle">
-            <thead class="table-light">
+    <!-- Pager (top) -->
+    <div class="pager-bar">
+        <div class="pager-left">
+            <button class="pager-btn" disabled="@(Page == 1)" @onclick="FirstPage">« First</button>
+            <button class="pager-btn" disabled="@(Page == 1)" @onclick="PrevPage">‹ Prev</button>
+        </div>
+        <div class="pager-middle">
+            Page @Page of @TotalPages
+            <span class="pager-sep">|</span>
+            <label>Per page</label>
+            <select class="pager-select" @bind="PageSize">
+                <option value="10">10</option>
+                <option value="25">25</option>
+                <option value="50">50</option>
+                <option value="100">100</option>
+            </select>
+            <span class="pager-sep">|</span>
+            <span>@TotalCount item(s)</span>
+        </div>
+        <div class="pager-right">
+            <button class="pager-btn" disabled="@(Page == TotalPages)" @onclick="NextPage">Next ›</button>
+            <button class="pager-btn" disabled="@(Page == TotalPages)" @onclick="LastPage">Last »</button>
+        </div>
+    </div>
+
+    <div class="table-wrap">
+        <div class="table-meta">
+            <div><strong>@PagedLogs.Count()</strong> shown</div>
+            @if (!string.IsNullOrWhiteSpace(username) || workOrderId.HasValue || !string.IsNullOrWhiteSpace(vehiclePlate) || eventType.HasValue)
+            {
+                <div class="muted">Filters active</div>
+            }
+        </div>
+
+        <table class="workorders-table logs-table">
+            <thead>
                 <tr>
-                    <th class="text-center">ID</th>
-                    <th class="text-center">Date</th>
-                    <th class="text-center">User</th>
-                    <th class="text-center">WorkOrder</th>
-                    <th class="text-center">Customer</th>
-                    <th class="text-center">Plate</th>
-                    <th class="text-center">Status</th>
-                    <th class="text-center">Start</th>
-                    <th class="text-center">End</th>
-                    <th class="text-center">Event</th>
-                    <th class="text-center">Details</th>
+                    <th style="width:80px;">ID</th>
+                    <th style="min-width:140px;">Date</th>
+                    <th>User</th>
+                    <th>WorkOrder</th>
+                    <th>Customer</th>
+                    <th>Plate</th>
+                    <th>Status</th>
+                    <th>Start</th>
+                    <th>End</th>
+                    <th>Event</th>
+                    <th style="min-width:260px;">Details</th>
                 </tr>
             </thead>
             <tbody>
-                @foreach (var log in logs)
+                @foreach (var log in PagedLogs)
                 {
                     <tr>
-                        <td class="px-3">@log.ID</td>
-                        <td class="px-3">@log.DateTime.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</td>
-                        <td class="px-3">@log.UserName</td>
-                        <td class="px-3">@log.workOrder.Id</td>
-                        <td class="px-3">@log.workOrder.CustomerName</td>
-                        <td class="px-3">@log.workOrder.VehiclePlate</td>
-                        <td class="px-3">@log.workOrder.Status</td>
-                        <td class="px-3">@(log.workOrder.StartDate?.ToLocalTime().ToString("g") ?? "-")</td>
-                        <td class="px-3">@(log.workOrder.EndDate?.ToLocalTime().ToString("g") ?? "-")</td>
-                        <td class="px-3">
-                            <span class="badge bg-info text-dark">
-                                @(
-                                    log.EventType switch
-                                    {
-                                        WorkOrderLogEvent.WorkOrderLogEventType.Created => "Work Order Created",
-                                        WorkOrderLogEvent.WorkOrderLogEventType.StatusChanged => "Status Updated",
-                                        WorkOrderLogEvent.WorkOrderLogEventType.DetailsChanged => "Details Updated",
-                                        WorkOrderLogEvent.WorkOrderLogEventType.TaskAdded => "Task Added",
-                                        WorkOrderLogEvent.WorkOrderLogEventType.TaskRemoved => "Task Removed",
-                                        WorkOrderLogEvent.WorkOrderLogEventType.TaskStatusChanged => "Task Status Updated",
-                                        WorkOrderLogEvent.WorkOrderLogEventType.TaskDetailsChanged => "Task Details Updated",
-                                        _ => log.EventType.ToString()
-                                    }
-                                )
-                            </span>
+                        <td>@log.ID</td>
+                        <td>@log.DateTime.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</td>
+                        <td>@log.UserName</td>
+                        <td>#@log.workOrder.Id</td>
+                        <td>@log.workOrder.CustomerName</td>
+                        <td><code class="chip">@log.workOrder.VehiclePlate</code></td>
+                        <td>
+                            <span class="tag @StatusClass(log.workOrder.Status)">@log.workOrder.Status</span>
                         </td>
-                        <td class="px-3">
-                            @switch (log)
+                        <td>@(log.workOrder.StartDate?.ToLocalTime().ToString("yyyy-MM-dd HH:mm") ?? "-")</td>
+                        <td>@(log.workOrder.EndDate?.ToLocalTime().ToString("yyyy-MM-dd HH:mm") ?? "-")</td>
+                        <td>
+                            <span class="etype">
+                                @(
+                                                        log.EventType switch
+                                                        {
+                                                            WorkOrderLogEvent.WorkOrderLogEventType.Created => "Work Order Created",
+                                                            WorkOrderLogEvent.WorkOrderLogEventType.StatusChanged => "Status Updated",
+                                                            WorkOrderLogEvent.WorkOrderLogEventType.DetailsChanged => "Details Updated",
+                                                            WorkOrderLogEvent.WorkOrderLogEventType.TaskAdded => "Task Added",
+                                                            WorkOrderLogEvent.WorkOrderLogEventType.TaskRemoved => "Task Removed",
+                                                            WorkOrderLogEvent.WorkOrderLogEventType.TaskStatusChanged => "Task Status Updated",
+                                                            WorkOrderLogEvent.WorkOrderLogEventType.TaskDetailsChanged => "Task Details Updated",
+                                                            _ => log.EventType.ToString()
+                                                        }
+                                                        )
+                        </span>
+                    </td>
+                    <td>
+                    @switch (log)
                             {
                                 case WorkOrderLogEvent.DetailsChangedEvent detailsEvent:
-                                    <details>
+                                    <details class="details-box">
                                         <summary>Details changed</summary>
-                                        <div>Customer: @detailsEvent.CustomerName</div>
-                                        <div>Plate: @detailsEvent.VehiclePlate</div>
+                                        <div><strong>Customer:</strong> @detailsEvent.CustomerName</div>
+                                        <div><strong>Plate:</strong> @detailsEvent.VehiclePlate</div>
                                         <div>@detailsEvent.Details</div>
                                     </details>
                                     break;
@@ -124,16 +150,16 @@ else
                                     break;
 
                                 case WorkOrderLogEvent.TaskDetailsChangedEvent taskDetails:
-                                    <details>
+                                    <details class="details-box">
                                         <summary>Task details changed</summary>
-                                        <div>Task: @taskDetails.Task?.Title</div>
+                                        <div><strong>Task:</strong> @taskDetails.Task?.Title</div>
                                         <div>@taskDetails.Details</div>
-                                        <div>Cost: @(taskDetails.CostCents / 100.0m).ToString("C")</div>
+                                        <div><strong>Cost:</strong> @(taskDetails.CostCents / 100.0m).ToString("C")</div>
                                     </details>
                                     break;
 
                                 case WorkOrderLogEvent.CreateEvent:
-                                    <span class="text-success">Work order created</span>
+                                    <span class="text-ok">Work order created</span>
                                     break;
 
                                 case WorkOrderLogEvent.StatusChangedEvent statusEvent:
@@ -150,8 +176,22 @@ else
             </tbody>
         </table>
     </div>
-}
 
+    <!-- Pager (bottom) -->
+    <div class="pager-bar" style="margin-top:.5rem;">
+        <div class="pager-left">
+            <button class="pager-btn" disabled="@(Page == 1)" @onclick="FirstPage">« First</button>
+            <button class="pager-btn" disabled="@(Page == 1)" @onclick="PrevPage">‹ Prev</button>
+        </div>
+        <div class="pager-middle">
+            Page @Page of @TotalPages
+        </div>
+        <div class="pager-right">
+            <button class="pager-btn" disabled="@(Page == TotalPages)" @onclick="NextPage">Next ›</button>
+            <button class="pager-btn" disabled="@(Page == TotalPages)" @onclick="LastPage">Last »</button>
+        </div>
+    </div>
+}
 @code {
     private List<WorkOrderLogEvent>? logs;
 
@@ -162,6 +202,22 @@ else
     private string? search;
     private WorkOrderLogEvent.WorkOrderLogEventType? eventType;
 
+    // Pagination
+    private int _pageSize = 25;
+    private int PageSize
+    {
+        get => _pageSize;
+        set { _pageSize = value <= 0 ? 25 : value; Page = 1; }
+    }
+    private int Page { get; set; } = 1;
+
+    private int TotalCount => logs?.Count ?? 0;
+    private int TotalPages => Math.Max(1, (int)Math.Ceiling(TotalCount / (double)PageSize));
+    private IEnumerable<WorkOrderLogEvent> PagedLogs =>
+        (logs ?? Enumerable.Empty<WorkOrderLogEvent>())
+            .Skip((Page - 1) * PageSize)
+            .Take(PageSize);
+
     protected override async Task OnInitializedAsync()
     {
         await LoadLogs();
@@ -170,6 +226,19 @@ else
     private async Task LoadLogs()
     {
         logs = await LogService.GetFilteredLogsAsync(username, workOrderId, status, vehiclePlate, search, eventType);
+        Page = 1;
+        StateHasChanged();
+    }
+
+    private void ClearFilters()
+    {
+        username = null;
+        workOrderId = null;
+        vehiclePlate = null;
+        status = null;
+        search = null;
+        eventType = null;
+        _ = LoadLogs();
     }
 
     private async Task ExportCsv()
@@ -180,11 +249,9 @@ else
 
         using var stream = new MemoryStream(bytes);
         using var streamRef = new DotNetStreamReference(stream: stream);
-
         await JS.InvokeVoidAsync("downloadFileFromStream", fileName, streamRef);
     }
 
-    // Demo handler: creates a dummy work order and logs it
     private async Task CreateTestWorkOrder()
     {
         var newWorkOrder = new WorkOrder
@@ -202,4 +269,19 @@ else
         await AuditService.AddWorkOrderAsync(newWorkOrder);
         await LoadLogs();
     }
+
+    private static string StatusClass(WorkOrderStatusType s) => s switch
+    {
+        WorkOrderStatusType.Created => "tag-info",
+        WorkOrderStatusType.WorkStarted => "tag-warn",
+        WorkOrderStatusType.WorkFinished => "tag-ok",
+        WorkOrderStatusType.Closed => "tag-ok",
+        _ => "tag-info"
+    };
+
+    // Pager handlers
+    private void FirstPage() => Page = 1;
+    private void PrevPage() { if (Page > 1) Page--; }
+    private void NextPage() { if (Page < TotalPages) Page++; }
+    private void LastPage() => Page = TotalPages;
 }

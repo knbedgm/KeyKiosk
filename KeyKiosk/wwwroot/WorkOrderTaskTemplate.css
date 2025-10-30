@@ -4,11 +4,11 @@ h1 {
     font-size: 2.5rem;
     font-weight: 700;
     margin: 1rem 0 1.25rem;
-    color: hsl(var(--primary)); /* theme red */
+    color: hsl(var(--primary));
     position: relative;
+    text-shadow: 0 1px 2px hsl(var(--primary) / 0.35);
 }
 
-    /* subtle red underline */
     h1::after {
         content: "";
         display: block;
@@ -19,11 +19,6 @@ h1 {
         border-radius: 2px;
     }
 
-/* optional glow for extra depth */
-h1 {
-    text-shadow: 0 1px 2px hsl(var(--primary) / 0.35);
-}
-
 h2, h3 {
     text-align: center;
     font-size: 1.5rem;
@@ -33,9 +28,7 @@ h2, h3 {
     position: relative;
 }
 
-    /* thinner underline for h2/h3 */
-    h2::after,
-    h3::after {
+    h2::after, h3::after {
         content: "";
         display: block;
         width: 60px;
@@ -45,7 +38,79 @@ h2, h3 {
         border-radius: 2px;
     }
 
-/* ===== Table (templates list) ===== */
+/* ===== Toolbar ===== */
+.toolbar {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    margin: .5rem 0 1rem;
+    flex-wrap: wrap;
+}
+
+.toolbar-spread {
+    justify-content: space-between;
+}
+
+.toolbar-left {
+    display: flex;
+    gap: .5rem;
+    align-items: center;
+}
+
+.table-input,
+.table-select {
+    padding: 8px 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    background: #fff;
+    color: #111827;
+}
+
+/* ===== Add panel card ===== */
+.card-like.add-card {
+    padding: 1rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    margin-bottom: 1rem;
+    max-width: 900px;
+    background: #fff;
+    box-shadow: 0 4px 12px rgba(0,0,0,.05);
+}
+
+/* Grid helpers */
+.grid-6 {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+}
+
+.col-span-2 {
+    grid-column: span 2;
+}
+
+.col-span-3 {
+    grid-column: span 3;
+}
+
+.col-span-4 {
+    grid-column: span 4;
+}
+
+.col-span-6 {
+    grid-column: span 6;
+}
+
+.gap-md {
+    gap: .75rem;
+}
+
+.muted {
+    color: #6b7280;
+    font-weight: 600;
+    font-size: .95rem;
+}
+
+/* ===== Table ===== */
+.workorders-table,
 table {
     width: auto;
     min-width: 720px;
@@ -55,7 +120,6 @@ table {
     box-sizing: border-box;
 }
 
-/* Cells */
 th, td {
     border: 1px solid #ddd;
     padding: 8px 10px;
@@ -63,27 +127,18 @@ th, td {
     vertical-align: top;
 }
 
-/* Red header bar */
 th {
     background-color: hsl(var(--primary));
     color: hsl(var(--primary-foreground));
     font-weight: bold;
 }
 
-/* Alternating rows and hover tint */
 tr:nth-child(even) {
     background-color: hsl(var(--primary) / 0.03);
 }
 
 tr:hover {
     background-color: hsl(var(--primary) / 0.08);
-}
-
-/* Keep long details readable */
-td:nth-child(3) {
-    max-width: 520px;
-    white-space: normal;
-    overflow-wrap: anywhere;
 }
 
 /* ===== Buttons ===== */
@@ -98,41 +153,40 @@ button {
     color: #fff;
 }
 
-/* Default primary (red) for general buttons */
 button,
 .btn-primary {
+    background-color: hsl(var(--primary));
     color: hsl(var(--primary-foreground));
 }
 
-/* ===== Individual Button Variants ===== */
+.small-btn {
+    padding: 4px 10px;
+    font-size: .9rem;
+    border-radius: 6px;
+}
+
 .edit-btn {
-    background-color: #007bff; /* blue edit */
-    color: #fff;
+    background-color: #007bff;
 }
 
 .delete-btn {
-    background-color: #dc3545; /* red delete */
-    color: #fff;
+    background-color: #dc3545;
 }
 
 .save-btn {
-    background-color: #28a745; /* green save */
-    color: #fff;
+    background-color: #28a745;
 }
 
 .cancel-btn {
-    background-color: #6c757d; /* gray cancel */
-    color: #fff;
+    background-color: #6c757d;
 }
 
-/* Table default button (plain <button> inside td) stays red */
 td > button {
     background-color: #dc3545;
 }
 
-/* Hover + disabled styles */
 button:hover {
-    opacity: 0.95;
+    opacity: .95;
     transform: translateY(-1px);
 }
 
@@ -141,93 +195,40 @@ button:disabled {
     cursor: not-allowed;
 }
 
+/* ===== Inputs inside add card ===== */
+.add-card label {
+    display: block;
+    font-size: .95rem;
+    color: #374151;
+    margin: .25rem 0 .2rem;
+    font-weight: 600;
+}
 
-/* ===== Forms (Add + Update) ===== */
-form {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: .75rem .75rem;
-    max-width: 720px;
-    margin: 1rem auto 2rem;
-    padding: 1rem 1rem 1.25rem;
+.add-card .table-input,
+.add-card input[type="text"],
+.add-card input[type="number"],
+.add-card select,
+.add-card textarea {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
     background: #fff;
-    border: 1px solid #e5e7eb;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0,0,0,.05);
+    color: #111827;
+    box-sizing: border-box;
 }
 
-    /* Labels */
-    form label {
-        display: block;
-        font-size: .95rem;
-        color: #374151;
-        margin: .25rem 0 .2rem;
-        font-weight: 600;
-    }
-
-    /* Inputs */
-    form input[type="text"],
-    form input[type="number"],
-    form select {
-        width: 100%;
-        padding: 8px 10px;
-        border: 1px solid #ccc;
-        border-radius: 6px;
-        background: #fff;
-        color: #111827;
-        box-sizing: border-box;
-    }
-
-    /* Title + Details full-width */
-    form label + input[type="text"] {
-        grid-column: span 2;
-    }
-
-    /* Submit / cancel buttons */
-    form button[type="submit"] {
-        grid-column: 2;
-        justify-self: end;
-        background: hsl(var(--primary));
-        color: hsl(var(--primary-foreground));
-    }
-
-    form .cancel-btn {
-        grid-column: 1;
-        justify-self: start;
-    }
-
-    /* Optional section headings */
-    form .form-section-title {
-        grid-column: span 2;
-        text-align: center;
-        margin: .25rem 0 .5rem;
-        font-weight: 700;
-        color: hsl(var(--primary));
-    }
-
-/* ===== Layout ===== */
-.page-wrap {
-    max-width: 1200px;
-    margin: 0 auto;
-}
-
-/* Responsive */
+/* ===== Responsive ===== */
 @media (max-width: 768px) {
-    table {
+    .workorders-table, table {
         min-width: 100%;
     }
 
-    form {
+    .grid-6 {
         grid-template-columns: 1fr;
     }
 
-        form label + input[type="text"],
-        form button[type="submit"] {
-            grid-column: span 1;
-        }
-}
-
-/* Hover accent for submit button */
-form button[type="submit"]:hover {
-    background-color: hsl(var(--primary) / 0.85);
+    .col-span-2, .col-span-3, .col-span-4, .col-span-6 {
+        grid-column: span 1;
+    }
 }
