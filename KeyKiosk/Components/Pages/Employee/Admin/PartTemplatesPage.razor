@@ -56,13 +56,39 @@ else
         </div>
     }
 
-    <!-- Table -->
     @if (!Filtered.Any())
     {
         <p class="text-center muted">No part templates found.</p>
     }
     else
     {
+        <!-- Pager (top) -->
+        <div class="pager-bar">
+            <div class="pager-left">
+                <button class="pager-btn" disabled="@(CurrentPage == 1)" @onclick="GoFirst">« First</button>
+                <button class="pager-btn" disabled="@(CurrentPage == 1)" @onclick="GoPrev">‹ Prev</button>
+            </div>
+            <div class="pager-middle">
+                Page @CurrentPage of @TotalPages
+                <span class="pager-sep">|</span>
+                <label>Per page</label>
+                <select class="pager-select" @bind="PageSize">
+                    <option value="5">5</option>
+                    <option value="10">10</option>
+                    <option value="15">15</option>
+                    <option value="25">25</option>
+                    <option value="50">50</option>
+                </select>
+                <span class="pager-sep">|</span>
+                <span>@FilteredCount item(s)</span>
+            </div>
+            <div class="pager-right">
+                <button class="pager-btn" disabled="@(CurrentPage == TotalPages)" @onclick="GoNext">Next ›</button>
+                <button class="pager-btn" disabled="@(CurrentPage == TotalPages)" @onclick="GoLast">Last »</button>
+            </div>
+        </div>
+
+        <!-- Table -->
         <table>
             <thead>
                 <tr>
@@ -74,7 +100,7 @@ else
                 </tr>
             </thead>
             <tbody>
-                @foreach (var t in Filtered)
+                @foreach (var t in Paged)
                 {
                     var isEditing = EditingId == t.Id;
                     <tr>
@@ -121,5 +147,20 @@ else
                 }
             </tbody>
         </table>
+
+        <!-- Pager (bottom) -->
+        <div class="pager-bar">
+            <div class="pager-left">
+                <button class="pager-btn" disabled="@(CurrentPage == 1)" @onclick="GoFirst">« First</button>
+                <button class="pager-btn" disabled="@(CurrentPage == 1)" @onclick="GoPrev">‹ Prev</button>
+            </div>
+            <div class="pager-middle">
+                Page @CurrentPage of @TotalPages
+            </div>
+            <div class="pager-right">
+                <button class="pager-btn" disabled="@(CurrentPage == TotalPages)" @onclick="GoNext">Next ›</button>
+                <button class="pager-btn" disabled="@(CurrentPage == TotalPages)" @onclick="GoLast">Last »</button>
+            </div>
+        </div>
     }
 }

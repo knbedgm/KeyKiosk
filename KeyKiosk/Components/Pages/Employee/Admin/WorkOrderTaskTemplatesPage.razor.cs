@@ -1,88 +1,185 @@
 ﻿using KeyKiosk.Data;
 using KeyKiosk.Services;
 using Microsoft.AspNetCore.Components;
+using MudBlazor;
 
 namespace KeyKiosk.Components.Pages.Employee.Admin;
 
-public partial class WorkOrderTaskTemplatesPage
+public partial class WorkOrderTaskTemplatesPage : ComponentBase
 {
-    [Inject] private WorkOrderTaskTemplateService TaskTemplateService { get; set; }
+    [Inject] private WorkOrderTaskTemplateService TemplateService { get; set; } = default!;
+    [Inject] private ISnackbar Snackbar { get; set; } = default!;
 
-    /// <summary>
-    /// Displays list of existing templates
-    /// </summary>
-    private List<WorkOrderTaskTemplate> TemplateList { get; set; } = new List<WorkOrderTaskTemplate>();
+    // ===== Data =====
+    protected List<WorkOrderTaskTemplate>? Templates;
 
-    /// <summary>
-    /// Model for adding template form
-    /// </summary>
-    private WorkOrderTaskTemplate TemplateToAdd { get; set; } = new WorkOrderTaskTemplate();
+    // ===== Toolbar =====
+    protected bool ShowAdd { get; set; } = false;
 
-    /// <summary>
-    /// Model for updating template form
-    /// </summary>
-    private WorkOrderTaskTemplate TemplateToUpdate { get; set; } = new WorkOrderTaskTemplate();
-
-    /// <summary>
-    /// Loads existing templates to display on page
-    /// </summary>
-    /// <returns></returns>
-    protected override Task OnInitializedAsync()
+    private string _search = string.Empty;
+    protected string Search
     {
-        RefreshTaskTemplatesList();
-        return Task.CompletedTask;
-    }
-
-    /// <summary>
-    /// Refreshes displayed templates after changes are made
-    /// </summary>
-    private void RefreshTaskTemplatesList()
-    {
-        var templates = TaskTemplateService.GetAllTaskTemplates();
-        PopulateTemplateList(templates);
-    }
-
-    /// <summary>
-    /// Populates TemplateList with data from database
-    /// </summary>
-    /// <param name="templates"></param>
-    private void PopulateTemplateList(List<WorkOrderTaskTemplate> templates)
-    {
-        TemplateList.Clear();
-
-        foreach (WorkOrderTaskTemplate t in templates)
+        get => _search;
+        set
         {
-            TemplateList.Add(t);
+            if (_search != value)
+            {
+                _search = value ?? string.Empty;
+                CurrentPage = 1; // reset when filtering
+            }
         }
     }
 
-    /// <summary>
-    /// Method to add new template
-    /// </summary>
-    public void AddNewTemplate()
+    // ===== Add form model =====
+    protected AddTemplateModel AddModel { get; set; } = new();
+
+    // ===== Inline edit model =====
+    protected int? EditingId { get; set; }
+    protected WorkOrderTaskTemplate EditingRow { get; set; } = new();
+
+    // ===== Filter (base) =====
+    protected IEnumerable<WorkOrderTaskTemplate> Filtered =>
+        (Templates ?? Enumerable.Empty<WorkOrderTaskTemplate>())
+            .Where(t =>
+                string.IsNullOrWhiteSpace(Search)
+                || (t.TaskTitle?.Contains(Search, StringComparison.OrdinalIgnoreCase) ?? false)
+                || (t.TaskDetails?.Contains(Search, StringComparison.OrdinalIgnoreCase) ?? false))
+            .OrderBy(t => t.Id);
+
+    // ===== Pagination =====
+    private int _pageSize = 10;
+    protected int PageSize
     {
-        TaskTemplateService.AddWorkOrderTaskTemplate(TemplateToAdd);
-        RefreshTaskTemplatesList();
-        TemplateToAdd = new WorkOrderTaskTemplate();
+        get => _pageSize;
+        set
+        {
+            var v = value <= 0 ? 10 : value;
+            if (_pageSize != v)
+            {
+                _pageSize = v;
+                CurrentPage = 1;
+            }
+        }
     }
 
-    /// <summary>
-    /// Method to delete existing template using id
-    /// </summary>
-    /// <param name="id"></param>
-    public void DeleteTemplate(int id)
+    protected int CurrentPage { get; set; } = 1;
+
+    protected int FilteredCount => Filtered.Count();
+    protected int TotalPages => Math.Max(1, (int)Math.Ceiling(FilteredCount / (double)PageSize));
+
+    protected IEnumerable<WorkOrderTaskTemplate> PagedFiltered =>
+        Filtered.Skip((CurrentPage - 1) * PageSize).Take(PageSize);
+
+    protected void GoFirst() => CurrentPage = 1;
+    protected void GoPrev() { if (CurrentPage > 1) CurrentPage--; }
+    protected void GoNext() { if (CurrentPage < TotalPages) CurrentPage++; }
+    protected void GoLast() => CurrentPage = TotalPages;
+
+    private void ClampPage() => CurrentPage = Math.Min(CurrentPage, TotalPages);
+
+    // ===== Lifecycle =====
+    protected override void OnInitialized()
     {
-        TaskTemplateService.DeleteWorkOrderTaskTemplate(id);
-        RefreshTaskTemplatesList();
+        LoadTemplates();
     }
 
-    /// <summary>
-    /// Method to update existing template
-    /// </summary>
-    private void UpdateExistingTemplate()
+    private void LoadTemplates()
     {
-        TaskTemplateService.UpdateWorkOrderTaskTemplate(TemplateToUpdate);
-        RefreshTaskTemplatesList();
-        TemplateToUpdate = new WorkOrderTaskTemplate();
+        Templates = TemplateService.GetAllTaskTemplates();
+        ClampPage();
+        StateHasChanged();
+    }
+
+    // ===== Toolbar actions =====
+    protected void ToggleAdd() => ShowAdd = !ShowAdd;
+
+    // ===== Add =====
+    protected void OnAdd()
+    {
+        try
+        {
+            var template = new WorkOrderTaskTemplate
+            {
+                TaskTitle = AddModel.TaskTitle?.Trim() ?? string.Empty,
+                TaskDetails = AddModel.TaskDetails?.Trim() ?? string.Empty,
+                TaskCostCents = AddModel.TaskCostCents,
+                ExpectedHoursForCompletion = AddModel.ExpectedHours
+            };
+
+            TemplateService.AddWorkOrderTaskTemplate(template);
+            LoadTemplates();
+
+            AddModel = new();
+            ShowAdd = false;
+            Snackbar.Add("Template created successfully.", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Create failed: {ex.Message}", Severity.Error);
+        }
+    }
+
+    // ===== Inline edit =====
+    protected void BeginEdit(WorkOrderTaskTemplate t)
+    {
+        EditingId = t.Id;
+        EditingRow = new WorkOrderTaskTemplate
+        {
+            Id = t.Id,
+            TaskTitle = t.TaskTitle,
+            // TaskDetails = t.TaskDetails,
+            TaskCostCents = t.TaskCostCents,
+            ExpectedHoursForCompletion = t.ExpectedHoursForCompletion
+        };
+    }
+
+    protected void CancelEdit()
+    {
+        EditingId = null;
+        EditingRow = new WorkOrderTaskTemplate();
+    }
+
+    protected void SaveRowAsync()
+    {
+        if (EditingId is null) return;
+
+        try
+        {
+            TemplateService.UpdateWorkOrderTaskTemplate(EditingRow);
+            LoadTemplates();
+            EditingId = null;
+            Snackbar.Add("Template updated successfully.", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Update failed: {ex.Message}", Severity.Error);
+        }
+    }
+
+    protected void OnDelete(int id)
+    {
+        try
+        {
+            TemplateService.DeleteWorkOrderTaskTemplate(id);
+            LoadTemplates();
+            ClampPage();
+            Snackbar.Add($"Template #{id} deleted.", Severity.Info);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Delete failed: {ex.Message}", Severity.Error);
+        }
+    }
+
+    // ===== Helpers =====
+    protected static string FormatCost(int cents) => (cents / 100m).ToString("C");
+
+    // ===== Add form DTO =====
+    protected sealed class AddTemplateModel
+    {
+        public string? TaskTitle { get; set; }
+        public string? TaskDetails { get; set; }
+        public int TaskCostCents { get; set; }
+        public int ExpectedHours { get; set; }
     }
 }

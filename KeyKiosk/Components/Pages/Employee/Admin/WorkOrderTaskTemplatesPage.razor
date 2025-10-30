@@ -1,11 +1,10 @@
 ﻿@page "/employee/admin/TaskTemplates"
 @rendermode InteractiveServer
 @layout Layout.MainLayout
+@namespace KeyKiosk.Components.Pages.Employee.Admin
 
 @using KeyKiosk.Data
 @using Microsoft.AspNetCore.Components.Forms
-@inject KeyKiosk.Services.WorkOrderTaskTemplateService TemplateService
-@inject ISnackbar Snackbar
 
 <link href="DesktopShared.css" rel="stylesheet" />
 <link href="WorkOrderTaskTemplate.css" rel="stylesheet" />
@@ -68,13 +67,39 @@ else
         </div>
     }
 
-    <!-- Table -->
     @if (!Filtered.Any())
     {
         <p class="text-center muted">No templates found.</p>
     }
     else
     {
+        <!-- Pagination (top) -->
+        <div class="pager-bar">
+            <div class="pager-left">
+                <button class="pager-btn" disabled="@(CurrentPage == 1)" @onclick="GoFirst">« First</button>
+                <button class="pager-btn" disabled="@(CurrentPage == 1)" @onclick="GoPrev">‹ Prev</button>
+            </div>
+            <div class="pager-middle">
+                Page @CurrentPage of @TotalPages
+                <span class="pager-sep">|</span>
+                <label>Per page</label>
+                <select class="pager-select" @bind="PageSize">
+                    <option value="5">5</option>
+                    <option value="10">10</option>
+                    <option value="15">15</option>
+                    <option value="25">25</option>
+                    <option value="50">50</option>
+                </select>
+                <span class="pager-sep">|</span>
+                <span>@FilteredCount item(s)</span>
+            </div>
+            <div class="pager-right">
+                <button class="pager-btn" disabled="@(CurrentPage == TotalPages)" @onclick="GoNext">Next ›</button>
+                <button class="pager-btn" disabled="@(CurrentPage == TotalPages)" @onclick="GoLast">Last »</button>
+            </div>
+        </div>
+
+        <!-- Table -->
         <table class="workorders-table">
             <thead>
                 <tr>
@@ -87,14 +112,13 @@ else
                 </tr>
             </thead>
             <tbody>
-                @foreach (var t in Filtered)
+                @foreach (var t in PagedFiltered)
                 {
                     var isEditing = EditingId == t.Id;
                     <tr>
                         <td>@t.Id</td>
-                        <td>
-                            @t.TaskTitle
-                        </td>
+                        <td>@t.TaskTitle</td>
+
                         @* <td>
                             @if (isEditing)
                             {
@@ -105,6 +129,7 @@ else
                                 @t.TaskDetails
                             }
                         </td> *@
+
                         <td style="text-align:right;">
                             @if (isEditing)
                             {
@@ -115,6 +140,7 @@ else
                                 @FormatCost(t.TaskCostCents)
                             }
                         </td>
+
                         <td style="text-align:right;">
                             @if (isEditing)
                             {
@@ -125,6 +151,7 @@ else
                                 @t.ExpectedHoursForCompletion
                             }
                         </td>
+
                         <td style="white-space:nowrap;">
                             @if (isEditing)
                             {
@@ -133,138 +160,39 @@ else
                             }
                             else
                             {
-                                <button class="edit-btn small-btn" @onclick="() => BeginEdit(t)">Edit</button>
-                                <button class="delete-btn small-btn" @onclick="() => OnDelete(t.Id)">Delete</button>
+                                <button class="edit-btn small-btn" @onclick="@(() => BeginEdit(t))">Edit</button>
+                                <button class="delete-btn small-btn" @onclick="@(() => OnDelete(t.Id))">Delete</button>
                             }
                         </td>
                     </tr>
                 }
             </tbody>
         </table>
-    }
-}
 
-@code {
-    // Data
-    private List<WorkOrderTaskTemplate>? Templates;
-
-    // Toolbar
-    private bool ShowAdd { get; set; } = false;
-    private string Search { get; set; } = string.Empty;
-
-    // Add form model
-    private AddTemplateModel AddModel = new();
-
-    // Inline edit model
-    private int? EditingId;
-    private WorkOrderTaskTemplate EditingRow = new();
-
-    // Filter
-    private IEnumerable<WorkOrderTaskTemplate> Filtered =>
-        (Templates ?? Enumerable.Empty<WorkOrderTaskTemplate>())
-            .Where(t =>
-                string.IsNullOrWhiteSpace(Search)
-                || (t.TaskTitle?.Contains(Search, StringComparison.OrdinalIgnoreCase) ?? false)
-                || (t.TaskDetails?.Contains(Search, StringComparison.OrdinalIgnoreCase) ?? false));
-
-    protected override void OnInitialized()
-    {
-        LoadTemplates();
-    }
-
-    private void LoadTemplates()
-    {
-        Templates = TemplateService.GetAllTaskTemplates();
-        StateHasChanged();
-    }
-
-    private void ToggleAdd() => ShowAdd = !ShowAdd;
-
-    // Add
-    private void OnAdd()
-    {
-        try
-        {
-            var template = new WorkOrderTaskTemplate
-            {
-                TaskTitle = AddModel.TaskTitle?.Trim() ?? string.Empty,
-                TaskDetails = AddModel.TaskDetails?.Trim() ?? string.Empty,
-                TaskCostCents = AddModel.TaskCostCents,
-                ExpectedHoursForCompletion = AddModel.ExpectedHours
-            };
-
-            TemplateService.AddWorkOrderTaskTemplate(template);
-            LoadTemplates();
-
-            AddModel = new();
-            ShowAdd = false;
-            Snackbar.Add("Template created successfully.", Severity.Success);
-        }
-        catch (Exception ex)
-        {
-            Snackbar.Add($"Create failed: {ex.Message}", Severity.Error);
-        }
-    }
-
-    // Inline edit
-    private void BeginEdit(WorkOrderTaskTemplate t)
-    {
-        EditingId = t.Id;
-        EditingRow = new WorkOrderTaskTemplate
-        {
-            Id = t.Id,
-            TaskTitle = t.TaskTitle,
-            // TaskDetails = t.TaskDetails,
-            TaskCostCents = t.TaskCostCents,
-            ExpectedHoursForCompletion = t.ExpectedHoursForCompletion
-        };
-    }
-
-    private void CancelEdit()
-    {
-        EditingId = null;
-        EditingRow = new WorkOrderTaskTemplate();
-    }
-
-    private void SaveRowAsync()
-    {
-        if (EditingId is null) return;
-
-        try
-        {
-            TemplateService.UpdateWorkOrderTaskTemplate(EditingRow);
-            LoadTemplates();
-            EditingId = null;
-            Snackbar.Add("Template updated successfully.", Severity.Success);
-        }
-        catch (Exception ex)
-        {
-            Snackbar.Add($"Update failed: {ex.Message}", Severity.Error);
-        }
-    }
-
-    private void OnDelete(int id)
-    {
-        try
-        {
-            TemplateService.DeleteWorkOrderTaskTemplate(id);
-            LoadTemplates();
-            Snackbar.Add($"Template #{id} deleted.", Severity.Info);
-        }
-        catch (Exception ex)
-        {
-            Snackbar.Add($"Delete failed: {ex.Message}", Severity.Error);
-        }
-    }
-
-    // Helpers
-    private static string FormatCost(int cents) => (cents / 100m).ToString("C");
-
-    private sealed class AddTemplateModel
-    {
-        public string? TaskTitle { get; set; }
-        public string? TaskDetails { get; set; }
-        public int TaskCostCents { get; set; }
-        public int ExpectedHours { get; set; }
+        <!-- Pagination (bottom) -->
+        <div class="pager-bar">
+            <div class="pager-left">
+                <button class="pager-btn" disabled="@(CurrentPage == 1)" @onclick="GoFirst">« First</button>
+                <button class="pager-btn" disabled="@(CurrentPage == 1)" @onclick="GoPrev">‹ Prev</button>
+            </div>
+            <div class="pager-middle">
+                Page @CurrentPage of @TotalPages
+                <span class="pager-sep">|</span>
+                <label>Per page</label>
+                <select class="pager-select" @bind="PageSize">
+                    <option value="5">5</option>
+                    <option value="10">10</option>
+                    <option value="15">15</option>
+                    <option value="25">25</option>
+                    <option value="50">50</option>
+                </select>
+                <span class="pager-sep">|</span>
+                <span>@FilteredCount item(s)</span>
+            </div>
+            <div class="pager-right">
+                <button class="pager-btn" disabled="@(CurrentPage == TotalPages)" @onclick="GoNext">Next ›</button>
+                <button class="pager-btn" disabled="@(CurrentPage == TotalPages)" @onclick="GoLast">Last »</button>
+            </div>
+        </div>
     }
 }

@@ -19,7 +19,7 @@
 <link href="EmployeeHomeWorkOrders.css" rel="stylesheet" />
 
 <PageTitle>Employee Home</PageTitle>
-<h1 style="text-align:center">Employee Home</h1>
+<h1 style="text-align:center">Work Orders</h1>
 
 <!-- Top toolbar: search (left) + create button (right) -->
 <div style="display:flex;align-items:center;gap:.75rem;justify-content:space-between;margin:.5rem auto 1rem;max-width:1100px;flex-wrap:wrap;">
@@ -38,8 +38,6 @@
 
     <button class="btn-primary" @onclick="OpenCreateModal">Create New Work Order</button>
 </div>
-
-<h1 style="text-align:center">Work Orders</h1>
 
 @if (WorkOrders is null)
 {
