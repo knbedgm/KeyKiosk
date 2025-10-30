@@ -1,0 +1,92 @@
+﻿@page "/kiosk/wo/{WorkOrderId:int}"
+@layout Layout.KioskLayout
+@inject AppAuthenticationStateProvider session
+@inject WorkOrderService WorkOrderService
+@inject NavigationManager navManager
+@rendermode InteractiveServer
+@* @attribute [Authorize("Kiosk")] *@
+
+<PageTitle>Home</PageTitle>
+<div class="m-4">
+	@if (wo is not null)
+	{
+		<span class="w-full">
+			<MudText Inline Typo="Typo.h1">@wo.VehiclePlate </MudText>
+			<MudText class="inline float-end" Typo="Typo.h2">#@wo.Id</MudText>
+		</span>
+		<br />
+		<MudText class="text-3xl" Typo="Typo.body1">@wo.Details</MudText>
+		<hr>
+
+		<div class="grid grid-cols-2 gap-4 mt-4">
+			@foreach (var task in wo.Tasks)
+			{
+				<MudCard Outlined>
+					<MudCardHeader>
+						<CardHeaderContent>
+							<MudText Typo="Typo.h6">@task.Title</MudText>
+						</CardHeaderContent>
+						@* <CardHeaderActions>
+							<MudCheckBox @bind-Value="Basic_CheckBox1"></MudCheckBox>
+						</CardHeaderActions> *@
+					</MudCardHeader>
+					<MudCardContent>
+						<MudText>@task.Details</MudText>
+					</MudCardContent>
+					@* <MudCardActions>
+						<MudButton Variant="Variant.Text" Color="Color.Primary">Show Details</MudButton>
+					</MudCardActions> *@
+				</MudCard>
+			}
+		</div>
+		<div class="flex justify-center w-full mt-4 text-[1.5em]">
+			@if (wo.Status == Data.WorkOrderStatusType.Created)
+			{
+				<MudButton class=" p-4" Variant="Variant.Filled" Color="Color.Primary" OnClick="StartClicked">Start Workorder</MudButton>
+			}
+			else
+			{
+				<MudPaper Outlined Class="p-4">
+					<div class="flex flex-col justify-center">
+						<MudTextField Class="w-72" T="string" Label="Task Details" Variant="Variant.Outlined" Text="@saveDetails" Lines="3" />
+						<MudButton class="mt-2 p-4" Variant="Variant.Filled" Color="Color.Primary" OnClick="ReturnClicked">Complete Workorder</MudButton>
+					</div>
+				</MudPaper>
+			}
+		</div>
+	}
+	else
+	{
+		<MudOverlay Visible="true" DarkBackground="true" Absolute="true">
+			<MudProgressCircular Color="Color.Secondary" Indeterminate="true" />
+		</MudOverlay>
+	}
+</div>
+
+@code {
+
+	[Parameter] public int WorkOrderId { get; set; }
+
+	Data.WorkOrder? wo = null;
+
+	string saveDetails = "";
+
+	protected override async Task OnInitializedAsync()
+	{
+		wo = await WorkOrderService.GetByIdAsync(WorkOrderId);
+	}
+
+	async Task StartClicked()
+	{
+		wo.Status = Data.WorkOrderStatusType.WorkStarted;
+		await WorkOrderService.UpdateWorkOrderAsync(wo);
+		navManager.NavigateTo($"/kiosk/home");
+	}
+	async Task ReturnClicked()
+	{
+		// wo.Details += "\n\n" + saveDetails;
+		wo.Status = Data.WorkOrderStatusType.WorkFinished;
+		await WorkOrderService.UpdateWorkOrderAsync(wo);
+		navManager.NavigateTo($"/kiosk/home");
+	}
+}

@@ -79,8 +79,10 @@ namespace KeyKiosk.Services
 				Console.WriteLine("uid scanned: " + uid);
 			if (!Regex.IsMatch(uid, "^0+$"))
 			{
-				this.OnCardScannedEvent?.Invoke(this, new OnCardScannedEventArgs(uid));
-
+				Task.Run(() =>
+				{
+					this.OnCardScannedEvent?.Invoke(this, new OnCardScannedEventArgs(uid));
+				});
 				ReaderBeep(chan);
 			}
 

@@ -88,7 +88,7 @@ public class PDFService
         return document.GeneratePdf();
     }
 
-    public string ConvertTaskStatus(WorkOrderTaskStatusType enumStatus)
+    public static string ConvertTaskStatus(WorkOrderTaskStatusType enumStatus)
     {
         if (enumStatus == WorkOrderTaskStatusType.Created)
         {
@@ -221,11 +221,11 @@ public class PDFService
         }
     }
 
-    public string ConvertWorkOrderStatus(WorkOrderStatusType enumStatus)
+    public static string ConvertWorkOrderStatus(WorkOrderStatusType enumStatus)
     {
         if (enumStatus == WorkOrderStatusType.Created)
         {
-            return "Todo";
+            return "To do";
         }
         else if (enumStatus == WorkOrderStatusType.WorkStarted)
         {

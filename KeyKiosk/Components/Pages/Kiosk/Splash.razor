@@ -3,6 +3,7 @@
 @rendermode InteractiveServer
 @inject NavigationManager navManager
 @inject AppAuthenticationStateProvider session
+@inject IRFIDReader RFIDReader
 @implements IAsyncDisposable
 
 
@@ -20,16 +21,20 @@
 
 @code {
 
+
+
     bool loginVisible;
     PinEntry? pinEntry;
     WatchDog wd = default!;
 
-    protected override Task OnInitializedAsync()
+    protected override async Task OnInitializedAsync()
     {
+        await base.OnInitializedAsync();
         loginVisible = false;
 
         wd = new WatchDog(15 * 1000, OnTimeout);
-        return base.OnInitializedAsync();
+
+        RFIDReader.OnCardScannedEvent += OnCardScanned;
     }
 
     void BgClicked(MouseEventArgs args)
@@ -51,6 +56,12 @@
         }
     }
 
+    private void OnCardScanned(object? source, OnCardScannedEventArgs e)
+    {
+        session.LoginKioskAsync("RFID").Wait();
+        navManager.NavigateTo("kiosk/home");
+    }
+
     async void OnTimeout()
     {
         this.loginVisible = false;
@@ -62,6 +73,7 @@
     {
         // Console.WriteLine("disposeing");
         wd.Stop();
+        RFIDReader.OnCardScannedEvent -= OnCardScanned;
 
         return new();
     }
