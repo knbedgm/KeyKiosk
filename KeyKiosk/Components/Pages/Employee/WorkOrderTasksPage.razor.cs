@@ -48,17 +48,16 @@ public partial class WorkOrderTasksPage : ComponentBase
     private int? SelectedPartTemplateId { get; set; }
     protected string PartFilter { get; set; } = "";
 
-    // header details inline edit
+    // details inline edit
     protected bool IsEditingWoDetails { get; set; } = false;
     protected string WoDetailsDraft { get; set; } = string.Empty;
 
-    // === Header inline edit state ===
+    // header inline edit
     protected bool IsEditingHeader { get; set; } = false;
     protected string HeaderCustomerDraft { get; set; } = string.Empty;
     protected string HeaderVehicleDraft { get; set; } = string.Empty;
     protected WorkOrderStatusType HeaderStatusDraft { get; set; }
 
-    // lifecycle
     protected override async Task OnInitializedAsync()
     {
         TemplateList = TemplateService.GetAllTaskTemplates().ToList();
@@ -71,7 +70,6 @@ public partial class WorkOrderTasksPage : ComponentBase
         RefreshAllLists();
     }
 
-    // ui handlers
     protected void ToggleAddForm() => ShowAddForm = !ShowAddForm;
 
     protected void ModifyCreateTaskFromTemplate(ChangeEventArgs e)
@@ -85,7 +83,7 @@ public partial class WorkOrderTasksPage : ComponentBase
         TaskToAdd.Title = t.TaskTitle;
         TaskToAdd.Details = t.TaskDetails;
         TaskToAdd.CostCents = t.TaskCostCents;
-        ResetAddTaskDefaults();
+        ResetAddTaskDefaults(); // set status/dates/hours defaults
     }
 
     protected void BeginEditTask(WorkOrderTask t)
@@ -97,8 +95,9 @@ public partial class WorkOrderTasksPage : ComponentBase
             Details = t.Details,
             CostCents = t.CostCents, // locked
             StartDate = t.StartDate, // locked
-            EndDate = t.EndDate,     // locked
-            Status = t.Status
+            EndDate = t.EndDate,   // locked
+            Status = t.Status,
+            HoursForCompletion = t.HoursForCompletion
         };
     }
 
@@ -115,7 +114,8 @@ public partial class WorkOrderTasksPage : ComponentBase
         var current = TaskList.FirstOrDefault(x => x.Id == EditingTaskId.Value);
         if (current is not null)
         {
-            ApplyStatusDates(current, EditingModel);
+            ApplyStatusDatesAndHours(current, EditingModel);
+
             // keep locked fields
             EditingModel.TaskTitle = current.Title;
             EditingModel.CostCents = current.CostCents;
@@ -136,7 +136,7 @@ public partial class WorkOrderTasksPage : ComponentBase
 
     protected void AddNewTask()
     {
-        ResetAddTaskDefaults(); // enforce defaults
+        ResetAddTaskDefaults(); // enforce defaults (Created, null dates, 0 hours)
         TaskService.AddWorkOrderTask(WorkOrderId, TaskToAdd);
         TaskToAdd = new AddWorkOrderTaskModel();
         RefreshTasksList();
@@ -160,7 +160,6 @@ public partial class WorkOrderTasksPage : ComponentBase
         ShowToast("Generated work order PDF.", Severity.Success);
     }
 
-    // tasks filtering
     protected IEnumerable<WorkOrderTask> FilteredTasks =>
         TaskList.Where(t =>
             (string.IsNullOrWhiteSpace(TaskSearch) ||
@@ -174,7 +173,6 @@ public partial class WorkOrderTasksPage : ComponentBase
             (string.IsNullOrWhiteSpace(FilterStatus) || t.Status.ToString() == FilterStatus)
         );
 
-    // parts
     private async Task AddPartFromTemplate()
     {
         if (!SelectedPartTemplateId.HasValue || WorkOrder is null) return;
@@ -208,7 +206,7 @@ public partial class WorkOrderTasksPage : ComponentBase
                 || (p.Details ?? "").Contains(PartFilter, StringComparison.OrdinalIgnoreCase))
             .OrderBy(p => p.Id);
 
-    // header details edit
+    // details edit
     protected void BeginEditWoDetails()
     {
         if (WorkOrder is null) return;
@@ -230,8 +228,6 @@ public partial class WorkOrderTasksPage : ComponentBase
         IsEditingWoDetails = false;
         await ReloadAndRefreshAsync("Work order details updated.", Severity.Success);
     }
-
-    // helpers (DRY)
 
     private async Task LoadWorkOrderAsync()
     {
@@ -270,10 +266,11 @@ public partial class WorkOrderTasksPage : ComponentBase
         TaskToAdd.Status = WorkOrderTaskStatusType.Created;
         TaskToAdd.StartDate = null;
         TaskToAdd.EndDate = null;
+        TaskToAdd.HoursForCompletion = 0; // default 0 at add
     }
 
-    // central rule for status->dates
-    private static void ApplyStatusDates(WorkOrderTask current, UpdateWorkOrderTaskModel edit)
+    // === central rule for status->dates + auto-hours ===
+    private static void ApplyStatusDatesAndHours(WorkOrderTask current, UpdateWorkOrderTaskModel edit)
     {
         var now = DateTimeOffset.Now;
 
@@ -282,16 +279,26 @@ public partial class WorkOrderTasksPage : ComponentBase
             case WorkOrderTaskStatusType.Created:
                 edit.StartDate = null;
                 edit.EndDate = null;
+                if (edit.HoursForCompletion <= 0) edit.HoursForCompletion = 0;
                 break;
 
             case WorkOrderTaskStatusType.WorkStarted:
                 edit.StartDate = current.StartDate ?? now;
                 edit.EndDate = null;
+                if (edit.HoursForCompletion < 0) edit.HoursForCompletion = 0;
                 break;
 
             case WorkOrderTaskStatusType.WorkFinished:
                 edit.StartDate = current.StartDate ?? now;
                 edit.EndDate = now;
+
+                // only auto-calc if user hasn't provided a positive value
+                if (edit.HoursForCompletion <= 0 && edit.StartDate.HasValue && edit.EndDate.HasValue)
+                {
+                    var hours = (edit.EndDate.Value - edit.StartDate.Value).TotalHours;
+                    edit.HoursForCompletion = (int)Math.Round(hours, MidpointRounding.AwayFromZero);
+                    if (edit.HoursForCompletion < 0) edit.HoursForCompletion = 0;
+                }
                 break;
         }
     }
@@ -304,7 +311,7 @@ public partial class WorkOrderTasksPage : ComponentBase
 
     // formatting
     protected static string FormatDateTime(DateTimeOffset? dt) =>
-    dt.HasValue ? dt.Value.ToLocalTime().ToString("yyyy-MM-dd HH:mm") : "N/A";
+        dt.HasValue ? dt.Value.ToLocalTime().ToString("yyyy-MM-dd HH:mm") : "N/A";
 
     protected static string FormatCost(int cents)
     {
@@ -312,7 +319,7 @@ public partial class WorkOrderTasksPage : ComponentBase
         return dollars.ToString("C");
     }
 
-    // Begin/Cancel header edit
+    // === Header Edit: begin/cancel/save ===
     protected void BeginEditHeader()
     {
         if (WorkOrder is null) return;
@@ -329,26 +336,22 @@ public partial class WorkOrderTasksPage : ComponentBase
         HeaderVehicleDraft = string.Empty;
     }
 
-    // Save header (apply status->dates rule, then persist)
     protected async Task SaveHeaderAsync()
     {
         if (WorkOrder is null) return;
 
-        // Update editable fields from drafts
         WorkOrder.CustomerName = (HeaderCustomerDraft ?? string.Empty).Trim();
         WorkOrder.VehiclePlate = (HeaderVehicleDraft ?? string.Empty).Trim();
 
-        // Apply status transitions to dates
         ApplyWorkOrderStatusDates(WorkOrder, HeaderStatusDraft);
 
-        // Persist
         await WorkOrderService.UpdateWorkOrderAsync(WorkOrder);
 
         IsEditingHeader = false;
         await ReloadAndRefreshAsync("Work order header updated.", Severity.Success);
     }
 
-    // Central rule for WorkOrder status -> Start/End dates
+    // WorkOrder status → Start/End rule
     private static void ApplyWorkOrderStatusDates(WorkOrder wo, WorkOrderStatusType newStatus)
     {
         var now = DateTimeOffset.Now;
@@ -363,21 +366,17 @@ public partial class WorkOrderTasksPage : ComponentBase
 
             case WorkOrderStatusType.WorkStarted:
                 wo.Status = newStatus;
-                // set start if not already set; end stays null
                 wo.StartDate ??= now;
                 wo.EndDate = null;
                 break;
 
-            // If your enum has WorkFinished use that; if not, treat Closed as the "finished" state
             case WorkOrderStatusType.Closed:
-                // If the order was never started, set StartDate now so both have values
                 wo.StartDate ??= now;
                 wo.EndDate = now;
                 wo.Status = newStatus;
                 break;
 
             default:
-                // Fallback: just set the status
                 wo.Status = newStatus;
                 break;
         }
