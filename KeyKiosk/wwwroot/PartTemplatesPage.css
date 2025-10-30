@@ -8,7 +8,6 @@ h1, h3 {
 }
 
 h1 {
-    font-size: 2.25rem;
     text-shadow: 0 1px 2px hsl(var(--primary) / 0.35);
 }
 
@@ -26,10 +25,71 @@ h3 {
         border-radius: 2px;
     }
 
-/* ===== Page wrapper ===== */
-.page-wrap {
-    max-width: 1200px;
-    margin: 0 auto;
+/* ===== Toolbar (match Users page: search left, Add right) ===== */
+.toolbar {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    margin: .5rem 0 1rem;
+    flex-wrap: wrap;
+}
+
+.toolbar-spread {
+    justify-content: space-between;
+}
+
+.toolbar-left {
+    display: flex;
+    gap: .5rem;
+    align-items: center;
+}
+
+.table-input,
+.table-select {
+    padding: 8px 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    background: #fff;
+    color: #111827;
+}
+
+/* ===== Add panel card ===== */
+.card-like.add-card {
+    padding: 1rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    margin-bottom: 1rem;
+    max-width: 900px;
+    background: #fff;
+    box-shadow: 0 4px 12px rgba(0,0,0,.05);
+}
+
+/* Simple grid helpers (like Users add form) */
+.grid-6 {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+}
+
+.col-span-2 {
+    grid-column: span 2;
+}
+
+.col-span-3 {
+    grid-column: span 3;
+}
+
+.col-span-6 {
+    grid-column: span 6;
+}
+
+.gap-md {
+    gap: .75rem;
+}
+
+.muted {
+    color: #6b7280;
+    font-weight: 600;
+    font-size: .95rem;
 }
 
 /* ===== Table ===== */
@@ -81,7 +141,7 @@ td:last-child {
     min-width: 120px;
 }
 
-/* ===== Buttons ===== */
+/* ===== Buttons (match Users page colors) ===== */
 button {
     padding: 6px 12px;
     margin: 2px;
@@ -93,27 +153,32 @@ button {
     color: #fff;
 }
 
-/* default red primary */
 button,
 .btn-primary {
+    background-color: hsl(var(--primary));
     color: hsl(var(--primary-foreground));
 }
 
-/* Variants */
+.small-btn {
+    padding: 4px 10px;
+    font-size: .9rem;
+    border-radius: 6px;
+}
+
 .edit-btn {
-    background-color: #007bff; /* blue edit */
+    background-color: #007bff;
 }
 
 .delete-btn {
-    background-color: #dc3545; /* red delete */
+    background-color: #dc3545;
 }
 
 .save-btn {
-    background-color: #28a745; /* green save */
+    background-color: #28a745;
 }
 
 .cancel-btn {
-    background-color: #6c757d; /* gray cancel */
+    background-color: #6c757d;
 }
 
 td > button {
@@ -121,7 +186,7 @@ td > button {
 }
 
 button:hover {
-    opacity: 0.95;
+    opacity: .95;
     transform: translateY(-1px);
 }
 
@@ -130,59 +195,26 @@ button:disabled {
     cursor: not-allowed;
 }
 
-/* ===== Forms ===== */
-form {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: .75rem .75rem;
-    max-width: 720px;
-    margin: 1rem auto 2rem;
-    padding: 1rem 1.25rem 1.25rem;
+/* ===== Forms (inside add card) ===== */
+.add-card label {
+    display: block;
+    font-size: .95rem;
+    color: #374151;
+    margin: .25rem 0 .2rem;
+    font-weight: 600;
+}
+
+.add-card input[type="text"],
+.add-card input[type="number"],
+.add-card select,
+.add-card textarea {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
     background: #fff;
-    border: 1px solid #e5e7eb;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0,0,0,.05);
-}
-
-    form label {
-        display: block;
-        font-size: .95rem;
-        color: #374151;
-        margin: .25rem 0 .2rem;
-        font-weight: 600;
-    }
-
-    form input[type="text"],
-    form input[type="number"],
-    form select,
-    form textarea {
-        width: 100%;
-        padding: 8px 10px;
-        border: 1px solid #ccc;
-        border-radius: 6px;
-        background: #fff;
-        color: #111827;
-        box-sizing: border-box;
-    }
-
-label + input[type="text"] {
-    grid-column: span 2;
-}
-
-form button[type="submit"] {
-    grid-column: 2;
-    justify-self: end;
-    background: hsl(var(--primary));
-    color: hsl(var(--primary-foreground));
-}
-
-    form button[type="submit"]:hover {
-        background-color: hsl(var(--primary) / 0.85);
-    }
-
-/* ===== Spacing helper ===== */
-.section-spacer {
-    height: 1.5rem;
+    color: #111827;
+    box-sizing: border-box;
 }
 
 /* ===== Responsive ===== */
@@ -191,12 +223,11 @@ form button[type="submit"] {
         min-width: 100%;
     }
 
-    form {
+    .grid-6 {
         grid-template-columns: 1fr;
     }
 
-        label + input[type="text"],
-        form button[type="submit"] {
-            grid-column: span 1;
-        }
+    .col-span-2, .col-span-3, .col-span-6 {
+        grid-column: span 1;
+    }
 }

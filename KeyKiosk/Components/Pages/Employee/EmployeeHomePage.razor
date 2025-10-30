@@ -25,7 +25,7 @@
 <div style="display:flex;align-items:center;gap:.75rem;justify-content:space-between;margin:.5rem auto 1rem;max-width:1100px;flex-wrap:wrap;">
     <EditForm Model="@SearchModel" OnValidSubmit="OnSearchSubmit">
         <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;">
-            <InputText class="table-input" style="min-width:280px"
+            <InputText class="table-input search-plate-input" style="min-width:280px"
                        placeholder="Search by plate (e.g., ABCD-123)"
                        @bind-Value="SearchModel.Plate" />
             <button class="btn-primary" type="submit">Open Details</button>
@@ -265,28 +265,6 @@ else
                         <label>Details</label>
                         <InputText class="table-input" @bind-Value="NewWorkOrder.Details" />
                     </div>
-
-                    <div>
-                        <label>Status</label>
-                        <InputSelect class="table-select" @bind-Value="NewWorkOrder.Status">
-                            @foreach (var status in Enum.GetValues(typeof(WorkOrderStatusType)))
-                            {
-                                <option value="@status">@status</option>
-                            }
-                        </InputSelect>
-                    </div>
-
-                    <!-- Dates are auto-managed; make them read-only -->
-                    <div>
-                        <label>Start Date</label>
-                        <InputDate class="table-input" @bind-Value="NewWorkOrder.StartDate" disabled />
-                    </div>
-
-                    <div>
-                        <label>End Date</label>
-                        <InputDate class="table-input" @bind-Value="NewWorkOrder.EndDate" disabled />
-                    </div>
-
                 </div>
 
                 <div class="modal-actions">
@@ -297,6 +275,7 @@ else
         </div>
     </div>
 }
+
 
 @code {
     [SupplyParameterFromQuery(Name = "new")]
@@ -390,8 +369,8 @@ else
         Details = "",
         Tasks = new List<WorkOrderTask>(),
         Parts = new List<WorkOrderPart>(),
-        StartDate = null,   // default: no dates until work starts
-        EndDate = null,
+        StartDate = null,                  // hide & keep null until work actually starts
+        EndDate = null,                    // hide & keep null until closed/finished
         Status = WorkOrderStatusType.Created
     };
 
@@ -502,14 +481,18 @@ else
         if (string.IsNullOrWhiteSpace(NewWorkOrder.CustomerName) ||
             string.IsNullOrWhiteSpace(NewWorkOrder.VehiclePlate))
         {
-            Snackbar.Add("Please fill all required fields.", Severity.Warning);
+            // ToastService.ShowToast("Please fill all required fields.", "warning");
             return;
         }
 
-        var created = await WorkOrderService.AddWorkOrderAsync(NewWorkOrder);
-        Snackbar.Add("New work order created successfully.", Severity.Success);
+        // Enforce defaults again just in case
+        NewWorkOrder.Status = WorkOrderStatusType.Created;
+        NewWorkOrder.StartDate = null;
+        NewWorkOrder.EndDate = null;
 
-        // Refresh list and go to details
+        var created = await WorkOrderService.AddWorkOrderAsync(NewWorkOrder);
+        // ToastService.ShowToast("New work order created successfully.", "success");
+
         WorkOrders = await WorkOrderService.GetAllWorkOrdersAsync();
         CloseCreateModal();
         GoToDetails(created.Id);

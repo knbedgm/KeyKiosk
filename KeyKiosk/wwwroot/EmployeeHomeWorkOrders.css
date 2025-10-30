@@ -28,20 +28,21 @@ button,
 
 /* Variants */
 .edit-btn {
-    background-color: #007bff; /* blue */
+    background-color: #007bff;
 }
-
+/* blue */
 .delete-btn {
-    background-color: #dc3545; /* red */
+    background-color: #dc3545;
 }
-
+/* red */
 .save-btn {
-    background-color: #28a745; /* green */
+    background-color: #28a745;
 }
-
+/* green */
 .cancel-btn {
-    background-color: #6c757d; /* gray */
+    background-color: #6c757d;
 }
+/* gray */
 
 /* Table action defaults red */
 td > button {
@@ -159,15 +160,12 @@ button:disabled {
     text-align: center;
 }
 
-.pager-left,
-.pager-middle,
-.pager-right {
+.pager-left, .pager-middle, .pager-right {
     display: flex;
     align-items: center;
     gap: .5rem;
     flex-wrap: wrap;
 }
-
 /* Red outline button style */
 .pager-btn {
     background: #fff;
@@ -184,21 +182,18 @@ button:disabled {
     box-shadow: 0 1px 0 rgba(17,24,39,.06);
 }
 
-    /* Hover: solid red */
     .pager-btn:hover {
         background: hsl(var(--primary));
         color: hsl(var(--primary-foreground));
         transform: translateY(-1px);
     }
 
-    /* Focus ring */
     .pager-btn:focus-visible {
         outline: 2px solid hsl(var(--primary));
         outline-offset: 2px;
         box-shadow: 0 0 0 3px hsl(var(--primary) / 0.25);
     }
 
-    /* Disabled */
     .pager-btn:disabled {
         background: #fff;
         color: hsl(var(--primary) / 0.45);
@@ -208,7 +203,6 @@ button:disabled {
         transform: none;
         opacity: 1;
     }
-
 /* Solid variant (optional) */
 .pager-btn--solid {
     background: hsl(var(--primary));
@@ -250,3 +244,220 @@ button:disabled {
         font-size: .92rem;
     }
 }
+
+/* ===== Modal Overlay (fixed & centered) ===== */
+.modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(17, 24, 39, 0.45);
+    backdrop-filter: saturate(120%) blur(2px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    animation: modal-fade-in .12s ease-out;
+}
+
+.modal-card {
+    width: min(720px, 92vw);
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    box-shadow: 0 24px 60px rgba(0,0,0,.18);
+    padding: 1rem 1rem 1.25rem;
+    transform: scale(0.98);
+    animation: modal-pop .14s ease-out forwards;
+}
+
+.modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .5rem;
+    margin-bottom: .5rem;
+}
+
+.modal-close {
+    background: transparent;
+    border: none;
+    font-size: 1.5rem;
+    line-height: 1;
+    color: #374151;
+    cursor: pointer;
+    border-radius: 8px;
+    padding: 2px 6px;
+    transition: background-color .18s ease, transform .08s ease;
+}
+
+    .modal-close:hover {
+        background: #f3f4f6;
+        transform: translateY(-1px);
+    }
+
+.modal-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: .75rem;
+    margin-top: .25rem;
+}
+
+    .modal-grid .span-2 {
+        grid-column: span 2;
+    }
+
+.modal-actions {
+    display: flex;
+    gap: .5rem;
+    justify-content: flex-end;
+    margin-top: .75rem;
+}
+/* tiny animations */
+@keyframes modal-fade-in {
+    from {
+        opacity: 0
+    }
+
+    to {
+        opacity: 1
+    }
+}
+
+@keyframes modal-pop {
+    to {
+        transform: scale(1)
+    }
+}
+/* Responsive */
+@media (max-width: 640px) {
+    .modal-grid {
+        grid-template-columns: 1fr;
+    }
+
+        .modal-grid .span-2 {
+            grid-column: span 1;
+        }
+}
+
+/* ===== New Work Order modal: clearer inputs BEFORE focus ===== */
+.modal-card label {
+    display: block;
+    font-size: .92rem;
+    color: #374151;
+    margin-bottom: .25rem;
+    font-weight: 600;
+}
+
+.modal-card .table-input,
+.modal-card input[type="text"],
+.modal-card input[type="number"],
+.modal-card input[type="date"],
+.modal-card select,
+.modal-card textarea {
+    width: 100%;
+    border: 1.5px solid #cbd5e1;
+    background: #fcfcfd;
+    color: #111827;
+    padding: 9px 11px;
+    border-radius: 8px;
+    box-shadow: inset 0 1px 0 rgba(0,0,0,.03);
+    transition: border-color .15s ease, box-shadow .15s ease, background-color .15s ease;
+}
+
+    .modal-card .table-input:hover,
+    .modal-card input[type="text"]:hover,
+    .modal-card input[type="number"]:hover,
+    .modal-card input[type="date"]:hover,
+    .modal-card select:hover,
+    .modal-card textarea:hover {
+        border-color: #94a3b8;
+        background: #f8fafc;
+    }
+
+    .modal-card .table-input:focus,
+    .modal-card input[type="text"]:focus,
+    .modal-card input[type="number"]:focus,
+    .modal-card input[type="date"]:focus,
+    .modal-card select:focus,
+    .modal-card textarea:focus {
+        outline: none;
+        border-color: hsl(var(--primary));
+        box-shadow: 0 0 0 3px hsl(var(--primary) / 0.18);
+        background: #fff;
+    }
+
+.modal-card ::placeholder {
+    color: #9ca3af;
+    opacity: 1;
+}
+
+.modal-card .table-input:disabled,
+.modal-card input:disabled,
+.modal-card select:disabled,
+.modal-card textarea:disabled {
+    background: #f3f4f6;
+    color: #6b7280;
+    border-color: #e5e7eb;
+    cursor: not-allowed;
+}
+
+@media (max-width: 640px) {
+    .modal-grid {
+        gap: .6rem;
+    }
+}
+
+/* ===== Search by plate input: clearer before focus ===== */
+.search-plate-input {
+    border: 1.5px solid #cbd5e1;
+    background: #fcfcfd;
+    color: #111827;
+    padding: 9px 11px;
+    border-radius: 8px;
+    box-shadow: inset 0 1px 0 rgba(0,0,0,.03);
+    transition: border-color .15s ease, box-shadow .15s ease, background-color .15s ease;
+}
+
+    .search-plate-input:hover {
+        border-color: #94a3b8;
+        background: #f8fafc;
+    }
+
+    .search-plate-input:focus {
+        outline: none;
+        border-color: hsl(var(--primary));
+        box-shadow: 0 0 0 3px hsl(var(--primary) / 0.18);
+        background: #fff;
+    }
+
+    .search-plate-input::placeholder {
+        color: #9ca3af;
+        opacity: 1;
+    }
+
+/* ===== Elevated input style used ACROSS the WorkOrder Tasks page ===== */
+.input-elevated {
+    border: 1.5px solid #cbd5e1; /* higher-contrast border */
+    background: #fcfcfd; /* slight tint */
+    color: #111827;
+    padding: 9px 11px;
+    border-radius: 8px;
+    box-shadow: inset 0 1px 0 rgba(0,0,0,.03);
+    transition: border-color .15s ease, box-shadow .15s ease, background-color .15s ease;
+}
+
+    .input-elevated:hover {
+        border-color: #94a3b8; /* slate-400 */
+        background: #f8fafc;
+    }
+
+    .input-elevated:focus {
+        outline: none;
+        border-color: hsl(var(--primary));
+        box-shadow: 0 0 0 3px hsl(var(--primary) / 0.18);
+        background: #fff;
+    }
+
+    .input-elevated::placeholder {
+        color: #9ca3af;
+        opacity: 1;
+    }

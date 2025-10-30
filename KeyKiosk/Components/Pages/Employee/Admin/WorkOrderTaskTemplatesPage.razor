@@ -11,123 +11,146 @@
 <link href="WorkOrderTaskTemplate.css" rel="stylesheet" />
 
 <PageTitle>Task Templates</PageTitle>
-<h1>Work Order Task Templates</h1>
+<h1>Task Templates</h1>
 
 @if (Templates is null)
 {
-    <p>Loading…</p>
-}
-else if (Templates.Count > 0)
-{
-    <table class="workorders-table">
-        <thead>
-            <tr>
-                <th style="width:80px;">Id</th>
-                <th>Title</th>
-                @* <th>Details</th> *@
-                <th>Cost</th>
-                <th>Expected Hours</th>
-                <th style="width:1%;">Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var t in Templates)
-            {
-                var isEditing = EditingId == t.Id;
-                <tr>
-                    <td>@t.Id</td>
-                    <td>
-                        @* @if (isEditing)
-                        {
-                            <InputText class="table-input" @bind-Value="EditingRow.TaskTitle" />
-                        }
-                        else
-                        {
-                            @t.TaskTitle
-                        } *@
-                        @t.TaskTitle
-                    </td>
-                    @* <td>
-                        @if (isEditing)
-                        {
-                            <InputText class="table-input" @bind-Value="EditingRow.TaskDetails" />
-                        }
-                        else
-                        {
-                            @t.TaskDetails
-                        }
-                    </td> *@
-                    <td style="text-align:right;">
-                        @if (isEditing)
-                        {
-                            <InputNumber class="table-input" @bind-Value="EditingRow.TaskCostCents" />
-                        }
-                        else
-                        {
-                            @FormatCost(t.TaskCostCents)
-                        }
-                    </td>
-                    <td style="text-align:right;">
-                        @if (isEditing)
-                        {
-                            <InputNumber class="table-input" @bind-Value="EditingRow.ExpectedHoursForCompletion" />
-                        }
-                        else
-                        {
-                            @t.ExpectedHoursForCompletion
-                        }
-                    </td>
-                    <td style="white-space:nowrap;">
-                        @if (isEditing)
-                        {
-                            <button class="save-btn" @onclick="SaveRowAsync">Save</button>
-                            <button class="cancel-btn" @onclick="CancelEdit">Cancel</button>
-                        }
-                        else
-                        {
-                            <button class="btn-primary" @onclick="() => BeginEdit(t)">Edit</button>
-                            <button class="delete-btn" @onclick="() => OnDelete(t.Id)">Delete</button>
-                        }
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
+    <p class="text-center">Loading…</p>
 }
 else
 {
-    <div class="card-like" style="padding:1rem;border:1px solid #e5e7eb;border-radius:12px;max-width:760px;margin:1rem auto;">
-        <p style="margin:0;text-align:center;color:#6b7280">
-            No templates yet. Add your first template below.
-        </p>
+    <!-- Toolbar: search (left) + add button (right) -->
+    <div class="toolbar toolbar-spread">
+        <div class="toolbar-left">
+            <input class="table-input" style="min-width:260px"
+                   placeholder="Search title or details"
+                   @bind="Search" @bind:event="oninput" />
+        </div>
+        <button class="btn-primary" @onclick="ToggleAdd">@((ShowAdd ? "Close" : "Add Template"))</button>
     </div>
+
+    <!-- Add panel -->
+    @if (ShowAdd)
+    {
+        <div class="card-like add-card">
+            <EditForm class="new-workorder-form" Model="@AddModel" OnValidSubmit="@OnAdd">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+
+                <div class="grid-6 gap-md">
+                    <div class="col-span-4">
+                        <label class="muted">Title</label>
+                        <InputText class="table-input" @bind-Value="AddModel.TaskTitle" />
+                    </div>
+                    <div class="col-span-2">
+                        <label class="muted">Cost (¢)</label>
+                        <InputNumber class="table-input" @bind-Value="AddModel.TaskCostCents" />
+                    </div>
+
+                    @* Optional details
+                    <div class="col-span-6">
+                        <label class="muted">Details</label>
+                        <InputText class="table-input" @bind-Value="AddModel.TaskDetails" />
+                    </div>
+                    *@
+
+                    <div class="col-span-2">
+                        <label class="muted">Expected Hours</label>
+                        <InputNumber class="table-input" @bind-Value="AddModel.ExpectedHours" />
+                    </div>
+
+                    <div class="col-span-6" style="text-align:right;">
+                        <button class="btn-primary" type="submit">Create</button>
+                        <button class="cancel-btn" type="button" @onclick="ToggleAdd">Cancel</button>
+                    </div>
+                </div>
+            </EditForm>
+        </div>
+    }
+
+    <!-- Table -->
+    @if (!Filtered.Any())
+    {
+        <p class="text-center muted">No templates found.</p>
+    }
+    else
+    {
+        <table class="workorders-table">
+            <thead>
+                <tr>
+                    <th style="width:80px;">Id</th>
+                    <th>Title</th>
+                    @* <th>Details</th> *@
+                    <th>Cost</th>
+                    <th>Expected Hours</th>
+                    <th style="width:1%;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var t in Filtered)
+                {
+                    var isEditing = EditingId == t.Id;
+                    <tr>
+                        <td>@t.Id</td>
+                        <td>
+                            @t.TaskTitle
+                        </td>
+                        @* <td>
+                            @if (isEditing)
+                            {
+                                <InputText class="table-input" @bind-Value="EditingRow.TaskDetails" />
+                            }
+                            else
+                            {
+                                @t.TaskDetails
+                            }
+                        </td> *@
+                        <td style="text-align:right;">
+                            @if (isEditing)
+                            {
+                                <InputNumber class="table-input" @bind-Value="EditingRow.TaskCostCents" />
+                            }
+                            else
+                            {
+                                @FormatCost(t.TaskCostCents)
+                            }
+                        </td>
+                        <td style="text-align:right;">
+                            @if (isEditing)
+                            {
+                                <InputNumber class="table-input" @bind-Value="EditingRow.ExpectedHoursForCompletion" />
+                            }
+                            else
+                            {
+                                @t.ExpectedHoursForCompletion
+                            }
+                        </td>
+                        <td style="white-space:nowrap;">
+                            @if (isEditing)
+                            {
+                                <button class="save-btn small-btn" @onclick="SaveRowAsync">Save</button>
+                                <button class="cancel-btn small-btn" @onclick="CancelEdit">Cancel</button>
+                            }
+                            else
+                            {
+                                <button class="edit-btn small-btn" @onclick="() => BeginEdit(t)">Edit</button>
+                                <button class="delete-btn small-btn" @onclick="() => OnDelete(t.Id)">Delete</button>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
 }
-
-<br />
-<h1>Add New Template</h1>
-
-<EditForm class="new-workorder-form" Model="@AddModel" OnValidSubmit="@OnAdd">
-    <DataAnnotationsValidator />
-    <ValidationSummary />
-
-    <label>Title</label>
-    <InputText @bind-Value="AddModel.TaskTitle" />
-
-    @* <label>Details</label>
-    <InputText @bind-Value="AddModel.TaskDetails" /> *@
-
-    <label>Cost in Cents</label>
-    <InputNumber @bind-Value="AddModel.TaskCostCents" />
-    
-    <label>Expected Hours</label>
-    <InputNumber @bind-Value="AddModel.ExpectedHours" />
-
-    <button class="btn-primary" type="submit">Submit</button>
-</EditForm>
 
 @code {
     // Data
     private List<WorkOrderTaskTemplate>? Templates;
+
+    // Toolbar
+    private bool ShowAdd { get; set; } = false;
+    private string Search { get; set; } = string.Empty;
 
     // Add form model
     private AddTemplateModel AddModel = new();
@@ -135,6 +158,14 @@ else
     // Inline edit model
     private int? EditingId;
     private WorkOrderTaskTemplate EditingRow = new();
+
+    // Filter
+    private IEnumerable<WorkOrderTaskTemplate> Filtered =>
+        (Templates ?? Enumerable.Empty<WorkOrderTaskTemplate>())
+            .Where(t =>
+                string.IsNullOrWhiteSpace(Search)
+                || (t.TaskTitle?.Contains(Search, StringComparison.OrdinalIgnoreCase) ?? false)
+                || (t.TaskDetails?.Contains(Search, StringComparison.OrdinalIgnoreCase) ?? false));
 
     protected override void OnInitialized()
     {
@@ -147,7 +178,9 @@ else
         StateHasChanged();
     }
 
-    // Actions
+    private void ToggleAdd() => ShowAdd = !ShowAdd;
+
+    // Add
     private void OnAdd()
     {
         try
@@ -163,7 +196,8 @@ else
             TemplateService.AddWorkOrderTaskTemplate(template);
             LoadTemplates();
 
-            AddModel = new(); // reset
+            AddModel = new();
+            ShowAdd = false;
             Snackbar.Add("Template created successfully.", Severity.Success);
         }
         catch (Exception ex)

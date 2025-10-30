@@ -1,82 +1,65 @@
 ﻿using KeyKiosk.Data;
 using KeyKiosk.Services;
 using Microsoft.AspNetCore.Components;
+using System.Linq;
 
 namespace KeyKiosk.Components.Pages.Employee.Admin;
 
 public partial class PartTemplatesPage
 {
-    /// <summary>
-    /// Displays list of existing templates
-    /// </summary>
-    private List<PartTemplate> TemplateList { get; set; } = new List<PartTemplate>();
+    // ===== Data =====
+    private List<PartTemplate> TemplateList { get; set; } = new();
+    private PartTemplate TemplateToAdd { get; set; } = new();
+    private PartTemplate TemplateToUpdate { get; set; } = new();
 
-    /// <summary>
-    /// Model for adding template form
-    /// </summary>
-    private PartTemplate TemplateToAdd { get; set; } = new PartTemplate();
+    // ===== UI State (new) =====
+    private bool ShowAdd { get; set; } = false;
+    private string Search { get; set; } = string.Empty;
 
-    /// <summary>
-    /// Model for updating template form
-    /// </summary>
-    private PartTemplate TemplateToUpdate { get; set; } = new PartTemplate();
+    // Computed filter to match Users page behavior
+    private IEnumerable<PartTemplate> Filtered =>
+        (TemplateList ?? Enumerable.Empty<PartTemplate>())
+            .Where(t =>
+                string.IsNullOrWhiteSpace(Search)
+                || (t.PartName?.Contains(Search, StringComparison.OrdinalIgnoreCase) ?? false)
+                || (t.Details?.Contains(Search, StringComparison.OrdinalIgnoreCase) ?? false));
 
-    /// <summary>
-    /// Loads existing templates to display on page
-    /// </summary>
-    /// <returns></returns>
     protected override Task OnInitializedAsync()
     {
         RefreshPartTemplatesList();
         return Task.CompletedTask;
     }
 
-    /// <summary>
-    /// Refreshes displayed templates after changes are made
-    /// </summary>
     private void RefreshPartTemplatesList()
     {
         var templates = PartTemplateService.GetAllPartTemplates();
         PopulateTemplateList(templates);
     }
 
-    /// <summary>
-    /// Populates TemplateList with data from database
-    /// </summary>
-    /// <param name="templates"></param>
     private void PopulateTemplateList(List<PartTemplate> templates)
     {
         TemplateList.Clear();
-
         foreach (PartTemplate t in templates)
-        {
             TemplateList.Add(t);
-        }
     }
 
-    /// <summary>
-    /// Method to add new template
-    /// </summary>
+    // ===== Add / Delete / Update =====
     public void AddNewTemplate()
     {
         PartTemplateService.AddPartTemplate(TemplateToAdd);
         RefreshPartTemplatesList();
         TemplateToAdd = new PartTemplate();
+        ShowAdd = false; // collapse panel like Users page
+        StateHasChanged();
     }
 
-    /// <summary>
-    /// Method to delete existing template using id
-    /// </summary>
-    /// <param name="id"></param>
     public void DeleteTemplate(int id)
     {
         PartTemplateService.DeletePartTemplate(id);
         RefreshPartTemplatesList();
+        if (EditingId == id) CancelEdit();
     }
 
-    /// <summary>
-    /// Method to update existing template
-    /// </summary>
     private void UpdateExistingTemplate()
     {
         PartTemplateService.UpdatePartTemplate(TemplateToUpdate);
@@ -84,23 +67,13 @@ public partial class PartTemplatesPage
         TemplateToUpdate = new PartTemplate();
     }
 
-    // -----------------------------------------------------
-    // Inline Editing Logic (added for editable in-table view)
-    // -----------------------------------------------------
+    // ===== Toolbar toggle (new) =====
+    private void ToggleAdd() => ShowAdd = !ShowAdd;
 
-    /// <summary>
-    /// Tracks which row is currently being edited
-    /// </summary>
+    // ===== Inline Editing Logic =====
     private int? EditingId { get; set; }
+    private PartTemplate EditingRow { get; set; } = new();
 
-    /// <summary>
-    /// Holds the editable row data
-    /// </summary>
-    private PartTemplate EditingRow { get; set; } = new PartTemplate();
-
-    /// <summary>
-    /// Begin editing a selected template row
-    /// </summary>
     private void BeginEdit(PartTemplate template)
     {
         EditingId = template.Id;
@@ -113,18 +86,12 @@ public partial class PartTemplatesPage
         };
     }
 
-    /// <summary>
-    /// Cancel current edit session
-    /// </summary>
     private void CancelEdit()
     {
         EditingId = null;
         EditingRow = new PartTemplate();
     }
 
-    /// <summary>
-    /// Save the edited template data back to the database
-    /// </summary>
     private void SaveRowAsync()
     {
         if (EditingId is null) return;
@@ -132,6 +99,7 @@ public partial class PartTemplatesPage
         var updatedTemplate = new PartTemplate
         {
             Id = EditingRow.Id,
+            // PartName remains read-only per your UI
             Details = EditingRow.Details ?? string.Empty,
             CostCents = EditingRow.CostCents
         };

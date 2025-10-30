@@ -68,6 +68,7 @@ public partial class WorkOrderTasksPage : ComponentBase
     {
         await LoadWorkOrderAsync();
         RefreshAllLists();
+        await AutoUpdateWorkOrderStatusFromTasksAsync(); // keep WO in sync on load
     }
 
     protected void ToggleAddForm() => ShowAddForm = !ShowAddForm;
@@ -83,7 +84,7 @@ public partial class WorkOrderTasksPage : ComponentBase
         TaskToAdd.Title = t.TaskTitle;
         TaskToAdd.Details = t.TaskDetails;
         TaskToAdd.CostCents = t.TaskCostCents;
-        ResetAddTaskDefaults(); // set status/dates/hours defaults
+        ResetAddTaskDefaults();
     }
 
     protected void BeginEditTask(WorkOrderTask t)
@@ -91,11 +92,11 @@ public partial class WorkOrderTasksPage : ComponentBase
         EditingTaskId = t.Id;
         EditingModel = new UpdateWorkOrderTaskModel
         {
-            TaskTitle = t.Title,     // locked in UI
+            TaskTitle = t.Title,
             Details = t.Details,
-            CostCents = t.CostCents, // locked
-            StartDate = t.StartDate, // locked
-            EndDate = t.EndDate,   // locked
+            CostCents = t.CostCents,
+            StartDate = t.StartDate,
+            EndDate = t.EndDate,
             Status = t.Status,
             HoursForCompletion = t.HoursForCompletion
         };
@@ -115,8 +116,6 @@ public partial class WorkOrderTasksPage : ComponentBase
         if (current is not null)
         {
             ApplyStatusDatesAndHours(current, EditingModel);
-
-            // keep locked fields
             EditingModel.TaskTitle = current.Title;
             EditingModel.CostCents = current.CostCents;
         }
@@ -130,17 +129,17 @@ public partial class WorkOrderTasksPage : ComponentBase
     {
         TaskService.DeleteWorkOrderTask(id);
         RefreshTasksList();
-        RecalcTotalsAsync(); // fire and forget
+        _ = AutoUpdateWorkOrderStatusFromTasksAsync(); // fire & forget
         ShowToast("Task deleted.", Severity.Info);
     }
 
     protected void AddNewTask()
     {
-        ResetAddTaskDefaults(); // enforce defaults (Created, null dates, 0 hours)
+        ResetAddTaskDefaults();
         TaskService.AddWorkOrderTask(WorkOrderId, TaskToAdd);
         TaskToAdd = new AddWorkOrderTaskModel();
         RefreshTasksList();
-        RecalcTotalsAsync(); // fire and forget
+        _ = AutoUpdateWorkOrderStatusFromTasksAsync(); // fire & forget
         ShowToast("Task added.", Severity.Success);
         ShowAddForm = false;
     }
@@ -256,6 +255,7 @@ public partial class WorkOrderTasksPage : ComponentBase
     {
         await LoadWorkOrderAsync();
         RefreshAllLists();
+        await AutoUpdateWorkOrderStatusFromTasksAsync(); // keep WO in sync after any change
         ShowToast(toastMsg, toastType);
     }
 
@@ -266,10 +266,10 @@ public partial class WorkOrderTasksPage : ComponentBase
         TaskToAdd.Status = WorkOrderTaskStatusType.Created;
         TaskToAdd.StartDate = null;
         TaskToAdd.EndDate = null;
-        TaskToAdd.HoursForCompletion = 0; // default 0 at add
+        TaskToAdd.HoursForCompletion = 0;
     }
 
-    // === central rule for status->dates + auto-hours ===
+    // status->dates + hours for task edit
     private static void ApplyStatusDatesAndHours(WorkOrderTask current, UpdateWorkOrderTaskModel edit)
     {
         var now = DateTimeOffset.Now;
@@ -292,7 +292,6 @@ public partial class WorkOrderTasksPage : ComponentBase
                 edit.StartDate = current.StartDate ?? now;
                 edit.EndDate = now;
 
-                // only auto-calc if user hasn't provided a positive value
                 if (edit.HoursForCompletion <= 0 && edit.StartDate.HasValue && edit.EndDate.HasValue)
                 {
                     var hours = (edit.EndDate.Value - edit.StartDate.Value).TotalHours;
@@ -319,7 +318,7 @@ public partial class WorkOrderTasksPage : ComponentBase
         return dollars.ToString("C");
     }
 
-    // === Header Edit: begin/cancel/save ===
+    // header edit
     protected void BeginEditHeader()
     {
         if (WorkOrder is null) return;
@@ -351,7 +350,7 @@ public partial class WorkOrderTasksPage : ComponentBase
         await ReloadAndRefreshAsync("Work order header updated.", Severity.Success);
     }
 
-    // WorkOrder status → Start/End rule
+    // WO status by header pick (now also handles WorkFinished)
     private static void ApplyWorkOrderStatusDates(WorkOrder wo, WorkOrderStatusType newStatus)
     {
         var now = DateTimeOffset.Now;
@@ -370,7 +369,14 @@ public partial class WorkOrderTasksPage : ComponentBase
                 wo.EndDate = null;
                 break;
 
+            case WorkOrderStatusType.WorkFinished:
+                wo.Status = newStatus;
+                wo.StartDate ??= now;
+                wo.EndDate = now;
+                break;
+
             case WorkOrderStatusType.Closed:
+                // Keeping legacy path if you still use Closed somewhere else
                 wo.StartDate ??= now;
                 wo.EndDate = now;
                 wo.Status = newStatus;
@@ -380,5 +386,61 @@ public partial class WorkOrderTasksPage : ComponentBase
                 wo.Status = newStatus;
                 break;
         }
+    }
+
+    // === Auto-set WO status from tasks (Created / WorkStarted / WorkFinished) ===
+    private async Task AutoUpdateWorkOrderStatusFromTasksAsync()
+    {
+        if (WorkOrder is null) return;
+
+        var tasks = TaskList;
+        if (tasks.Count == 0) return;
+
+        bool allCreated = tasks.All(t => t.Status == WorkOrderTaskStatusType.Created);
+        bool allFinished = tasks.All(t => t.Status == WorkOrderTaskStatusType.WorkFinished);
+
+        var now = DateTimeOffset.Now;
+
+        if (allCreated)
+        {
+            // All tasks are Created -> WO Created
+            WorkOrder.Status = WorkOrderStatusType.Created;
+            WorkOrder.StartDate = null;
+            WorkOrder.EndDate = null;
+
+            await WorkOrderService.UpdateWorkOrderAsync(WorkOrder);
+            StateHasChanged();
+            return;
+        }
+
+        if (allFinished)
+        {
+            // All tasks Finished -> WO WorkFinished
+            var minStart = tasks.Where(t => t.StartDate.HasValue).Select(t => t.StartDate!.Value).DefaultIfEmpty(now).Min();
+            var maxEnd = tasks.Where(t => t.EndDate.HasValue).Select(t => t.EndDate!.Value).DefaultIfEmpty(now).Max();
+
+            WorkOrder.Status = WorkOrderStatusType.WorkFinished;
+            WorkOrder.StartDate ??= minStart;
+            WorkOrder.EndDate = maxEnd;
+
+            await WorkOrderService.UpdateWorkOrderAsync(WorkOrder);
+            StateHasChanged();
+            return;
+        }
+
+        // Any other combination -> WO WorkStarted
+        WorkOrder.Status = WorkOrderStatusType.WorkStarted;
+
+        // Prefer earliest real start if any task has one; otherwise set now
+        var anyTaskStart = tasks.Where(t => t.StartDate.HasValue).Select(t => t.StartDate!.Value).OrderBy(d => d).FirstOrDefault();
+        if (anyTaskStart != default)
+            WorkOrder.StartDate ??= anyTaskStart;
+        else
+            WorkOrder.StartDate ??= now;
+
+        WorkOrder.EndDate = null;
+
+        await WorkOrderService.UpdateWorkOrderAsync(WorkOrder);
+        StateHasChanged();
     }
 }

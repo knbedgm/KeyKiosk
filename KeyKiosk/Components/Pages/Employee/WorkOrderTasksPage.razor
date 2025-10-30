@@ -49,15 +49,15 @@ else
                     <!-- Inline edit controls -->
                     <div>
                         <div class="muted" style="font-size:.9rem;color:#6b7280;">Customer</div>
-                        <InputText class="table-input" @bind-Value="HeaderCustomerDraft" />
+                        <InputText class="table-input input-elevated" @bind-Value="HeaderCustomerDraft" />
                     </div>
                     <div>
                         <div class="muted" style="font-size:.9rem;color:#6b7280;">Vehicle Plate</div>
-                        <InputText class="table-input" @bind-Value="HeaderVehicleDraft" />
+                        <InputText class="table-input input-elevated" @bind-Value="HeaderVehicleDraft" />
                     </div>
                     <div>
                         <div class="muted" style="font-size:.9rem;color:#6b7280;">Status</div>
-                        <InputSelect class="table-select" @bind-Value="HeaderStatusDraft">
+                        <InputSelect class="table-select input-elevated" @bind-Value="HeaderStatusDraft">
                             @foreach (WorkOrderStatusType s in Enum.GetValues(typeof(WorkOrderStatusType)))
                             {
                                 <option value="@s">@s</option>
@@ -107,7 +107,7 @@ else
             {
                 <form @onsubmit="SaveWoDetailsAsync" @onsubmit:preventDefault>
                     <div style="display:grid;gap:.5rem;">
-                        <textarea class="table-input" style="min-height:120px;" @bind="WoDetailsDraft"></textarea>
+                        <textarea class="table-input input-elevated" style="min-height:120px;" @bind="WoDetailsDraft"></textarea>
                         <div style="display:flex;gap:.5rem;justify-content:flex-end;">
                             <button class="save-btn small-btn" type="submit">Save</button>
                             <button class="cancel-btn small-btn" type="button" @onclick="CancelEditWoDetails">Cancel</button>
@@ -122,7 +122,7 @@ else
     <div style="display:flex;justify-content:space-between;align-items:center;margin:.25rem 0 .75rem;">
         <h2 style="margin:0">Tasks</h2>
         <div style="display:flex;gap:.5rem;align-items:center;">
-            <input class="table-input" style="min-width:260px" placeholder="Search task title/details"
+            <input class="table-input input-elevated" style="min-width:260px" placeholder="Search task title/details"
                    @bind="TaskSearch" @bind:event="oninput" />
             <button class="btn-primary" @onclick="ToggleAddForm">@((ShowAddForm ? "Close" : "Add Task"))</button>
         </div>
@@ -138,8 +138,8 @@ else
                 <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:.75rem;">
 
                     <div style="grid-column: span 2;">
-                        <label class="muted">Template</label>
-                        <select class="table-select" @onchange="ModifyCreateTaskFromTemplate">
+                        <label class="muted">Task</label>
+                        <select class="table-select input-elevated" @onchange="ModifyCreateTaskFromTemplate">
                             <option value="">— Select —</option>
                             @foreach (var t in TemplateList)
                             {
@@ -148,40 +148,14 @@ else
                         </select>
                     </div>
 
-                    <div style="grid-column: span 2;">
-                        <label class="muted">Title</label>
-                        <InputText class="table-input" @bind-Value="TaskToAdd.Title" disabled />
+                    <div style="grid-column: span 3;">
+                        <label class="muted">Details</label>
+                        <InputTextArea class="table-input input-elevated" @bind-Value="TaskToAdd.Details" />
                     </div>
 
                     <div>
                         <label class="muted">Cost (¢)</label>
-                        <InputNumber class="table-input" @bind-Value="TaskToAdd.CostCents" disabled />
-                    </div>
-
-                    <div>
-                        <label class="muted">Status</label>
-                        <input class="table-input" value="Created" disabled />
-                    </div>
-
-                    <div style="grid-column: span 3;">
-                        <label class="muted">Details</label>
-                        <InputTextArea class="table-input" @bind-Value="TaskToAdd.Details" />
-                    </div>
-
-                    <div>
-                        <label class="muted">Start</label>
-                        <input class="table-input" value="N/A" disabled />
-                    </div>
-
-                    <div>
-                        <label class="muted">End</label>
-                        <input class="table-input" value="N/A" disabled />
-                    </div>
-
-                    <!-- Hours: default 0, not editable in add panel -->
-                    <div>
-                        <label class="muted">Hours For Completion</label>
-                        <input class="table-input" value="0" disabled />
+                        <InputNumber class="table-input input-elevated" @bind-Value="TaskToAdd.CostCents" disabled />
                     </div>
 
                     <div style="grid-column: span 6;text-align:right;">
@@ -209,13 +183,13 @@ else
                 </tr>
                 <tr>
                     <th></th>
-                    <th><input class="table-input" placeholder="Filter title" @bind="FilterTitle" @bind:event="oninput" /></th>
-                    <th><input class="table-input" placeholder="Filter details" @bind="FilterDetails" @bind:event="oninput" /></th>
-                    <th><input class="table-input" placeholder="¢" @bind="FilterCost" @bind:event="oninput" /></th>
-                    <th><input class="table-input" type="date" @bind="FilterStart" /></th>
-                    <th><input class="table-input" type="date" @bind="FilterEnd" /></th>
+                    <th><input class="table-input input-elevated" placeholder="Filter title" @bind="FilterTitle" @bind:event="oninput" /></th>
+                    <th><input class="table-input input-elevated" placeholder="Filter details" @bind="FilterDetails" @bind:event="oninput" /></th>
+                    <th><input class="table-input input-elevated" placeholder="¢" @bind="FilterCost" @bind:event="oninput" /></th>
+                    <th><input class="table-input input-elevated" type="date" @bind="FilterStart" /></th>
+                    <th><input class="table-input input-elevated" type="date" @bind="FilterEnd" /></th>
                     <th>
-                        <select class="table-select" @bind="FilterStatus">
+                        <select class="table-select input-elevated" @bind="FilterStatus">
                             <option value="">All</option>
                             @foreach (WorkOrderTaskStatusType s in Enum.GetValues(typeof(WorkOrderTaskStatusType)))
                             {
@@ -241,7 +215,7 @@ else
                         <td>
                             @if (isEditing)
                             {
-                                <InputTextArea class="table-input" @bind-Value="EditingModel.Details" />
+                                <InputTextArea class="table-input input-elevated" @bind-Value="EditingModel.Details" />
                             }
                             else
                             {
@@ -260,7 +234,7 @@ else
                         <td>
                             @if (isEditing)
                             {
-                                <select class="table-select" @bind="EditingModel.Status">
+                                <select class="table-select input-elevated" @bind="EditingModel.Status">
                                     @foreach (WorkOrderTaskStatusType s in Enum.GetValues(typeof(WorkOrderTaskStatusType)))
                                     {
                                         <option value="@s">@s</option>
@@ -277,7 +251,7 @@ else
                         <td style="text-align:right;min-width:90px;">
                             @if (isEditing)
                             {
-                                <InputNumber class="table-input" @bind-Value="EditingModel.HoursForCompletion" />
+                                <InputNumber class="table-input input-elevated" @bind-Value="EditingModel.HoursForCompletion" />
                             }
                             else
                             {
@@ -305,7 +279,7 @@ else
         <!-- Parts toolbar -->
         <div style="display:flex;justify-content:space-between;align-items:center;margin:1rem 0 .5rem;">
             <h2 style="margin:0">Parts</h2>
-            <input class="table-input" style="min-width:260px" placeholder="Search parts"
+            <input class="table-input input-elevated" style="min-width:260px" placeholder="Search parts"
                    @bind="PartFilter" @bind:event="oninput" />
         </div>
 
@@ -315,7 +289,7 @@ else
                 <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:.75rem;">
                     <div style="grid-column: span 4;">
                         <label class="muted">Part Template</label>
-                        <select class="table-select" @bind="SelectedPartTemplateId">
+                        <select class="table-select input-elevated" @bind="SelectedPartTemplateId">
                             <option value="">— Select a part template —</option>
                             @foreach (var pt in PartTemplateList)
                             {
