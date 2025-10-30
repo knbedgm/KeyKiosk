@@ -2,10 +2,13 @@
 @using KeyKiosk.Data
 @using KeyKiosk.Services
 @using System.Text
+@using System.Threading
 @layout Layout.MainLayout
+
 @inject WorkOrderLogService LogService
-@inject WorkOrderAuditService AuditService
 @inject IJSRuntime JS
+@* Optional: keep if you still want the demo creator *@
+@inject WorkOrderAuditService? AuditService
 
 <link href="DesktopShared.css" rel="stylesheet" />
 <link href="WorkOrderLogs.css" rel="stylesheet" />
@@ -28,7 +31,7 @@
         </select>
     </div>
     <div class="actions">
-        <button class="btn-primary" @onclick="LoadLogs">Search</button>
+        <button class="btn-primary" @onclick="() => LoadLogs(resetPage: true)">Search</button>
         <button class="btn-outline" @onclick="ClearFilters">Clear</button>
         <button class="btn-outline" @onclick="ExportCsv">Export</button>
     </div>
@@ -132,38 +135,70 @@ else
                     <td>
                     @switch (log)
                             {
+                                // Work order field edits
                                 case WorkOrderLogEvent.DetailsChangedEvent detailsEvent:
                                     <details class="details-box">
-                                        <summary>Details changed</summary>
-                                        <div><strong>Customer:</strong> @detailsEvent.CustomerName</div>
-                                        <div><strong>Plate:</strong> @detailsEvent.VehiclePlate</div>
-                                        <div>@detailsEvent.Details</div>
+                                        <summary>Work order info updated</summary>
+                                        @if (!string.IsNullOrWhiteSpace(detailsEvent.CustomerName))
+                                        {
+                                            <div><strong>Customer:</strong> @detailsEvent.CustomerName</div>
+                                        }
+                                        @if (!string.IsNullOrWhiteSpace(detailsEvent.VehiclePlate))
+                                        {
+                                            <div><strong>Plate:</strong> @detailsEvent.VehiclePlate</div>
+                                        }
+                                        @if (!string.IsNullOrWhiteSpace(detailsEvent.Details))
+                                        {
+                                            <div style="white-space:pre-wrap">@detailsEvent.Details</div>
+                                        }
                                     </details>
                                     break;
 
-                                case WorkOrderLogEvent.TaskAddedEvent taskAdded:
-                                    <span>Task added: <strong>@taskAdded.Task?.Title</strong></span>
-                                    break;
-
-                                case WorkOrderLogEvent.TaskRemovedEvent taskRemoved:
-                                    <span>Task removed: <strong>@taskRemoved.Task?.Title</strong></span>
-                                    break;
-
-                                case WorkOrderLogEvent.TaskDetailsChangedEvent taskDetails:
-                                    <details class="details-box">
-                                        <summary>Task details changed</summary>
-                                        <div><strong>Task:</strong> @taskDetails.Task?.Title</div>
-                                        <div>@taskDetails.Details</div>
-                                        <div><strong>Cost:</strong> @(taskDetails.CostCents / 100.0m).ToString("C")</div>
-                                    </details>
-                                    break;
-
-                                case WorkOrderLogEvent.CreateEvent:
-                                    <span class="text-ok">Work order created</span>
-                                    break;
-
+                                // Status change on WO
                                 case WorkOrderLogEvent.StatusChangedEvent statusEvent:
                                     <span>Status → <strong>@statusEvent.Status</strong></span>
+                                    break;
+
+                                // Task events (🛠 show TaskTitle, fall back to Title)
+                                case WorkOrderLogEvent.TaskAddedEvent taskAdded:
+                                    {
+                                        var tname = taskAdded.Task?.Title ?? taskAdded.Task?.Title ?? "(no title)";
+                                        <span>Task added: <strong>@tname</strong></span>
+                                        break;
+                                    }
+                                case WorkOrderLogEvent.TaskRemovedEvent taskRemoved:
+                                    {
+                                        var tname = taskRemoved.Task?.Title ?? taskRemoved.Task?.Title ?? "(no title)";
+                                        <span>Task removed: <strong>@tname</strong></span>
+                                        break;
+                                    }
+                                case WorkOrderLogEvent.TaskStatusChangedEvent taskStatus:
+                                    {
+                                        var tname = taskStatus.Task?.Title ?? taskStatus.Task?.Title ?? "(no title)";
+                                        <span>Task <strong>@tname</strong> → <strong>@taskStatus.Status</strong></span>
+                                        break;
+                                    }
+                                case WorkOrderLogEvent.TaskDetailsChangedEvent taskDetails:
+                                    {
+                                        var tname = taskDetails.Task?.Title ?? taskDetails.Task?.Title ?? "(no title)";
+                                        <details class="details-box">
+                                            <summary>Task details changed</summary>
+                                            <div><strong>Task:</strong> @tname</div>
+                                            @if (!string.IsNullOrWhiteSpace(taskDetails.Details))
+                                            {
+                                                <div style="white-space:pre-wrap">@taskDetails.Details</div>
+                                            }
+                                            @if (taskDetails.CostCents > 0)
+                                            {
+                                                <div><strong>Cost:</strong> @(taskDetails.CostCents / 100.0m).ToString("C")</div>
+                                            }
+                                        </details>
+                                        break;
+                                    }
+
+                                // Creation
+                                case WorkOrderLogEvent.CreateEvent:
+                                    <span class="text-ok">Work order created</span>
                                     break;
 
                                 default:
@@ -192,9 +227,11 @@ else
         </div>
     </div>
 }
+
 @code {
     private List<WorkOrderLogEvent>? logs;
 
+    // Filters
     private string? username;
     private int? workOrderId;
     private string? status;
@@ -218,16 +255,54 @@ else
             .Skip((Page - 1) * PageSize)
             .Take(PageSize);
 
+    // --- lightweight auto-refresh bits ---
+    private PeriodicTimer? _refreshTimer;
+    private CancellationTokenSource? _cts;
+
     protected override async Task OnInitializedAsync()
     {
-        await LoadLogs();
+        await LoadLogs(resetPage: true); // initial load
     }
 
-    private async Task LoadLogs()
+    protected override Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _cts = new CancellationTokenSource();
+            _refreshTimer = new PeriodicTimer(TimeSpan.FromSeconds(15)); // change cadence if you want
+            _ = AutoRefreshLoopAsync();
+        }
+        return Task.CompletedTask;
+    }
+
+    private async Task AutoRefreshLoopAsync()
+    {
+        try
+        {
+            while (_refreshTimer != null &&
+                   await _refreshTimer.WaitForNextTickAsync(_cts!.Token))
+            {
+                await LoadLogs(resetPage: false); // keep current page while refreshing
+                await InvokeAsync(StateHasChanged);
+            }
+        }
+        catch (OperationCanceledException) { /* normal during dispose */ }
+    }
+
+    private async Task LoadLogs(bool resetPage = true)
     {
         logs = await LogService.GetFilteredLogsAsync(username, workOrderId, status, vehiclePlate, search, eventType);
-        Page = 1;
-        StateHasChanged();
+
+        if (resetPage)
+        {
+            Page = 1;
+        }
+        else
+        {
+            // clamp if total shrank so the current page isn't empty
+            if (Page > TotalPages) Page = TotalPages;
+            if (Page < 1) Page = 1;
+        }
     }
 
     private void ClearFilters()
@@ -238,7 +313,7 @@ else
         status = null;
         search = null;
         eventType = null;
-        _ = LoadLogs();
+        _ = LoadLogs(resetPage: true);
     }
 
     private async Task ExportCsv()
@@ -250,24 +325,6 @@ else
         using var stream = new MemoryStream(bytes);
         using var streamRef = new DotNetStreamReference(stream: stream);
         await JS.InvokeVoidAsync("downloadFileFromStream", fileName, streamRef);
-    }
-
-    private async Task CreateTestWorkOrder()
-    {
-        var newWorkOrder = new WorkOrder
-        {
-            CustomerName = "Goofy Duck",
-            VehiclePlate = "GGDD423",
-            Details = "Headlight replacement",
-            Status = WorkOrderStatusType.Created,
-            StartDate = DateTimeOffset.Now,
-            EndDate = DateTimeOffset.Now.AddHours(2),
-            Tasks = new List<WorkOrderTask>(),
-            Parts = new List<WorkOrderPart>()
-        };
-
-        await AuditService.AddWorkOrderAsync(newWorkOrder);
-        await LoadLogs();
     }
 
     private static string StatusClass(WorkOrderStatusType s) => s switch
@@ -284,4 +341,11 @@ else
     private void PrevPage() { if (Page > 1) Page--; }
     private void NextPage() { if (Page < TotalPages) Page++; }
     private void LastPage() => Page = TotalPages;
+
+    public void Dispose()
+    {
+        try { _cts?.Cancel(); } catch { }
+        _refreshTimer?.Dispose();
+        _cts?.Dispose();
+    }
 }
