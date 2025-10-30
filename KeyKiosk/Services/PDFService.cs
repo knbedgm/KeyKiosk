@@ -571,7 +571,7 @@ public class PDFService
                             {
                                 header.Cell().Element(CellStyle).Text("ID");
                                 header.Cell().Element(CellStyle).Text("Customer");
-                                header.Cell().Element(CellStyle).Text("Model");
+                                header.Cell().Element(CellStyle).Text("Details");
                                 header.Cell().Element(CellStyle).Text("Date");
 
                                 static IContainer CellStyle(IContainer container)
