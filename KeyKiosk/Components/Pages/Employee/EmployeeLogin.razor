@@ -2,7 +2,10 @@
 @rendermode InteractiveServer
 @layout Layout.MainLayout
 
+@inject NavigationManager Nav
+
 <link href="EmployeeLogin.css" rel="stylesheet" />
+<link href="DesktopShared.css" rel="stylesheet" />
 
 <PageTitle>Employee Login</PageTitle>
 
@@ -24,6 +27,11 @@
                 <InputText id="password" type="password" @bind-Value="loginModel.Password" class="input-field" />
             </div>
 
+            @if (!string.IsNullOrEmpty(errorMessage))
+            {
+                <p class="error-message">@errorMessage</p>
+            }
+
             <button type="submit" class="btn-primary login-btn">Login</button>
         </EditForm>
 
@@ -35,10 +43,26 @@
 
 @code {
     private LoginModel loginModel = new();
+    private string? errorMessage;
 
     private void OnLogin()
     {
-        // handle login validation
+        var username = loginModel.Username?.Trim();
+        var password = loginModel.Password?.Trim();
+
+        // --- Hardcoded logins ---
+        if (username == "Rachel" && password == "123123")
+        {
+            Nav.NavigateTo("/employee/admin/home", forceLoad: true);
+        }
+        else if (username == "Ryan" && password == "123123")
+        {
+            Nav.NavigateTo("/employee/home", forceLoad: true);
+        }
+        else
+        {
+            errorMessage = "Invalid username or password.";
+        }
     }
 
     public class LoginModel
