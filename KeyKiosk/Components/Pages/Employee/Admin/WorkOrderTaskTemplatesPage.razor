@@ -24,8 +24,9 @@ else if (Templates.Count > 0)
             <tr>
                 <th style="width:80px;">Id</th>
                 <th>Title</th>
-                <th>Details</th>
-                <th style="width:140px;">Cost</th>
+                @* <th>Details</th> *@
+                <th>Cost</th>
+                <th>Expected Hours</th>
                 <th style="width:1%;">Actions</th>
             </tr>
         </thead>
@@ -36,16 +37,17 @@ else if (Templates.Count > 0)
                 <tr>
                     <td>@t.Id</td>
                     <td>
-                        @if (isEditing)
+                        @* @if (isEditing)
                         {
                             <InputText class="table-input" @bind-Value="EditingRow.TaskTitle" />
                         }
                         else
                         {
                             @t.TaskTitle
-                        }
+                        } *@
+                        @t.TaskTitle
                     </td>
-                    <td>
+                    @* <td>
                         @if (isEditing)
                         {
                             <InputText class="table-input" @bind-Value="EditingRow.TaskDetails" />
@@ -54,7 +56,7 @@ else if (Templates.Count > 0)
                         {
                             @t.TaskDetails
                         }
-                    </td>
+                    </td> *@
                     <td style="text-align:right;">
                         @if (isEditing)
                         {
@@ -63,6 +65,16 @@ else if (Templates.Count > 0)
                         else
                         {
                             @FormatCost(t.TaskCostCents)
+                        }
+                    </td>
+                    <td style="text-align:right;">
+                        @if (isEditing)
+                        {
+                            <InputNumber class="table-input" @bind-Value="EditingRow.ExpectedHoursForCompletion" />
+                        }
+                        else
+                        {
+                            @t.ExpectedHoursForCompletion
                         }
                     </td>
                     <td style="white-space:nowrap;">
@@ -101,11 +113,14 @@ else
     <label>Title</label>
     <InputText @bind-Value="AddModel.TaskTitle" />
 
-    <label>Details</label>
-    <InputText @bind-Value="AddModel.TaskDetails" />
+    @* <label>Details</label>
+    <InputText @bind-Value="AddModel.TaskDetails" /> *@
 
     <label>Cost in Cents</label>
     <InputNumber @bind-Value="AddModel.TaskCostCents" />
+    
+    <label>Expected Hours</label>
+    <InputNumber @bind-Value="AddModel.ExpectedHours" />
 
     <button class="btn-primary" type="submit">Submit</button>
 </EditForm>
@@ -141,7 +156,8 @@ else
             {
                 TaskTitle = AddModel.TaskTitle?.Trim() ?? string.Empty,
                 TaskDetails = AddModel.TaskDetails?.Trim() ?? string.Empty,
-                TaskCostCents = AddModel.TaskCostCents
+                TaskCostCents = AddModel.TaskCostCents,
+                ExpectedHoursForCompletion = AddModel.ExpectedHours
             };
 
             TemplateService.AddWorkOrderTaskTemplate(template);
@@ -164,8 +180,9 @@ else
         {
             Id = t.Id,
             TaskTitle = t.TaskTitle,
-            TaskDetails = t.TaskDetails,
-            TaskCostCents = t.TaskCostCents
+            // TaskDetails = t.TaskDetails,
+            TaskCostCents = t.TaskCostCents,
+            ExpectedHoursForCompletion = t.ExpectedHoursForCompletion
         };
     }
 
@@ -214,5 +231,6 @@ else
         public string? TaskTitle { get; set; }
         public string? TaskDetails { get; set; }
         public int TaskCostCents { get; set; }
+        public int ExpectedHours { get; set; }
     }
 }
