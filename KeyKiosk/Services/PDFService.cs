@@ -846,7 +846,7 @@ public class PDFService
                                 table.Cell().Element(CellStyle).Text(part.PartName);
                                 table.Cell().Element(CellStyle).Text(part.Count.ToString());
                                 table.Cell().Element(CellStyle).Text($"{((float)part.Cost/100).ToString("F2")}");
-                                table.Cell().Element(CellStyle).Text((((float)part.Cost / 100)/part.Count).ToString());
+                                table.Cell().Element(CellStyle).Text((((float)part.Cost / 100)/part.Count).ToString("F2"));
 
                                 IContainer CellStyle(IContainer container)
                                 {
