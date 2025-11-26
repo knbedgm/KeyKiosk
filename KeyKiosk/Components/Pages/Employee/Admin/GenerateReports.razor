@@ -10,6 +10,7 @@
 
 <h1>Generate Reports</h1>
 
+@* Input fields for report generation *@
 <div class="report-filters">
     <div>
         <label class="muted">Start Date</label>
@@ -34,7 +35,10 @@
 </div>
 
 <!-- Action panels -->
+@* Buttons for generating reports *@
 <div class="report-panels">
+    
+    @* Preview *@
     <section class="report-card" aria-labelledby="preview-title">
         <h2 id="preview-title">Preview Reports</h2>
         <div class="btn-grid">
@@ -49,6 +53,7 @@
         </div>
     </section>
 
+    @* Download *@
     <section class="report-card" aria-labelledby="download-title">
         <h2 id="download-title">Download Reports</h2>
         <div class="btn-grid">
@@ -72,7 +77,7 @@
 
 
 @code {
-    // Inputs
+    // Input values
     public DateTimeOffset StartDate { get; set; } = DateTimeOffset.Now.Date;
     public DateTimeOffset EndDate { get; set; } = DateTimeOffset.Now.Date;
     public string CustomerName { get; set; } = "";
@@ -92,7 +97,12 @@
     [Inject] private WorkOrderLogService WorkOrderLogService { get; set; } = default!;
 
 
-    // Normalize to whole-day range and validate
+    /// <summary>
+    /// Normalize to whole-day range and validate
+    /// </summary>
+    /// <param name="start">Start date for data filtering</param>
+    /// <param name="end">End date for data filtering</param>
+    /// <returns>True if no errors</returns>
     private bool TryGetRange(out DateTimeOffset start, out DateTimeOffset end)
     {
         ErrorMessage = null;
@@ -118,6 +128,8 @@
         finally { IsBusy = false; }
     }
 
+    // Previews Reports
+    #region Preview Reports
     private Task GenerateEfficiencyReport() => Run(async () =>
     {
         if (!TryGetRange(out var s, out var e)) return;
@@ -175,6 +187,10 @@
         await PreviewDownloadService.PreviewMechanicProductivityReportAsync(workOrderLogs, StartDate, EndDate, EmployeeName);
     });
 
+    #endregion
+
+    // Downloads Reports
+    #region Download Reports
     private Task DownloadEfficiencyReport() => Run(async () =>
     {
         if (!TryGetRange(out var s, out var e)) return;
@@ -226,9 +242,10 @@
     });
 
     private Task DownloadMechanicProductivityReport() => Run(async () =>
-{
-    List<WorkOrderLogEvent> workOrderLogs = await WorkOrderLogService.GetWorkOrderLogsByUsernameDatePeriod(EmployeeName, StartDate, EndDate);
+    {
+        List<WorkOrderLogEvent> workOrderLogs = await WorkOrderLogService.GetWorkOrderLogsByUsernameDatePeriod(EmployeeName, StartDate, EndDate);
 
-    await PreviewDownloadService.DownloadMechanicProductivityReportAsync(workOrderLogs, StartDate, EndDate, EmployeeName);
-});
+        await PreviewDownloadService.DownloadMechanicProductivityReportAsync(workOrderLogs, StartDate, EndDate, EmployeeName);
+    }); 
+    #endregion
 }

@@ -7,12 +7,24 @@ namespace KeyKiosk.Components.Pages.Employee.Admin;
 
 public partial class PartTemplatesPage
 {
-    // Data
+    /// <summary>
+    /// Stores list of existing templates in database
+    /// </summary>
     private List<PartTemplate> TemplateList { get; set; } = new();
+    
+    /// <summary>
+    /// Stores data for template to add
+    /// </summary>
     private PartTemplate TemplateToAdd { get; set; } = new();
+    
+    /// <summary>
+    /// Stores data for template to update
+    /// </summary>
     private PartTemplate TemplateToUpdate { get; set; } = new();
 
-    // UI state
+    /// <summary>
+    /// Controls whether to show the add template panel
+    /// </summary>
     private bool ShowAdd { get; set; } = false;
 
     private string _search = string.Empty;
@@ -29,7 +41,9 @@ public partial class PartTemplatesPage
         }
     }
 
-    // Filtering
+    /// <summary>
+    /// Filters displayed templates
+    /// </summary>
     private IEnumerable<PartTemplate> Filtered =>
         (TemplateList ?? Enumerable.Empty<PartTemplate>())
             .Where(t =>
@@ -38,7 +52,9 @@ public partial class PartTemplatesPage
                 || (t.Details?.Contains(Search, StringComparison.OrdinalIgnoreCase) ?? false))
             .OrderBy(t => t.Id);
 
-    // Pagination
+    /// <summary>
+    /// Pagination
+    /// </summary>
     private int _pageSize = 10;
     private int PageSize
     {
@@ -54,32 +70,49 @@ public partial class PartTemplatesPage
         }
     }
 
+    /// <summary>
+    /// Current page value
+    /// </summary>
     private int CurrentPage { get; set; } = 1;
 
     private int FilteredCount => Filtered.Count();
+
+    /// <summary>
+    /// Total number of pages
+    /// </summary>
     private int TotalPages => Math.Max(1, (int)Math.Ceiling(FilteredCount / (double)PageSize));
 
     private IEnumerable<PartTemplate> Paged =>
         Filtered.Skip((CurrentPage - 1) * PageSize).Take(PageSize);
 
+    /// <summary>
+    /// Resets the current page to the first page
+    /// </summary>
     private void ResetToFirstPage()
     {
         CurrentPage = 1;
         StateHasChanged();
     }
 
+    // Change the displayed page
     private void GoFirst() => CurrentPage = 1;
     private void GoPrev() { if (CurrentPage > 1) CurrentPage--; }
     private void GoNext() { if (CurrentPage < TotalPages) CurrentPage++; }
     private void GoLast() => CurrentPage = TotalPages;
 
-    // Lifecycle
+    /// <summary>
+    /// Runs on page load
+    /// </summary>
+    /// <returns></returns>
     protected override Task OnInitializedAsync()
     {
         RefreshPartTemplatesList();
         return Task.CompletedTask;
     }
 
+    /// <summary>
+    /// Gets templates from database and populates template list
+    /// </summary>
     private void RefreshPartTemplatesList()
     {
         var templates = PartTemplateService.GetAllPartTemplates();
@@ -89,6 +122,10 @@ public partial class PartTemplatesPage
         if (CurrentPage > TotalPages) CurrentPage = TotalPages;
     }
 
+    /// <summary>
+    /// Populates template list with provided data
+    /// </summary>
+    /// <param name="templates">List of templates</param>
     private void PopulateTemplateList(List<PartTemplate> templates)
     {
         TemplateList.Clear();
@@ -96,7 +133,9 @@ public partial class PartTemplatesPage
             TemplateList.Add(t);
     }
 
-    // Add / Delete / Update
+    /// <summary>
+    /// Adds new using PartTemplateService
+    /// </summary>
     public void AddNewTemplate()
     {
         PartTemplateService.AddPartTemplate(TemplateToAdd);
@@ -106,6 +145,9 @@ public partial class PartTemplatesPage
         ResetToFirstPage();
     }
 
+    /// <summary>
+    /// Deletes template using PartTemplateService
+    /// </summary>
     public void DeleteTemplate(int id)
     {
         PartTemplateService.DeletePartTemplate(id);
@@ -116,6 +158,9 @@ public partial class PartTemplatesPage
         if (!Paged.Any() && CurrentPage > 1) CurrentPage--;
     }
 
+    /// <summary>
+    /// Updates existing template using PartTemplateService
+    /// </summary>
     private void UpdateExistingTemplate()
     {
         PartTemplateService.UpdatePartTemplate(TemplateToUpdate);
