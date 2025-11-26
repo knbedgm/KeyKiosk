@@ -59,7 +59,7 @@ namespace KeyKiosk.Services
         /// <summary>
         /// Get a single user by id
         /// </summary>
-        /// <param name="id"></param>
+        /// <param name="id">Id of user to get from database</param>
         /// <returns></returns>
         public async Task<User?> GetUserById(int id)
         {
@@ -69,7 +69,7 @@ namespace KeyKiosk.Services
         /// <summary>
         /// Add a new user to the database
         /// </summary>
-        /// <param name="newUser"></param>
+        /// <param name="newUser">NewUser to add</param>
         public async Task<User> AddAsync(User newUser)
         {
             db.Users.Add(newUser);
@@ -80,8 +80,8 @@ namespace KeyKiosk.Services
         /// <summary>
         /// Update existing user using id
         /// </summary>
-        /// <param name="id"></param>
-        /// <param name="updated"></param>
+        /// <param name="id">Id of user to update</param>
+        /// <param name="updated">Updated user values</param>
     public async Task UpdateAsync(int id, User updated)
         {
             var userToUpdate = await db.Users.FirstOrDefaultAsync(x => x.Id == id);
@@ -95,7 +95,7 @@ namespace KeyKiosk.Services
         /// <summary>
         /// Delete existing user using id
         /// </summary>
-        /// <param name="id"></param>
+        /// <param name="id">Id of user to delete</param>
         public async Task DeleteAsync(int id)
         {
             var userToDelete = await db.Users.FirstOrDefaultAsync(x => x.Id == id);

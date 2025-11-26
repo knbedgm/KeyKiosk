@@ -8,6 +8,7 @@
 <h1>Admin Dashboard</h1>
 
 <div class="admin-grid">
+    @* Top bar buttons for navigation *@
     <button type="button" class="admin-card" @onclick="GoEmployees">
         <span class="admin-icon" aria-hidden="true">👥</span>
         <span class="admin-label">Employees</span>
@@ -43,6 +44,7 @@
 @code {
     [Inject] private NavigationManager Nav { get; set; } = default!;
 
+    // Methods to perform navigation
     private void GoEmployees() => Nav.NavigateTo("/employee/admin/users");
     private void GoWorkOrders() => Nav.NavigateTo("/employee/home");
     private void GoTaskTemplates() => Nav.NavigateTo("/employee/admin/TaskTemplates");

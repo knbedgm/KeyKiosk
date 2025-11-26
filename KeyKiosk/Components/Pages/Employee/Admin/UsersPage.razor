@@ -219,13 +219,24 @@ else
     private int TotalPages => Math.Max(1, (int)Math.Ceiling(FilteredCount / (double)PageSize));
     private IEnumerable<User> PagedUsers => Filtered.Skip((Page - 1) * PageSize).Take(PageSize);
 
+    /// <summary>
+    /// Runs on page load
+    /// </summary>
+    /// <returns></returns>
     protected override async Task OnInitializedAsync()
     {
         Users = await UserService.GetAllAsync();
     }
 
+    /// <summary>
+    /// Show or hide add user panel
+    /// </summary>
     private void ToggleAdd() => ShowAdd = !ShowAdd;
 
+    /// <summary>
+    /// Creates new user
+    /// </summary>
+    /// <returns></returns>
     private async Task CreateUserAsync()
     {
         if (string.IsNullOrWhiteSpace(NewUser.Name) || string.IsNullOrWhiteSpace(NewUser.Pin))
@@ -244,6 +255,10 @@ else
         StateHasChanged();
     }
 
+    /// <summary>
+    /// Updates editing model with new values
+    /// </summary>
+    /// <param name="u"></param>
     private void BeginEdit(User u)
     {
         EditingId = u.Id;
@@ -256,12 +271,20 @@ else
         };
     }
 
+    /// <summary>
+    /// Cancels call changes made while editing
+    /// </summary>
     private void CancelEdit()
     {
         EditingId = null;
         EditModel = new();
     }
 
+    /// <summary>
+    /// Saves new user using UserService
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
     private async Task SaveUserAsync(int id)
     {
         if (EditingId is null) return;
@@ -278,6 +301,11 @@ else
         CancelEdit();
     }
 
+    /// <summary>
+    /// Deletes user using id and UserService
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
     private async Task DeleteUserAsync(int id)
     {
         await UserService.DeleteAsync(id);
