@@ -186,12 +186,18 @@ public partial class PartTemplatesPage
         };
     }
 
+    /// <summary>
+    /// Cancels changes made while editing template
+    /// </summary>
     private void CancelEdit()
     {
         EditingId = null;
         EditingRow = new PartTemplate();
     }
 
+    /// <summary>
+    /// Updates edited template using PartTemplateService
+    /// </summary>
     private void SaveRowAsync()
     {
         if (EditingId is null) return;

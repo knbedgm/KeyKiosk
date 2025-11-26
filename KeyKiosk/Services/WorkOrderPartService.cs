@@ -27,7 +27,7 @@ public class WorkOrderPartService
     /// <summary>
     /// Get work order parts by work order id
     /// </summary>
-    /// <param name="workOrderId"></param>
+    /// <param name="workOrderId">Id of work order to get parts for</param>
     /// <returns></returns>
     public List<WorkOrderPart> GetWorkOrderPartsByWorkOrderId(int workOrderId)
     {
@@ -50,7 +50,7 @@ public class WorkOrderPartService
     /// <summary>
     /// Get a single work order part by id
     /// </summary>
-    /// <param name="partId"></param>
+    /// <param name="partId">Id of part to get</param>
     /// <returns></returns>
     public WorkOrderPart GetWorkOrderPartById(int partId)
     {
@@ -58,7 +58,9 @@ public class WorkOrderPartService
                         .First(p => p.Id == partId);
     }
 
-
+    /// <summary>
+    /// Model for adding part
+    /// </summary>
     public class AddWorkOrderPartModel
     {
         public string PartName { get; set; } = "";
@@ -67,10 +69,11 @@ public class WorkOrderPartService
     }
 
     /// <summary>
-    /// Add a new work order part to the database
+    /// Add new part part to work order
     /// </summary>
-    /// <param name="newPart"></param>
-    /// 
+    /// <param name="workOrderId">Work order to add part to</param>
+    /// <param name="newPart">Part to add</param>
+    /// <exception cref="ArgumentException"></exception>
     public void AddWorkOrderPart(int workOrderId, AddWorkOrderPartModel newPart)
     {
         var workOrder = dbContext.WorkOrders.FirstOrDefault(p => p.Id == workOrderId);
@@ -91,6 +94,9 @@ public class WorkOrderPartService
         dbContext.SaveChanges();
     }
 
+    /// <summary>
+    /// Model for updating existing part
+    /// </summary>
     public class UpdateWorkOrderPartModel
     {
         public string PartName { get; set; } = "";
@@ -101,8 +107,8 @@ public class WorkOrderPartService
     /// <summary>
     /// Update existing work order part using id
     /// </summary>
-    /// <param name="partId"></param>
-    /// <param name="updatedPart"></param>
+    /// <param name="partId">Part id to update</param>
+    /// <param name="updatedPart">Updated part values</param>
     public void UpdateWorkOrderPart(int partId, UpdateWorkOrderPartModel updatedPart)
     {
         var partToUpdate = dbContext.WorkOrderParts.FirstOrDefault(p => p.Id == partId);
@@ -117,7 +123,7 @@ public class WorkOrderPartService
     /// <summary>
     /// Deletes work order part using id
     /// </summary>
-    /// <param name="idToDelete"></param>
+    /// <param name="idToDelete">Id of part to delete from work order</param>
     public void DeleteWorkOrderPart(int idToDelete)
     {
         var partToDelete = dbContext.WorkOrderParts.FirstOrDefault(p => p.Id == idToDelete);
@@ -128,7 +134,12 @@ public class WorkOrderPartService
         dbContext.SaveChanges();
     }
 
-    // Get parts between two dates
+    /// <summary>
+    /// Get parts for work orders started between two dates
+    /// </summary>
+    /// <param name="startDate">Earliest date of work order</param>
+    /// <param name="endDate">Latest date of work order</param>
+    /// <returns></returns>
     public async Task<List<WorkOrderPart>> GetPartsByDatePeriod(DateTimeOffset startDate, DateTimeOffset endDate)
     {
         List<WorkOrder> workOrders = await dbContext.WorkOrders

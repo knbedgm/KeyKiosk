@@ -279,7 +279,14 @@ else
     [SupplyParameterFromQuery(Name = "new")]
     public bool OpenNew { get; set; }
 
+    /// <summary>
+    /// Existing work orders
+    /// </summary>
     private List<WorkOrder> WorkOrders { get; set; } = new();
+
+    /// <summary>
+    /// Work order to edit
+    /// </summary>
     private WorkOrder? EditingWorkOrder { get; set; }
 
     // snapshot originals while a row is being edited
@@ -287,13 +294,26 @@ else
     private DateTimeOffset? _originalStart;
     private DateTimeOffset? _originalEnd;
 
-    // = PDF actions =
+    /// <summary>
+    /// Service for previewing or downloading pdf
+    /// </summary>
     [Inject] private PreviewDownloadService PreviewDownloadService { get; set; } = default!;
+
+    /// <summary>
+    /// Download work order for mechanics
+    /// </summary>
+    /// <param name="workOrder">Work order</param>
+    /// <returns></returns>
     private async Task DownloadPdfAsync(WorkOrder workOrder)
     {
         await PreviewDownloadService.DownloadMechanicTodoAsync(workOrder);
     }
 
+    /// <summary>
+    /// Preview work order for mechanics
+    /// </summary>
+    /// <param name="workOrder">Work order</param>
+    /// <returns></returns>
     private async Task PreviewPdfAsync(WorkOrder workOrder)
     {
         await PreviewDownloadService.PreviewMechanicTodoAsync(workOrder);
@@ -372,6 +392,10 @@ else
         Status = WorkOrderStatusType.Created
     };
 
+    /// <summary>
+    /// Runs on page load
+    /// </summary>
+    /// <returns></returns>
     protected override async Task OnInitializedAsync()
     {
         WorkOrders = await WorkOrderService.GetAllWorkOrdersAsync();
@@ -414,6 +438,10 @@ else
         return Task.CompletedTask;
     }
 
+    /// <summary>
+    /// Navigate to details page for selected work order
+    /// </summary>
+    /// <param name="workOrderId"></param>
     private void GoToDetails(int workOrderId)
     {
         Nav.NavigateTo($"/employee/workorder/{workOrderId}/tasks");
@@ -428,6 +456,9 @@ else
         _originalEnd = workOrder.EndDate;
     }
 
+    /// <summary>
+    /// Cancels changes made while editing
+    /// </summary>
     private void CancelEdit()
     {
         EditingWorkOrder = null;
@@ -436,6 +467,11 @@ else
         _originalEnd = null;
     }
 
+    /// <summary>
+    /// Saves changes to database for selected work order using WorkOrderService
+    /// </summary>
+    /// <param name="workOrder"></param>
+    /// <returns></returns>
     private async Task SaveWorkOrderAsync(WorkOrder workOrder)
     {
         ApplyWorkOrderStatusDates(_originalStatus, _originalStart, _originalEnd, workOrder);

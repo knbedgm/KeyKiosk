@@ -77,12 +77,17 @@ public partial class WorkOrderTaskTemplatesPage : ComponentBase
 
     private void ClampPage() => CurrentPage = Math.Min(CurrentPage, TotalPages);
 
-    // ===== Lifecycle =====
+    /// <summary>
+    /// Runs on page load
+    /// </summary>
     protected override void OnInitialized()
     {
         LoadTemplates();
     }
 
+    /// <summary>
+    /// Loads existing templates for display
+    /// </summary>
     private void LoadTemplates()
     {
         Templates = TemplateService.GetAllTaskTemplates();
@@ -93,7 +98,9 @@ public partial class WorkOrderTaskTemplatesPage : ComponentBase
     // ===== Toolbar actions =====
     protected void ToggleAdd() => ShowAdd = !ShowAdd;
 
-    // ===== Add =====
+    /// <summary>
+    /// Adds new task template
+    /// </summary>
     protected void OnAdd()
     {
         try

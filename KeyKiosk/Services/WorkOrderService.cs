@@ -12,7 +12,10 @@ public class WorkOrderService
         _dbContext = dbContext;
     }
 
-    // Get all work orders
+    /// <summary>
+    /// Get all work orders
+    /// </summary>
+    /// <returns></returns>
     public async Task<List<WorkOrder>> GetAllWorkOrdersAsync()
     {
         return await _dbContext.WorkOrders
@@ -22,7 +25,11 @@ public class WorkOrderService
                                .ToListAsync();
     }
 
-    // Get work orders by customer name
+    /// <summary>
+    /// Get work orders by customer name
+    /// </summary>
+    /// <param name="customerName">Name of customer to get work orders for</param>
+    /// <returns></returns>
     public async Task<List<WorkOrder>> GetWorkOrdersByCustomerNameAsync(string customerName)
     {
         return await _dbContext.WorkOrders
@@ -33,7 +40,11 @@ public class WorkOrderService
                                .ToListAsync();
     }
 
-    // Add a new work order
+    /// <summary>
+    /// Add a new work order to database
+    /// </summary>
+    /// <param name="workOrder">Work order values</param>
+    /// <returns></returns>
     public async Task<WorkOrder> AddWorkOrderAsync(WorkOrder workOrder)
     {
         if (workOrder.Tasks == null)
@@ -47,21 +58,32 @@ public class WorkOrderService
         return workOrder;
     }
 
-    //fetch all work orders
+    /// <summary>
+    /// Get all work orders including associated tasks and parts
+    /// </summary>
+    /// <returns></returns>
     public async Task<List<WorkOrder>> GetAllAsync()
     {
         return await _dbContext.WorkOrders.Include(w => w.Tasks).Include(w => w.Parts).ToListAsync();
     }
 
 
-    //fetch work order by id
+    /// <summary>
+    /// Get work order by id
+    /// </summary>
+    /// <param name="id">Id of work order to get</param>
+    /// <returns></returns>
     public async Task<WorkOrder?> GetByIdAsync(int id)
     {
         return await _dbContext.WorkOrders.Include(w => w.Tasks).Include(w => w.Parts)
                                    .FirstOrDefaultAsync(w => w.Id == id);
     }
 
-    // Update an existing work order
+    /// <summary>
+    /// Update an existing work order
+    /// </summary>
+    /// <param name="workOrder">Work order to update including new values</param>
+    /// <returns></returns>
     public async Task UpdateWorkOrderAsync(WorkOrder workOrder)
     {
         // Get the tracked entity if it exists
@@ -88,7 +110,11 @@ public class WorkOrderService
     }
 
 
-    // Delete a work order
+    /// <summary>
+    /// Delete a work order using id
+    /// </summary>
+    /// <param name="workOrderId">Id of work order to delete</param>
+    /// <returns></returns>
     public async Task DeleteWorkOrderAsync(int workOrderId)
     {
         var workOrder = await _dbContext.WorkOrders
@@ -102,7 +128,11 @@ public class WorkOrderService
         }
     }
 
-    // Get work orders by vehicle plate
+    /// <summary>
+    /// Get work orders by vehicle plate
+    /// </summary>
+    /// <param name="plate">License plate of work order to get</param>
+    /// <returns></returns>
     public async Task<List<WorkOrder>> GetWorkOrdersByVehiclePlateAsync(string plate)
     {
         return await _dbContext.WorkOrders
@@ -113,7 +143,12 @@ public class WorkOrderService
                                .ToListAsync();
     }
 
-    // Get work orders between two dates
+    /// <summary>
+    /// Get work orders between two dates
+    /// </summary>
+    /// <param name="startDate">Earliest starting date of work order</param>
+    /// <param name="endDate">Latest starting date of work order</param>
+    /// <returns></returns>
     public async Task<List<WorkOrder>> GetWorkOrderByDatePeriod(DateTimeOffset startDate, DateTimeOffset endDate)
     {
         return await _dbContext.WorkOrders
