@@ -7,7 +7,6 @@
 
 @inject WorkOrderLogService LogService
 @inject IJSRuntime JS
-@* Optional: keep if you still want the demo creator *@
 @inject WorkOrderAuditService? AuditService
 
 <link href="DesktopShared.css" rel="stylesheet" />
@@ -16,7 +15,7 @@
 <PageTitle>Work Order Logs</PageTitle>
 <h1 style="text-align:center">Work Order Logs</h1>
 
-<!-- Filters -->
+<!-- Filters + actions -->
 <div class="logs-toolbar card-like">
     <div class="filters">
         <input class="table-input" placeholder="Username" @bind="username" />
@@ -31,18 +30,23 @@
         </select>
     </div>
     <div class="actions">
+        <!-- Loads logs with filters -->
         <button class="btn-primary" @onclick="() => LoadLogs(resetPage: true)">Search</button>
+        <!-- Clears filters -->
         <button class="btn-outline" @onclick="ClearFilters">Clear</button>
+        <!-- Downloads CSV -->
         <button class="btn-outline" @onclick="ExportCsv">Export</button>
     </div>
 </div>
 
 @if (logs is null)
 {
+    <!-- Loading -->
     <p class="text-center">Loading…</p>
 }
 else if (!logs.Any())
 {
+    <!-- Empty results -->
     <div class="empty card-like">
         <div>No log events found.</div>
         <small class="muted">Try adjusting the filters above.</small>
@@ -60,6 +64,7 @@ else
             Page @Page of @TotalPages
             <span class="pager-sep">|</span>
             <label>Per page</label>
+            <!-- Page size -->
             <select class="pager-select" @bind="PageSize">
                 <option value="10">10</option>
                 <option value="25">25</option>
@@ -75,6 +80,7 @@ else
         </div>
     </div>
 
+    <!-- Logs table -->
     <div class="table-wrap">
         <div class="table-meta">
             <div><strong>@PagedLogs.Count()</strong> shown</div>
@@ -104,17 +110,18 @@ else
                 @foreach (var log in PagedLogs)
                 {
                     <tr>
+                        <!-- Basic columns -->
                         <td>@log.ID</td>
                         <td>@log.DateTime.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</td>
                         <td>@log.UserName</td>
                         <td>#@log.workOrder.Id</td>
                         <td>@log.workOrder.CustomerName</td>
                         <td><code class="chip">@log.workOrder.VehiclePlate</code></td>
-                        <td>
-                            <span class="tag @StatusClass(log.workOrder.Status)">@log.workOrder.Status</span>
-                        </td>
+                        <td><span class="tag @StatusClass(log.workOrder.Status)">@log.workOrder.Status</span></td>
                         <td>@(log.workOrder.StartDate?.ToLocalTime().ToString("yyyy-MM-dd HH:mm") ?? "-")</td>
                         <td>@(log.workOrder.EndDate?.ToLocalTime().ToString("yyyy-MM-dd HH:mm") ?? "-")</td>
+
+                        <!-- Friendly event type text -->
                         <td>
                             <span class="etype">
                                 @(
@@ -128,14 +135,14 @@ else
                                                             WorkOrderLogEvent.WorkOrderLogEventType.TaskStatusChanged => "Task Status Updated",
                                                             WorkOrderLogEvent.WorkOrderLogEventType.TaskDetailsChanged => "Task Details Updated",
                                                             _ => log.EventType.ToString()
-                                                        }
-                                                        )
-                        </span>
-                    </td>
-                    <td>
+                                                        })
+                    </span>
+                </td>
+
+                                                <!-- Specific details per event -->
+                                                <td>
                     @switch (log)
                             {
-                                // Work order field edits
                                 case WorkOrderLogEvent.DetailsChangedEvent detailsEvent:
                                     <details class="details-box">
                                         <summary>Work order info updated</summary>
@@ -154,33 +161,31 @@ else
                                     </details>
                                     break;
 
-                                // Status change on WO
                                 case WorkOrderLogEvent.StatusChangedEvent statusEvent:
                                     <span>Status → <strong>@statusEvent.Status</strong></span>
                                     break;
 
-                                // Task events (🛠 show TaskTitle, fall back to Title)
                                 case WorkOrderLogEvent.TaskAddedEvent taskAdded:
                                     {
-                                        var tname = taskAdded.Task?.Title ?? taskAdded.Task?.Title ?? "(no title)";
+                                        var tname = taskAdded.Task?.Title ?? "(no title)";
                                         <span>Task added: <strong>@tname</strong></span>
                                         break;
                                     }
                                 case WorkOrderLogEvent.TaskRemovedEvent taskRemoved:
                                     {
-                                        var tname = taskRemoved.Task?.Title ?? taskRemoved.Task?.Title ?? "(no title)";
+                                        var tname = taskRemoved.Task?.Title ?? "(no title)";
                                         <span>Task removed: <strong>@tname</strong></span>
                                         break;
                                     }
                                 case WorkOrderLogEvent.TaskStatusChangedEvent taskStatus:
                                     {
-                                        var tname = taskStatus.Task?.Title ?? taskStatus.Task?.Title ?? "(no title)";
+                                        var tname = taskStatus.Task?.Title ?? "(no title)";
                                         <span>Task <strong>@tname</strong> → <strong>@taskStatus.Status</strong></span>
                                         break;
                                     }
                                 case WorkOrderLogEvent.TaskDetailsChangedEvent taskDetails:
                                     {
-                                        var tname = taskDetails.Task?.Title ?? taskDetails.Task?.Title ?? "(no title)";
+                                        var tname = taskDetails.Task?.Title ?? "(no title)";
                                         <details class="details-box">
                                             <summary>Task details changed</summary>
                                             <div><strong>Task:</strong> @tname</div>
@@ -196,7 +201,6 @@ else
                                         break;
                                     }
 
-                                // Creation
                                 case WorkOrderLogEvent.CreateEvent:
                                     <span class="text-ok">Work order created</span>
                                     break;
@@ -218,9 +222,7 @@ else
             <button class="pager-btn" disabled="@(Page == 1)" @onclick="FirstPage">« First</button>
             <button class="pager-btn" disabled="@(Page == 1)" @onclick="PrevPage">‹ Prev</button>
         </div>
-        <div class="pager-middle">
-            Page @Page of @TotalPages
-        </div>
+        <div class="pager-middle">Page @Page of @TotalPages</div>
         <div class="pager-right">
             <button class="pager-btn" disabled="@(Page == TotalPages)" @onclick="NextPage">Next ›</button>
             <button class="pager-btn" disabled="@(Page == TotalPages)" @onclick="LastPage">Last »</button>
@@ -229,9 +231,10 @@ else
 }
 
 @code {
+    // Loaded logs
     private List<WorkOrderLogEvent>? logs;
 
-    // Filters
+    // Filter fields
     private string? username;
     private int? workOrderId;
     private string? status;
@@ -239,42 +242,39 @@ else
     private string? search;
     private WorkOrderLogEvent.WorkOrderLogEventType? eventType;
 
-    // Pagination
+    // Paging
     private int _pageSize = 25;
-    private int PageSize
-    {
-        get => _pageSize;
-        set { _pageSize = value <= 0 ? 25 : value; Page = 1; }
-    }
+    private int PageSize { get => _pageSize; set { _pageSize = value <= 0 ? 25 : value; Page = 1; } }
     private int Page { get; set; } = 1;
 
     private int TotalCount => logs?.Count ?? 0;
     private int TotalPages => Math.Max(1, (int)Math.Ceiling(TotalCount / (double)PageSize));
     private IEnumerable<WorkOrderLogEvent> PagedLogs =>
-        (logs ?? Enumerable.Empty<WorkOrderLogEvent>())
-            .Skip((Page - 1) * PageSize)
-            .Take(PageSize);
+        (logs ?? Enumerable.Empty<WorkOrderLogEvent>()).Skip((Page - 1) * PageSize).Take(PageSize);
 
-    // --- lightweight auto-refresh bits ---
+    // Auto refresh setup
     private PeriodicTimer? _refreshTimer;
     private CancellationTokenSource? _cts;
 
     protected override async Task OnInitializedAsync()
     {
-        await LoadLogs(resetPage: true); // initial load
+        // Initial load
+        await LoadLogs(resetPage: true);
     }
 
     protected override Task OnAfterRenderAsync(bool firstRender)
     {
+        // Start 15s refresh loop once
         if (firstRender)
         {
             _cts = new CancellationTokenSource();
-            _refreshTimer = new PeriodicTimer(TimeSpan.FromSeconds(15)); // change cadence if you want
+            _refreshTimer = new PeriodicTimer(TimeSpan.FromSeconds(15));
             _ = AutoRefreshLoopAsync();
         }
         return Task.CompletedTask;
     }
 
+    // Refresh loop that keeps the current page
     private async Task AutoRefreshLoopAsync()
     {
         try
@@ -282,40 +282,35 @@ else
             while (_refreshTimer != null &&
                    await _refreshTimer.WaitForNextTickAsync(_cts!.Token))
             {
-                await LoadLogs(resetPage: false); // keep current page while refreshing
+                await LoadLogs(resetPage: false);
                 await InvokeAsync(StateHasChanged);
             }
         }
-        catch (OperationCanceledException) { /* normal during dispose */ }
+        catch (OperationCanceledException) { /* normal on dispose */ }
     }
 
+    // Loads from service with current filters
     private async Task LoadLogs(bool resetPage = true)
     {
         logs = await LogService.GetFilteredLogsAsync(username, workOrderId, status, vehiclePlate, search, eventType);
 
-        if (resetPage)
-        {
-            Page = 1;
-        }
+        if (resetPage) Page = 1;
         else
         {
-            // clamp if total shrank so the current page isn't empty
+            // Clamp page if size changed
             if (Page > TotalPages) Page = TotalPages;
             if (Page < 1) Page = 1;
         }
     }
 
+    // Clears filters and reloads
     private void ClearFilters()
     {
-        username = null;
-        workOrderId = null;
-        vehiclePlate = null;
-        status = null;
-        search = null;
-        eventType = null;
+        username = null; workOrderId = null; vehiclePlate = null; status = null; search = null; eventType = null;
         _ = LoadLogs(resetPage: true);
     }
 
+    // Exports current filter set as CSV
     private async Task ExportCsv()
     {
         var csv = await LogService.ExportLogsToCsvAsync(username, workOrderId, status, vehiclePlate, search, eventType);
@@ -327,6 +322,7 @@ else
         await JS.InvokeVoidAsync("downloadFileFromStream", fileName, streamRef);
     }
 
+    // Tag color helper
     private static string StatusClass(WorkOrderStatusType s) => s switch
     {
         WorkOrderStatusType.Created => "tag-info",
@@ -342,6 +338,7 @@ else
     private void NextPage() { if (Page < TotalPages) Page++; }
     private void LastPage() => Page = TotalPages;
 
+    // Cleanup timers
     public void Dispose()
     {
         try { _cts?.Cancel(); } catch { }

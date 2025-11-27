@@ -2,12 +2,11 @@
 @rendermode InteractiveServer
 @layout Layout.MainLayout
 @namespace KeyKiosk.Components.Pages.Employee
-
 @using KeyKiosk.Data
 
 <h3>Work Order Parts Page</h3>
 
-@* Display list of existing Parts*@
+@* Shows current parts *@
 @if (PartList != null && PartList.Count > 0)
 {
     <table>
@@ -25,25 +24,17 @@
                 <td>@Part.Details</td>
                 <td>@Part.CostCents</td>
                 <td>
-                    @* Deletes selected Part *@
-                    <button @onclick="@(e => DeletePart(Part.Id))">
-                        Delete
-                    </button>
+                    @* Remove a part *@
+                    <button @onclick="@(e => DeletePart(Part.Id))">Delete</button>
                 </td>
             </tr>
         }
     </table>
 }
 
-<br />
-<br />
-<br />
-
 <h1>Add New Part</h1>
 
-<br />
-
-@* Form to add new Part *@
+@* Create from a template *@
 <EditForm Model="@PartToAdd" OnValidSubmit="@AddNewPart">
     <DataAnnotationsValidator />
     <ValidationSummary />
@@ -63,14 +54,11 @@
     <button type="submit">Submit</button>
 </EditForm>
 
-<br />
-<br />
-<br />
-
 @if (PartList != null && PartList.Count > 0)
 {
     <h1>Update Existing Part</h1>
 
+    <!-- Pick which part to edit -->
     <InputSelect @bind-Value:get="PartToUpdateId" @bind-Value:set="LoadUpdatePart">
         <option value="">Select a Part</option>
         @foreach (WorkOrderPart Part in PartList)
@@ -79,9 +67,7 @@
         }
     </InputSelect>
 
-    <br />
-
-    @* Form to update existing template *@
+    @* Edit selected part *@
     @if (PartToUpdateId != null)
     {
         <EditForm Model="@PartToUpdate" OnValidSubmit="@UpdateExistingPart">
@@ -95,7 +81,6 @@
             <InputTextArea class="form-control" @bind-Value="PartToUpdate.Details" />
 
             <label>Cost in Cents</label>
-            @* <input type="number" value="@PartToUpdate.CostCents" readonly /> *@
             <InputNumber @bind-Value=PartToUpdate.CostCents></InputNumber>
 
             <button type="submit">Submit</button>
