@@ -14,24 +14,29 @@
 
 @if (Templates is null)
 {
+    <!-- Show loading while templates are fetching -->
     <p class="text-center">Loading…</p>
 }
 else
 {
-    <!-- Toolbar: search (left) + add button (right) -->
+    <!-- Search bar + Add button -->
     <div class="toolbar toolbar-spread">
         <div class="toolbar-left">
+            <!-- Search templates by title/details -->
             <input class="table-input" style="min-width:260px"
                    placeholder="Search title or details"
                    @bind="Search" @bind:event="oninput" />
         </div>
+
+        <!-- Opens the add template form -->
         <button class="btn-primary" @onclick="ToggleAdd">@((ShowAdd ? "Close" : "Add Template"))</button>
     </div>
 
-    <!-- Add panel -->
+    <!-- Add template panel -->
     @if (ShowAdd)
     {
         <div class="card-like add-card">
+            <!-- Form to create new template -->
             <EditForm class="new-workorder-form" Model="@AddModel" OnValidSubmit="@OnAdd">
                 <DataAnnotationsValidator />
                 <ValidationSummary />
@@ -41,12 +46,14 @@ else
                         <label class="muted">Title</label>
                         <InputText class="table-input" @bind-Value="AddModel.TaskTitle" />
                     </div>
+
                     <div class="col-span-2">
                         <label class="muted">Cost (¢)</label>
                         <InputNumber class="table-input" @bind-Value="AddModel.TaskCostCents" />
                     </div>
 
-                    @* Optional details
+                    <!-- Optional template details (disabled currently) -->
+                    @* 
                     <div class="col-span-6">
                         <label class="muted">Details</label>
                         <InputText class="table-input" @bind-Value="AddModel.TaskDetails" />
@@ -59,7 +66,10 @@ else
                     </div>
 
                     <div class="col-span-6" style="text-align:right;">
+                        <!-- Save new template -->
                         <button class="btn-primary" type="submit">Create</button>
+
+                        <!-- Close panel -->
                         <button class="cancel-btn" type="button" @onclick="ToggleAdd">Cancel</button>
                     </div>
                 </div>
@@ -69,6 +79,7 @@ else
 
     @if (!Filtered.Any())
     {
+        <!-- No matching templates -->
         <p class="text-center muted">No templates found.</p>
     }
     else
@@ -79,10 +90,14 @@ else
                 <button class="pager-btn" disabled="@(CurrentPage == 1)" @onclick="GoFirst">« First</button>
                 <button class="pager-btn" disabled="@(CurrentPage == 1)" @onclick="GoPrev">‹ Prev</button>
             </div>
+
             <div class="pager-middle">
+                <!-- Page number + page size -->
                 Page @CurrentPage of @TotalPages
                 <span class="pager-sep">|</span>
                 <label>Per page</label>
+
+                <!-- Change page size -->
                 <select class="pager-select" @bind="PageSize">
                     <option value="5">5</option>
                     <option value="10">10</option>
@@ -90,49 +105,47 @@ else
                     <option value="25">25</option>
                     <option value="50">50</option>
                 </select>
+
                 <span class="pager-sep">|</span>
                 <span>@FilteredCount item(s)</span>
             </div>
+
             <div class="pager-right">
                 <button class="pager-btn" disabled="@(CurrentPage == TotalPages)" @onclick="GoNext">Next ›</button>
                 <button class="pager-btn" disabled="@(CurrentPage == TotalPages)" @onclick="GoLast">Last »</button>
             </div>
         </div>
 
-        <!-- Table -->
+        <!-- Template table -->
         <table class="workorders-table">
             <thead>
                 <tr>
                     <th style="width:80px;">Id</th>
                     <th>Title</th>
-                    @* <th>Details</th> *@
+                    <!-- <th>Details</th>  (currently hidden) -->
                     <th>Cost</th>
                     <th>Expected Hours</th>
                     <th style="width:1%;">Actions</th>
                 </tr>
             </thead>
+
             <tbody>
                 @foreach (var t in PagedFiltered)
                 {
                     var isEditing = EditingId == t.Id;
+
                     <tr>
+                        <!-- Template ID -->
                         <td>@t.Id</td>
+
+                        <!-- Template title (not editable inline) -->
                         <td>@t.TaskTitle</td>
 
-                        @* <td>
-                            @if (isEditing)
-                            {
-                                <InputText class="table-input" @bind-Value="EditingRow.TaskDetails" />
-                            }
-                            else
-                            {
-                                @t.TaskDetails
-                            }
-                        </td> *@
-
+                        <!-- Cost column -->
                         <td style="text-align:right;">
                             @if (isEditing)
                             {
+                                <!-- Edit cost -->
                                 <InputNumber class="table-input" @bind-Value="EditingRow.TaskCostCents" />
                             }
                             else
@@ -141,9 +154,11 @@ else
                             }
                         </td>
 
+                        <!-- Expected hours -->
                         <td style="text-align:right;">
                             @if (isEditing)
                             {
+                                <!-- Edit hours -->
                                 <InputNumber class="table-input" @bind-Value="EditingRow.ExpectedHoursForCompletion" />
                             }
                             else
@@ -152,15 +167,22 @@ else
                             }
                         </td>
 
+                        <!-- Edit/Delete buttons -->
                         <td style="white-space:nowrap;">
                             @if (isEditing)
                             {
+                                <!-- Save updated row -->
                                 <button class="save-btn small-btn" @onclick="SaveRowAsync">Save</button>
+
+                                <!-- Cancel edit -->
                                 <button class="cancel-btn small-btn" @onclick="CancelEdit">Cancel</button>
                             }
                             else
                             {
+                                <!-- Begin editing -->
                                 <button class="edit-btn small-btn" @onclick="@(() => BeginEdit(t))">Edit</button>
+
+                                <!-- Delete this template -->
                                 <button class="delete-btn small-btn" @onclick="@(() => OnDelete(t.Id))">Delete</button>
                             }
                         </td>
@@ -175,10 +197,14 @@ else
                 <button class="pager-btn" disabled="@(CurrentPage == 1)" @onclick="GoFirst">« First</button>
                 <button class="pager-btn" disabled="@(CurrentPage == 1)" @onclick="GoPrev">‹ Prev</button>
             </div>
+
             <div class="pager-middle">
+                <!-- Page display -->
                 Page @CurrentPage of @TotalPages
                 <span class="pager-sep">|</span>
                 <label>Per page</label>
+
+                <!-- Page size select -->
                 <select class="pager-select" @bind="PageSize">
                     <option value="5">5</option>
                     <option value="10">10</option>
@@ -186,9 +212,11 @@ else
                     <option value="25">25</option>
                     <option value="50">50</option>
                 </select>
+
                 <span class="pager-sep">|</span>
                 <span>@FilteredCount item(s)</span>
             </div>
+
             <div class="pager-right">
                 <button class="pager-btn" disabled="@(CurrentPage == TotalPages)" @onclick="GoNext">Next ›</button>
                 <button class="pager-btn" disabled="@(CurrentPage == TotalPages)" @onclick="GoLast">Last »</button>

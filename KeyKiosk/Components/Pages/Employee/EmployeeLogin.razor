@@ -13,20 +13,24 @@
     <div class="login-card">
         <h1>Employee Login</h1>
 
+        <!-- Basic login form -->
         <EditForm Model="@loginModel" OnValidSubmit="OnLogin">
             <DataAnnotationsValidator />
             <ValidationSummary />
 
+            <!-- Username input -->
             <div class="form-group">
                 <label for="username">Username</label>
                 <InputText id="username" @bind-Value="loginModel.Username" class="input-field" />
             </div>
 
+            <!-- Password input -->
             <div class="form-group">
                 <label for="password">Password</label>
                 <InputText id="password" type="password" @bind-Value="loginModel.Password" class="input-field" />
             </div>
 
+            <!-- Shows error if login fails -->
             @if (!string.IsNullOrEmpty(errorMessage))
             {
                 <p class="error-message">@errorMessage</p>
@@ -42,25 +46,29 @@
 </div>
 
 @code {
+    // Simple model for the form
     private LoginModel loginModel = new();
     private string? errorMessage;
 
+    // Very basic hardcoded auth and redirects
     private void OnLogin()
     {
         var username = loginModel.Username?.Trim();
         var password = loginModel.Password?.Trim();
 
-        // --- Hardcoded logins ---
         if (username == "Rachel" && password == "123123")
         {
+            // Admin home
             Nav.NavigateTo("/employee/admin/home", forceLoad: true);
         }
         else if (username == "Ryan" && password == "123123")
         {
+            // Employee home
             Nav.NavigateTo("/employee/home", forceLoad: true);
         }
         else
         {
+            // Bad credentials
             errorMessage = "Invalid username or password.";
         }
     }

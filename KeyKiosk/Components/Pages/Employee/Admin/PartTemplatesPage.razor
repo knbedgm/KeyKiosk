@@ -13,42 +13,53 @@
 
 @if (TemplateList is null)
 {
+    <!-- Show loading while templates are being fetched -->
     <p class="text-center">Loading…</p>
 }
 else
 {
-    <!-- Top toolbar: search (left) + Add button (right) -->
+    <!-- Top toolbar: search box + Add button -->
     <div class="toolbar toolbar-spread">
         <div class="toolbar-left">
+            <!-- Search by name or details -->
             <input class="table-input" style="min-width:260px"
                    placeholder="Search part name or details"
                    @bind="Search" @bind:event="oninput" />
         </div>
+
+        <!-- Toggle add template form -->
         <button class="btn-primary" @onclick="ToggleAdd">@((ShowAdd ? "Close" : "Add Template"))</button>
     </div>
 
-    <!-- Add panel -->
+    <!-- Add new part template panel -->
     @if (ShowAdd)
     {
         <div class="card-like add-card">
+            <!-- Form for creating a new template -->
             <EditForm Model="@TemplateToAdd" OnValidSubmit="@AddNewTemplate">
                 <DataAnnotationsValidator />
                 <ValidationSummary />
+
                 <div class="grid-6 gap-md">
                     <div class="col-span-3">
                         <label class="muted">Part Name</label>
                         <InputText class="table-input" @bind-Value="TemplateToAdd.PartName" />
                     </div>
+
                     <div class="col-span-2">
                         <label class="muted">Cost (¢)</label>
                         <InputNumber class="table-input" @bind-Value="TemplateToAdd.CostCents" />
                     </div>
+
                     <div class="col-span-6">
                         <label class="muted">Details</label>
                         <InputText class="table-input" @bind-Value="TemplateToAdd.Details" />
                     </div>
+
                     <div class="col-span-6" style="text-align:right;">
+                        <!-- Save new template -->
                         <button class="btn-primary" type="submit">Create</button>
+                        <!-- Close add panel -->
                         <button class="cancel-btn" type="button" @onclick="ToggleAdd">Cancel</button>
                     </div>
                 </div>
@@ -58,6 +69,7 @@ else
 
     @if (!Filtered.Any())
     {
+        <!-- No templates match the current search -->
         <p class="text-center muted">No part templates found.</p>
     }
     else
@@ -68,10 +80,14 @@ else
                 <button class="pager-btn" disabled="@(CurrentPage == 1)" @onclick="GoFirst">« First</button>
                 <button class="pager-btn" disabled="@(CurrentPage == 1)" @onclick="GoPrev">‹ Prev</button>
             </div>
+
             <div class="pager-middle">
+                <!-- Current page and page size -->
                 Page @CurrentPage of @TotalPages
                 <span class="pager-sep">|</span>
                 <label>Per page</label>
+
+                <!-- Change page size -->
                 <select class="pager-select" @bind="PageSize">
                     <option value="5">5</option>
                     <option value="10">10</option>
@@ -79,16 +95,18 @@ else
                     <option value="25">25</option>
                     <option value="50">50</option>
                 </select>
+
                 <span class="pager-sep">|</span>
                 <span>@FilteredCount item(s)</span>
             </div>
+
             <div class="pager-right">
                 <button class="pager-btn" disabled="@(CurrentPage == TotalPages)" @onclick="GoNext">Next ›</button>
                 <button class="pager-btn" disabled="@(CurrentPage == TotalPages)" @onclick="GoLast">Last »</button>
             </div>
         </div>
 
-        <!-- Table -->
+        <!-- Main table of part templates -->
         <table>
             <thead>
                 <tr>
@@ -104,11 +122,13 @@ else
                 {
                     var isEditing = EditingId == t.Id;
                     <tr>
+                        <!-- Template ID -->
                         <td>@t.Id</td>
 
                         <!-- Name is read-only -->
                         <td>@t.PartName</td>
 
+                        <!-- Details: editable when in edit mode -->
                         <td>
                             @if (isEditing)
                             {
@@ -120,6 +140,7 @@ else
                             }
                         </td>
 
+                        <!-- Cost: editable only when editing -->
                         <td style="text-align:right;">
                             @if (isEditing)
                             {
@@ -131,15 +152,20 @@ else
                             }
                         </td>
 
+                        <!-- Row actions: Edit / Save / Cancel / Delete -->
                         <td style="white-space:nowrap;">
                             @if (isEditing)
                             {
+                                <!-- Save edited row -->
                                 <button class="save-btn small-btn" @onclick="SaveRowAsync">Save</button>
+                                <!-- Cancel edit -->
                                 <button class="cancel-btn small-btn" @onclick="CancelEdit">Cancel</button>
                             }
                             else
                             {
+                                <!-- Start editing this row -->
                                 <button class="edit-btn small-btn" @onclick="() => BeginEdit(t)">Edit</button>
+                                <!-- Delete this template -->
                                 <button class="delete-btn small-btn" @onclick="() => DeleteTemplate(t.Id)">Delete</button>
                             }
                         </td>
@@ -154,9 +180,12 @@ else
                 <button class="pager-btn" disabled="@(CurrentPage == 1)" @onclick="GoFirst">« First</button>
                 <button class="pager-btn" disabled="@(CurrentPage == 1)" @onclick="GoPrev">‹ Prev</button>
             </div>
+
             <div class="pager-middle">
+                <!-- Simple page display -->
                 Page @CurrentPage of @TotalPages
             </div>
+
             <div class="pager-right">
                 <button class="pager-btn" disabled="@(CurrentPage == TotalPages)" @onclick="GoNext">Next ›</button>
                 <button class="pager-btn" disabled="@(CurrentPage == TotalPages)" @onclick="GoLast">Last »</button>

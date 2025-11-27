@@ -13,14 +13,16 @@
 
 @if (WorkOrder is null)
 {
+    <!-- Loading state -->
     <p>Loading…</p>
 }
 else
 {
-    <!-- Summary header -->
+    <!-- Header summary and inline edit -->
     <div class="card-like" style="padding:1rem;border:1px solid #e5e7eb;border-radius:12px;margin-bottom:1rem;">
         <div style="display:flex;gap:1rem;flex-wrap:wrap;align-items:center;justify-content:space-between;">
 
+            <!-- Left: labels and values -->
             <div style="display:flex;gap:1.25rem;flex-wrap:wrap;align-items:center;">
                 <div>
                     <div class="muted" style="font-size:.9rem;color:#6b7280;">Work Order</div>
@@ -29,6 +31,7 @@ else
 
                 @if (!IsEditingHeader)
                 {
+                    <!-- Read-only header -->
                     <div>
                         <div class="muted" style="font-size:.9rem;color:#6b7280;">Customer</div>
                         <div class="fw-semibold">@WorkOrder.CustomerName</div>
@@ -46,7 +49,7 @@ else
                 }
                 else
                 {
-                    <!-- Inline edit controls -->
+                    <!-- Editable header -->
                     <div>
                         <div class="muted" style="font-size:.9rem;color:#6b7280;">Customer</div>
                         <InputText class="table-input input-elevated" @bind-Value="HeaderCustomerDraft" />
@@ -66,6 +69,7 @@ else
                     </div>
                 }
 
+                <!-- Timestamps + total -->
                 <div>
                     <div class="muted" style="font-size:.9rem;color:#6b7280;">Start → End</div>
                     <div class="fw-semibold">@FormatDateTime(WorkOrder.StartDate) → @FormatDateTime(WorkOrder.EndDate)</div>
@@ -76,6 +80,7 @@ else
                 </div>
             </div>
 
+            <!-- Header actions -->
             <div style="display:flex;gap:.5rem;align-items:center;">
                 @if (!IsEditingHeader)
                 {
@@ -87,12 +92,13 @@ else
                     <button class="cancel-btn" @onclick="CancelEditHeader">Cancel</button>
                 }
 
+                <!-- Generate PDF and (future) archive -->
                 <button class="btn-primary" @onclick="GenerateWorkOrderDoc">Generate Work Order</button>
                 <button class="delete-btn" disabled>Archive Work Order</button>
             </div>
         </div>
 
-        <!-- Details (single copy) -->
+        <!-- Details text with inline edit -->
         <div style="margin-top:.75rem;">
             @if (!IsEditingWoDetails)
             {
@@ -118,17 +124,19 @@ else
         </div>
     </div>
 
-    <!-- Toolbar -->
+    <!-- Tasks toolbar -->
     <div style="display:flex;justify-content:space-between;align-items:center;margin:.25rem 0 .75rem;">
         <h2 style="margin:0">Tasks</h2>
         <div style="display:flex;gap:.5rem;align-items:center;">
+            <!-- Search tasks -->
             <input class="table-input input-elevated" style="min-width:260px" placeholder="Search task title/details"
                    @bind="TaskSearch" @bind:event="oninput" />
+            <!-- Toggle add task panel -->
             <button class="btn-primary" @onclick="ToggleAddForm">@((ShowAddForm ? "Close" : "Add Task"))</button>
         </div>
     </div>
 
-    <!-- Add task panel -->
+    <!-- Add task from template -->
     @if (ShowAddForm)
     {
         <div class="card-like" style="padding:1rem;border:1px solid #e5e7eb;border-radius:12px;margin-bottom:1rem;">
@@ -136,7 +144,6 @@ else
                 <DataAnnotationsValidator />
                 <ValidationSummary />
                 <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:.75rem;">
-
                     <div style="grid-column: span 2;">
                         <label class="muted">Task</label>
                         <select class="table-select input-elevated" @onchange="ModifyCreateTaskFromTemplate">
@@ -147,17 +154,14 @@ else
                             }
                         </select>
                     </div>
-
                     <div style="grid-column: span 3;">
                         <label class="muted">Details</label>
                         <InputTextArea class="table-input input-elevated" @bind-Value="TaskToAdd.Details" />
                     </div>
-
                     <div>
                         <label class="muted">Cost (¢)</label>
                         <InputNumber class="table-input input-elevated" @bind-Value="TaskToAdd.CostCents" disabled />
                     </div>
-
                     <div style="grid-column: span 6;text-align:right;">
                         <button class="btn-primary" type="submit">Add Task</button>
                     </div>
@@ -166,7 +170,7 @@ else
         </div>
     }
 
-    <!-- Tasks table -->
+    <!-- Tasks table with inline edit -->
     <div class="workorders-table-container">
         <table class="workorders-table">
             <thead>
@@ -181,6 +185,7 @@ else
                     <th>Hours</th>
                     <th style="width:1%;">Actions</th>
                 </tr>
+                <!-- Task filters -->
                 <tr>
                     <th></th>
                     <th><input class="table-input input-elevated" placeholder="Filter title" @bind="FilterTitle" @bind:event="oninput" /></th>
@@ -208,10 +213,10 @@ else
                     <tr>
                         <td>@t.Id</td>
 
-                        <!-- Title: never editable inline -->
+                        <!-- Title is never editable inline -->
                         <td>@t.Title</td>
 
-                        <!-- Details: editable when editing -->
+                        <!-- Details editable when editing -->
                         <td>
                             @if (isEditing)
                             {
@@ -219,18 +224,19 @@ else
                             }
                             else
                             {
+
                                 @t.Details
                             }
                         </td>
 
-                        <!-- Cost: never editable inline -->
+                        <!-- Cost is read-only here -->
                         <td>@FormatCost(t.CostCents)</td>
 
-                        <!-- Dates: never editable inline -->
+                        <!-- Date columns readonly -->
                         <td>@FormatDateTime(t.StartDate)</td>
                         <td>@FormatDateTime(t.EndDate)</td>
 
-                        <!-- Status: editable when editing -->
+                        <!-- Status editable when editing -->
                         <td>
                             @if (isEditing)
                             {
@@ -243,11 +249,12 @@ else
                             }
                             else
                             {
+
                                 @t.Status
                             }
                         </td>
 
-                        <!-- Hours: editable only when editing -->
+                        <!-- Hours editable when editing -->
                         <td style="text-align:right;min-width:90px;">
                             @if (isEditing)
                             {
@@ -255,10 +262,12 @@ else
                             }
                             else
                             {
+
                                 @t.HoursForCompletion
                             }
                         </td>
 
+                        <!-- Row actions -->
                         <td style="white-space:nowrap;">
                             @if (isEditing)
                             {
@@ -276,14 +285,14 @@ else
             </tbody>
         </table>
 
-        <!-- Parts toolbar -->
+        <!-- Parts section below tasks -->
         <div style="display:flex;justify-content:space-between;align-items:center;margin:1rem 0 .5rem;">
             <h2 style="margin:0">Parts</h2>
             <input class="table-input input-elevated" style="min-width:260px" placeholder="Search parts"
                    @bind="PartFilter" @bind:event="oninput" />
         </div>
 
-        <!-- Add Part (from template only) -->
+        <!-- Add part from template -->
         <div class="card-like" style="padding:1rem;border:1px solid #e5e7eb;border-radius:12px;margin-bottom:1rem;">
             <form @onsubmit="AddPartFromTemplate" @onsubmit:preventDefault>
                 <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:.75rem;">
