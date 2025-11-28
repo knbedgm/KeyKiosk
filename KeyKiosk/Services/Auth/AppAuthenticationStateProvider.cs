@@ -87,6 +87,23 @@ namespace KeyKiosk.Services.Auth
 			}
 		}
 
+		public async Task<bool> LoginRFIDAsync(string uid)
+		{
+			var user = await userService.GetUserByRFIDAsync(uid);
+
+			if (user is not null)
+			{
+				var session = new Session(user, SessionLoginType.Kiosk, true);
+				await StartSession(session);
+				return true;
+
+			} else
+			{
+				await StartSession(null);
+				return false;
+			}
+		}
+
 		public async Task Logout()
 		{
 			if (CurrentSession is not null)

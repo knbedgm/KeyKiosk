@@ -9,6 +9,7 @@ namespace KeyKiosk.Data
         public int Id { get; set; }
         public string Name { get; set; } = "";
         public string? Pin { get; set; } = null;
+        public string? RFIDUid { get; set; } = null;
         public UserDesktopLogin? DesktopLogin { get; set; }
         public UserType UserType { get; set; } = UserType.User;
     }

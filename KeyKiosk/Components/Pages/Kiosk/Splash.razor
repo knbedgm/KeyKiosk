@@ -58,8 +58,8 @@
 
     private void OnCardScanned(object? source, OnCardScannedEventArgs e)
     {
-        session.LoginKioskAsync("RFID").Wait();
-        navManager.NavigateTo("kiosk/home");
+        session.LoginKioskAsync(e.CardId).Wait();
+        InvokeAsync(() => navManager.NavigateTo("kiosk/home")).Wait();
     }
 
     async void OnTimeout()

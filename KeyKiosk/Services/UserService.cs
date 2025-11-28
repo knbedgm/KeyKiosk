@@ -44,6 +44,12 @@ namespace KeyKiosk.Services
 
 		}
 
+		public async Task<User?> GetUserByRFIDAsync(string uid)
+		{
+			return await (from u in db.Users where u.RFIDUid == uid select u).FirstOrDefaultAsync();
+
+		}
+
         /// <summary>
         /// Get all  users
         /// </summary>
