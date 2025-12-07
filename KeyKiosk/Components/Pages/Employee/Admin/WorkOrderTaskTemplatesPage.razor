@@ -2,6 +2,8 @@
 @rendermode InteractiveServer
 @layout Layout.MainLayout
 @namespace KeyKiosk.Components.Pages.Employee.Admin
+@attribute [Authorize("Desktop")]
+@attribute [Authorize("RoleManager")]
 
 @using KeyKiosk.Data
 @using Microsoft.AspNetCore.Components.Forms

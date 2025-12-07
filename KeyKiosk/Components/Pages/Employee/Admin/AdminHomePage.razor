@@ -1,6 +1,8 @@
 ﻿@page "/employee/admin/home"
 @rendermode InteractiveServer
 @layout Layout.MainLayout
+@attribute [Authorize("Desktop")]
+@attribute [Authorize("RoleAdmin")]
 
 <link href="DesktopShared.css" rel="stylesheet" />
 <link href="AdminHomePage.css" rel="stylesheet" />

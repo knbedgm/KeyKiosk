@@ -38,6 +38,22 @@ namespace KeyKiosk.Services
 			}
 		}
 
+		public async Task SetUserDesktopLoginAsync(int userId, string username, string password)
+		{
+
+            var user = await GetUserById(userId);
+            if (user is null)
+            {
+                throw new ArgumentException("No user with that ID", "userId");
+            }
+
+			var hash = passwordHasher.HashPassword(null, password);
+
+            user.DesktopLogin = new UserDesktopLogin { Username = username, HashedPassword = hash };
+
+            await db.SaveChangesAsync();
+		}
+
 		public async Task<User?> GetUserByKioskLoginAsync(string pin)
 		{
 			return await (from u in db.Users where u.Pin == pin select u).FirstOrDefaultAsync();

@@ -1,6 +1,8 @@
 ﻿@page "/employee/admin/users"
 @rendermode InteractiveServer
 @layout Layout.MainLayout
+@attribute [Authorize("Desktop")]
+@attribute [Authorize("RoleAdmin")]
 @using KeyKiosk.Data
 @inject KeyKiosk.Services.UserService UserService
 @inject ISnackbar Snackbar
@@ -130,7 +132,7 @@ else
                             else
                             {
 
-                                @u.Pin
+                                @(u.Pin ?? "Unset")
                             }
                         </td>
                         <td>
@@ -211,6 +213,7 @@ else
             .Where(u =>
                 (string.IsNullOrWhiteSpace(Search)
                     || (u.Name?.Contains(Search, StringComparison.OrdinalIgnoreCase) ?? false)
+                    || (u.DesktopLogin?.Username.Contains(Search, StringComparison.OrdinalIgnoreCase) ?? false)
                     || (u.Pin?.Contains(Search, StringComparison.OrdinalIgnoreCase) ?? false))
                 && (string.IsNullOrWhiteSpace(FilterRole)
                     || u.UserType.ToString() == FilterRole));
@@ -239,10 +242,15 @@ else
     /// <returns></returns>
     private async Task CreateUserAsync()
     {
-        if (string.IsNullOrWhiteSpace(NewUser.Name) || string.IsNullOrWhiteSpace(NewUser.Pin))
+        if (string.IsNullOrWhiteSpace(NewUser.Name))
         {
-            Snackbar.Add("Name and PIN are required.", Severity.Warning);
+            Snackbar.Add("Name is required.", Severity.Warning);
             return;
+        }
+
+        if (string.IsNullOrWhiteSpace(NewUser.Pin))
+        {
+            NewUser.Pin = null;
         }
 
         var created = await UserService.AddAsync(NewUser);
@@ -292,7 +300,7 @@ else
         await UserService.UpdateAsync(id, new User
         {
             Name = EditModel.Name ?? "",
-            Pin = EditModel.Pin ?? "000000",
+            Pin = String.IsNullOrWhiteSpace(EditModel.Pin) ? null : EditModel.Pin,
             UserType = EditModel.UserType
         });
 

@@ -47,7 +47,7 @@
 </div>
 
 @code {
-    [CascadingParameter] protected Task<AuthenticationState> AuthStat { get; set; }
+    [CascadingParameter] protected Task<AuthenticationState> AuthState { get; set; }
 
     List<string> History = [];
 
@@ -57,7 +57,7 @@
     protected async override Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
-        var user = (await AuthStat).User;
+        var user = (await AuthState).User;
         if (!(user?.Identity?.IsAuthenticated ?? false))
         {
             // nav.NavigateTo($"authentication/login?returnUrl={Uri.EscapeDataString(nav.Uri)}");

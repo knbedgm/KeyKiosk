@@ -1,5 +1,6 @@
 ﻿using KeyKiosk.Data;
 using KeyKiosk.Services;
+using KeyKiosk.Services.Auth;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
@@ -120,8 +121,9 @@ namespace KeyKiosk.Data.Interceptors
         private static User GetUser(IServiceProvider sp)
         {
             var db = sp.GetRequiredService<ApplicationDbContext>();
-            return db.Users.First(); // fallback: first user in DB
-        }
+			var auth = sp.GetRequiredService<AppAuthenticationStateProvider>();
+			return auth.CurrentSession?.User ?? db.Users.First(); // fallback: first user in DB
+		}
 
         // Helper: run a log action
         private static async Task LogAsync(IServiceProvider sp, Func<WorkOrderLogService, Task> action)

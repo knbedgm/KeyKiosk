@@ -4,6 +4,8 @@
 @using System.Text
 @using System.Threading
 @layout Layout.MainLayout
+@attribute [Authorize("Desktop")]
+@attribute [Authorize("RoleManager")]
 
 @inject WorkOrderLogService LogService
 @inject IJSRuntime JS

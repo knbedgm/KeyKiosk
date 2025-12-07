@@ -3,6 +3,7 @@
 @layout Layout.MainLayout
 
 @inject NavigationManager Nav
+@inject AppAuthenticationStateProvider session
 
 <link href="EmployeeLogin.css" rel="stylesheet" />
 <link href="DesktopShared.css" rel="stylesheet" />
@@ -46,30 +47,43 @@
 </div>
 
 @code {
+
     // Simple model for the form
     private LoginModel loginModel = new();
     private string? errorMessage;
 
     // Very basic hardcoded auth and redirects
-    private void OnLogin()
+    private async Task OnLogin()
     {
-        var username = loginModel.Username?.Trim();
-        var password = loginModel.Password?.Trim();
+        var username = loginModel.Username;
+        var password = loginModel.Password;
 
-        if (username == "Rachel" && password == "123123")
+        if (username != null && password != null)
         {
-            // Admin home
-            Nav.NavigateTo("/employee/admin/home", forceLoad: true);
-        }
-        else if (username == "Ryan" && password == "123123")
-        {
-            // Employee home
-            Nav.NavigateTo("/employee/home", forceLoad: true);
+
+            var success = await session.LoginDesktopAsync(username, password);
+            if (success)
+            {
+                switch (session.CurrentSession!.User.UserType)
+                {
+                    case Data.UserType.Admin:
+                    case Data.UserType.Manager:
+                        Nav.NavigateTo("/employee/admin/home", forceLoad: true);
+                        break;
+                    case Data.UserType.User:
+                    default:
+                        Nav.NavigateTo("/employee/home", forceLoad: true);
+                        break;
+                }
+            } else
+            {
+                errorMessage = "Invalid username or password.";
+            }
         }
         else
         {
             // Bad credentials
-            errorMessage = "Invalid username or password.";
+            errorMessage = "Missing username or password.";
         }
     }
 

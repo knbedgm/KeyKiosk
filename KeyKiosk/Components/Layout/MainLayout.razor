@@ -1,6 +1,7 @@
 ﻿@inherits LayoutComponentBase
 @using Microsoft.AspNetCore.Components.Routing
 @inject NavigationManager Nav
+@inject AppAuthenticationStateProvider authState
 
 @* Required *@
 <MudThemeProvider />
@@ -13,12 +14,12 @@
 <MudSnackbarProvider />
 
 <div class="layout-shell">
-    @if (!IsLoginPage)
+    @if (!ShowHeader)
     {
         <!-- Top navigation bar -->
         <header class="top-nav">
             <nav class="nav-container">
-                @if (IsAdminPage)
+                @if (ShowAdminHeader)
                 {
                     <!-- ADMIN NAV -->
                     <div class="nav-left">
@@ -36,8 +37,7 @@
                     </div>
 
                     <div class="nav-right">
-                        <NavLink href="/employee/home" class="nav-link">Employee View</NavLink>
-                        <NavLink href="/employee/login" class="nav-link">Logout</NavLink>
+                        <a onclick="@Logout" class="nav-link">Logout</a>
                     </div>
                 }
                 else
@@ -52,7 +52,7 @@
                     </div>
 
                     <div class="nav-right">
-                        <NavLink href="/employee/login" class="nav-link">Logout</NavLink>
+                        <a onclick="@Logout" class="nav-link">Logout</a>
                     </div>
                 }
             </nav>
@@ -68,6 +68,11 @@
 </div>
 
 @code {
-    private bool IsLoginPage => Nav.Uri.Contains("/employee/login", StringComparison.OrdinalIgnoreCase);
-    private bool IsAdminPage => Nav.Uri.Contains("/employee/admin/", StringComparison.OrdinalIgnoreCase);
+    private bool ShowHeader => authState?.CurrentSession is null;
+    private bool ShowAdminHeader => authState.CurrentSession is null ? false : authState.CurrentSession.User.UserType == Data.UserType.Admin;
+
+    private async Task Logout()
+    {
+        await authState.Logout();
+    }
 }

@@ -63,7 +63,7 @@ namespace KeyKiosk.Services.Auth
 				Response.Redirect("/kiosk");
 			} else
 			{
-				Response.Redirect("/"); //todo send to login page
+				Response.Redirect("/");
 			}
 			
 		}

@@ -1,12 +1,34 @@
 ﻿@page "/"
 @layout Layout.BlankLayout;
 
-<h1>Login Screen (WIP)</h1>
+@inject NavigationManager nav
+@inject AppAuthenticationStateProvider authState
+
+@* <h1>Login Screen (WIP)</h1>
 
 <NavLink href="home">Login</NavLink><br>
-<NavLink href="kiosk">Kiosk</NavLink>
+<NavLink href="kiosk">Kiosk</NavLink> *@
 
 
 @code {
-
+	protected override void OnInitialized()
+	{
+		if (authState.CurrentSession is not null)
+		{
+			switch (authState.CurrentSession.User.UserType)
+			{
+				case Data.UserType.Admin:
+				case Data.UserType.Manager:
+					nav.NavigateTo("/employee/admin/home");
+					break;
+				case Data.UserType.User:
+				default:
+					nav.NavigateTo("/employee/home");
+					break;
+			} 
+		} else
+		{
+			nav.NavigateTo("/employee/login");
+		}
+	}
 }

@@ -2,6 +2,8 @@
 @using KeyKiosk.Data
 @rendermode InteractiveServer
 @layout Layout.MainLayout
+@attribute [Authorize("Desktop")]
+@attribute [Authorize("RoleAdmin")]
 
 <link href="DesktopShared.css" rel="stylesheet" />
 <link href="GenerateReports.css" rel="stylesheet" />
