@@ -4,6 +4,8 @@
 @inject WorkOrderService WorkOrderService
 @inject IRFIDReader RFIDReader
 @inject NavigationManager navManager
+@inject DrawerService drawers
+@inject ISnackbar Snackbar
 @rendermode InteractiveServer
 @attribute [Authorize("Kiosk")]
 
@@ -53,7 +55,17 @@
 
 	private void OnCardScanned(object? source, OnCardScannedEventArgs e)
 	{
-		navManager.NavigateTo($"/kiosk/wo/{WOs.First().Id}");
+		var drawer = drawers.GetByRFID(e.CardId);
+
+		var woId = drawer?.CurrentWorkorder?.Id;
+
+		if (woId is null)
+		{
+			Snackbar.Add("Key tag not assigned to a workorder.", Severity.Error);
+			return;
+		};
+
+		navManager.NavigateTo($"/kiosk/wo/{woId}");
 	}
 
 	public ValueTask DisposeAsync()

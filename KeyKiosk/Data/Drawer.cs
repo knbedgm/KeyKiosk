@@ -3,7 +3,8 @@
     public class Drawer
     {
         public int Id { get; set; }
-        public string? CurrentRONumber { get; set; }
+        public WorkOrder? CurrentWorkorder { get; set; }
+        public string? RFIDUid { get; set; }
         public bool Occupied { get; set; }
     }
 }

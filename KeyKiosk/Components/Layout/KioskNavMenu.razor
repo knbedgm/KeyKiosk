@@ -1,4 +1,4 @@
-﻿@inject KioskNavAuthService navAuthService
+﻿@inject AppAuthenticationStateProvider authState
 
 <nav class="flex flex-row justify-evenly h-full py-3 bg-border">
     @foreach (var link in accessableLinks)
@@ -19,11 +19,15 @@
 </nav>
 
 @code {
-    class Link
+
+
+
+    protected class Link
     {
         public required string Name { get; init; }
         public required string href { get; init; }
         public required string icon { get; init; }
+        public required Data.UserType RequiredRole { get; init; }
 
         public override string ToString()
         {
@@ -32,20 +36,29 @@
     }
 
     List<Link> links = [
-        // new(){Name="Counter", href="counter", icon="fluent--history-24-filled"},
-        new(){Name="Home", href="kiosk/home", icon="fluent--drawer-24-filled"},
-        // new(){Name="Weather", href="weather", icon="fluent--person-edit-24-filled"},
-        // new(){Name="WorkOrders", href="workorders", icon="fluent--person-edit-24-filled"},
-        // new(){Name="WorkOrdersTasks", href="worktasks", icon="fluent--person-edit-24-filled"}
-
-    ];
-    
+        new(){Name="Home", href="kiosk/home", icon="fluent--drawer-24-filled", RequiredRole = Data.UserType.User },
+    ];    
 
     List<Link> accessableLinks = [];
 
     protected override void OnParametersSet()
     {
-        accessableLinks = links.FindAll((l) => (navAuthService.UserCanAccessPath(l.href) is null));
+        accessableLinks = links.FindAll((l) => (CanUserAccessLink(l)));
+    }
+
+    protected bool CanUserAccessLink(Link l) {
+        if (authState.CurrentSession is null) return false;
+        switch (authState.CurrentSession.User.UserType) {
+            case Data.UserType.Admin:
+                if (l.RequiredRole == Data.UserType.Admin) return true;
+                goto case Data.UserType.Manager;
+            case Data.UserType.Manager:
+                if (l.RequiredRole == Data.UserType.Manager) return true;
+                goto case Data.UserType.User;
+            case Data.UserType.User:
+            default:
+                return true;
+        }
     }
 
     object? cw(string str)

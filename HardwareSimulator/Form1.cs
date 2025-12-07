@@ -33,5 +33,13 @@ namespace HardwareSimulator
 
 			channels.RFIDEvents.Writer.WriteAsync(card);
 		}
+
+		private void comboBox1_KeyPress(object sender, KeyPressEventArgs e)
+		{
+			if (e.KeyChar == 13) // Enter
+			{
+				button1_Click(sender, e);
+			}
+		}
 	}
 }

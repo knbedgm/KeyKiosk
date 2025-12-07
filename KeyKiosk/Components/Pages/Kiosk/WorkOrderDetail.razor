@@ -3,6 +3,7 @@
 @inject AppAuthenticationStateProvider session
 @inject WorkOrderService WorkOrderService
 @inject NavigationManager navManager
+@inject DrawerService drawers
 @rendermode InteractiveServer
 @attribute [Authorize("Kiosk")]
 
@@ -78,6 +79,13 @@
 
 	async Task StartClicked()
 	{
+		var drawer = drawers.GetByWOId(wo.Id);
+
+		if (drawer is not null)
+		{
+			await drawers.Open(drawer.Id);
+		}
+
 		wo.Status = Data.WorkOrderStatusType.WorkStarted;
 		await WorkOrderService.UpdateWorkOrderAsync(wo);
 		navManager.NavigateTo($"/kiosk/home");

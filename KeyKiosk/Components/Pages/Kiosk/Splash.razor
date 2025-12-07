@@ -58,7 +58,7 @@
 
     private void OnCardScanned(object? source, OnCardScannedEventArgs e)
     {
-        session.LoginKioskAsync(e.CardId).Wait();
+        session.LoginRFIDAsync(e.CardId).Wait();
         InvokeAsync(() => navManager.NavigateTo("kiosk/home")).Wait();
     }
 

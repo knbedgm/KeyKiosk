@@ -31,15 +31,37 @@ namespace KeyKiosk.Services
 
         public async Task Open(int id)
         {
-            //TODO: make service scoped to access use / database for audit
             dbContext.DrawerLog.Add(new() { DateTime = DateTime.Now, EventType = DrawerLogEventType.Open, DrawerId = id, User = userSessionService.CurrentSession!.User});
             var drawer = drawers.First(d => d.Id == id);
             if (drawer == null) throw new ArgumentException($"Unable to find drawer with id ${id}", "id");
 
             drawer.db.Occupied = !drawer.Occupied;
-            dbContext.SaveChanges();
-            await DrawerController.Open(drawer.config.RelayIndex);
+			await dbContext.SaveChangesAsync();
+			await DrawerController.Open(drawer.config.RelayIndex);
         }
+
+        public async Task AssignRFID(int id, string rfiduid)
+        {
+            var drawer = drawers.First(d => d.Id == id);
+            if (drawer == null) throw new ArgumentException($"Unable to find drawer with id ${id}", "id");
+
+            drawer.db.RFIDUid = rfiduid;
+            await dbContext.SaveChangesAsync();
+        }
+
+        public Drawer? GetByRFID(string rfiduid)
+        {
+            var drawer = drawers.FirstOrDefault(d => d.RFIDUid == rfiduid.ToUpperInvariant());
+
+            return drawer;
+		}
+
+        public Drawer? GetByWOId(int workorderid)
+        {
+            var drawer = drawers.FirstOrDefault(d => d.CurrentWorkorder?.Id == workorderid);
+
+            return drawer;
+		}
 
         public async Task OpenAll()
         {
@@ -79,8 +101,9 @@ namespace KeyKiosk.Services
             public required Data.Drawer db { internal get; init; }
             public int Id { get => db.Id; }
             public string Name { get => config.Name; }
-            public string? CurrentRONumber { get => db.CurrentRONumber; }
-            public bool Occupied { get => db.Occupied; }
+            public WorkOrder? CurrentWorkorder { get => db.CurrentWorkorder; }
+			public string? RFIDUid { get => db.RFIDUid; }
+			public bool Occupied { get => db.Occupied; }
         }
     }
 }
