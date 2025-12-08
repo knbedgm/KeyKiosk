@@ -18,7 +18,8 @@ namespace KeyKiosk.Data
     {
         User,
         Manager,
-        Admin
+        Admin,
+        Terminated
     }
 
 	[Owned]
