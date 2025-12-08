@@ -21,8 +21,6 @@
 
 @code {
 
-
-
     bool loginVisible;
     PinEntry? pinEntry;
     WatchDog wd = default!;
@@ -58,8 +56,10 @@
 
     private void OnCardScanned(object? source, OnCardScannedEventArgs e)
     {
-        session.LoginRFIDAsync(e.CardId).Wait();
-        InvokeAsync(() => navManager.NavigateTo("kiosk/home")).Wait();
+        if (session.LoginRFIDAsync(e.CardId).Result)
+        {
+            InvokeAsync(() => navManager.NavigateTo("kiosk/home"));
+        }
     }
 
     async void OnTimeout()
